@@ -10,10 +10,14 @@
 using System;
 using System.Reflection;
 
+[assembly: System.Reflection.AssemblyMetadataAttribute("Microsoft.Maui.ApplicationModel.AppInfo.PackageName", "com.companyname.medicalendar")]
+[assembly: System.Reflection.AssemblyMetadataAttribute("Microsoft.Maui.ApplicationModel.AppInfo.PublisherName", "User Name")]
+[assembly: System.Reflection.AssemblyMetadataAttribute("Microsoft.Maui.ApplicationModel.AppInfo.Name", "Medicalendar")]
+[assembly: System.Reflection.AssemblyMetadataAttribute("Microsoft.Maui.ApplicationModel.AppInfo.Version", "1.0.0.1")]
 [assembly: System.Reflection.AssemblyCompanyAttribute("Medicalendar")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+10078f43ddbae1daa4761a8dcaccbe281440e6bf")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0+711d84093189877e365a7f44002ec8e6fde1368f")]
 [assembly: System.Reflection.AssemblyProductAttribute("Medicalendar")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Medicalendar")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
