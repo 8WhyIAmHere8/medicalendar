@@ -2,6 +2,7 @@
 bin/
 obj/
 
+Medicalendar/obj
 # Ignore user-specific and IDE settings
 .vscode/
 *.user
