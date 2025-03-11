@@ -19,10 +19,6 @@ public partial class App : MauiWinUIApplication
 		this.InitializeComponent();
 	}
 
-    private void InitializeComponent()
-    {
-        throw new NotImplementedException();
-    }
 
     protected override MauiApp CreateMauiApp() => MauiProgram.CreateMauiApp();
 }
