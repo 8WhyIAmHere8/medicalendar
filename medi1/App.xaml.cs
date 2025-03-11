@@ -1,14 +1,13 @@
-﻿namespace medi1;
+﻿using Microsoft.Maui.Controls;
 
-public partial class App : Application
+namespace medi1
 {
-	public App()
-	{
-		InitializeComponent();
-	}
-
-	protected override Window CreateWindow(IActivationState? activationState)
-	{
-		return new Window(new AppShell());
-	}
+    public partial class App : Application
+    {
+        public App()
+        {
+            InitializeComponent();
+            MainPage = new AppShell();
+        }
+    }
 }

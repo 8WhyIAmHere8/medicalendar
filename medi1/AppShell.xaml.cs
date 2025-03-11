@@ -1,9 +1,12 @@
-﻿namespace medi1;
+﻿using Microsoft.Maui.Controls;
 
-public partial class AppShell : Shell
+namespace medi1
 {
-	public AppShell()
-	{
-		InitializeComponent();
-	}
+    public partial class AppShell : Shell
+    {
+        public AppShell()
+        {
+            InitializeComponent();
+        }
+    }
 }

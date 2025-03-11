@@ -26,3 +26,5 @@ Resources/**/obj/
 node_modules/
 
 # Ignore .NET dependency caching
+
+.fake

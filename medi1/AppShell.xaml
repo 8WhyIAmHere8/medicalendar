@@ -1,15 +1,37 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<Shell
-    x:Class="medi1.AppShell"
-    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:local="clr-namespace:medi1"
-    Shell.FlyoutBehavior="Flyout"
-    Title="medi1">
+<Shell xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+       xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+       xmlns:pages="clr-namespace:medi1.Pages"
+       x:Class="medi1.AppShell">
 
-    <ShellContent
-        Title="Home"
-        ContentTemplate="{DataTemplate local:MainPage}"
-        Route="MainPage" />
+  <Shell.FlyoutHeader>
+    <StackLayout Padding="20" BackgroundColor="LightBlue">
+      <Label Text="MediCalendar" FontSize="24" TextColor="White" />
+    </StackLayout>
+  </Shell.FlyoutHeader>
+
+  <FlyoutItem Title="Dashboard">
+    <ShellContent ContentTemplate="{DataTemplate pages:HomePage}" Route="home" />
+  </FlyoutItem>
+
+  <FlyoutItem Title="Calendar">
+    <ShellContent ContentTemplate="{DataTemplate pages:CalendarPage}" Route="calendar" />
+  </FlyoutItem>
+
+  <FlyoutItem Title="My Conditions">
+    <ShellContent ContentTemplate="{DataTemplate pages:ConditionsPage}" Route="conditions" />
+  </FlyoutItem>
+
+  <FlyoutItem Title="Add Entry">
+    <ShellContent ContentTemplate="{DataTemplate pages:AddEntryPage}" Route="addentry" />
+  </FlyoutItem>
+
+  <FlyoutItem Title="Reports &amp; Comparisons">
+    <ShellContent ContentTemplate="{DataTemplate pages:ReportsPage}" Route="reports" />
+  </FlyoutItem>
+
+  <FlyoutItem Title="Settings &amp; Profile">
+    <ShellContent ContentTemplate="{DataTemplate pages:SettingsPage}" Route="settings" />
+  </FlyoutItem>
 
 </Shell>

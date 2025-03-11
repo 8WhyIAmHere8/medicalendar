@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="medi1.Pages.ConditionsPage"
+             Title="My Conditions">
+  <StackLayout Padding="20">
+    <Label Text="Manage Your Medical Conditions" 
+           FontSize="24" 
+           HorizontalOptions="Center" />
+    <!-- List and management controls for conditions -->
+  </StackLayout>
+</ContentPage>
