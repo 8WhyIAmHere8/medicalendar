@@ -1,12 +1,98 @@
-<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:components="clr-namespace:medi1.SplashPageComponents"
              x:Class="medi1.Pages.HomePage"
              Title="Dashboard">
-  <StackLayout Padding="20">
-    <Label Text="Welcome to MediCalendar Dashboard!" 
-           FontSize="24" 
-           HorizontalOptions="Center" />
-    <!-- Add summary and quick notes here -->
-  </StackLayout>
+
+    <!-- Converter to highlight the current day -->
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <components:HighlightToday x:Key="HighlightToday"/>
+        </ResourceDictionary>
+    </ContentPage.Resources>
+
+    <ScrollView>
+        <StackLayout Padding="20">
+            <Label Text="{Binding CurrentMonth}" FontSize="24" HorizontalOptions="Center"/>
+
+            <!-- Calendar Display -->
+            <Grid HorizontalOptions="Center" VerticalOptions="Center" Padding="30">
+                <CollectionView ItemsSource="{Binding DaysInMonth}">
+                    <CollectionView.ItemsLayout>
+                        <GridItemsLayout Orientation="Vertical" Span="7"/>
+                    </CollectionView.ItemsLayout>
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <Frame Padding="10" Margin="2"
+                                    CornerRadius="5"
+                                    WidthRequest="75"
+                                    BackgroundColor="{Binding IsToday, Converter={StaticResource HighlightToday}}">
+                                <Label Text="{Binding DayNumber}" 
+                                       HorizontalOptions="Center" 
+                                       FontSize="18" 
+                                       FontAttributes="Bold"/>
+                            </Frame>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </Grid>
+
+            <!-- Buttons below the calendar -->
+            <FlexLayout Direction="Row" JustifyContent="Center" AlignItems="Center" Padding="30">
+                <Button Text="My Conditions" BackgroundColor="Red" TextColor="White" FontSize="14" Padding="10" WidthRequest="120" HeightRequest="40" Clicked="GoToConditions"/>
+                <Button Text="Add Entry" BackgroundColor="LightGray" TextColor="Red" FontSize="14" Padding="10" WidthRequest="120" HeightRequest="40" Clicked="GoToAddEntry"/>
+                <Button Text="View Calendar" BackgroundColor="Blue" TextColor="White" FontSize="14" Padding="10" WidthRequest="120" HeightRequest="40" Clicked="GoToCalendar"/>               
+            </FlexLayout>
+
+            <!-- Frame displaying the current date and task input button -->
+            <Frame BorderColor="Gray" Padding="20" CornerRadius="10" HasShadow="True" BackgroundColor="Transparent" Margin="0,30,0,0">
+                <Label Text="{Binding FullDateToday}" FontSize="24" HorizontalOptions="Center"/>
+
+                <StackLayout Orientation="Vertical" Spacing="10">
+                    <Frame>
+                        <StackLayout>
+                            <Label Text="Today's Tasks" FontSize="20" HorizontalOptions="Center" Padding="20"/>
+                            <Button Text="+ New Task" Clicked="OnAddClicked" />
+
+                            <!-- StackLayout for the task list (where tasks will be added) -->
+                            <StackLayout x:Name="TaskListContainer" Padding="10" Spacing="5" />
+
+                            <!-- Task input popup (visible only when the "+" button is clicked) -->
+                            <Grid x:Name="AddTaskPopup" BackgroundColor="Black" Opacity="0.5" IsVisible="False" HorizontalOptions="Center" VerticalOptions="CenterAndExpand">
+                                <Frame BackgroundColor="White" Padding="20" CornerRadius="10" HasShadow="True">
+                                    <StackLayout>
+                                        <Label Text="Add Task" FontSize="18" HorizontalOptions="Center"/>
+                                        <Entry x:Name="TaskInput" Placeholder="New Task..." />
+                                        <StackLayout Orientation="Horizontal" HorizontalOptions="Center" Spacing="10">
+                                            <Button Text="Confirm" Clicked="OnConfirmClicked"/>
+                                            <Button Text="Cancel" Clicked="OnCancelClicked"/>
+                                        </StackLayout>
+                                    </StackLayout>
+                                </Frame>
+                            </Grid>
+                            <Grid x:Name="EditTaskPopup" BackgroundColor="Black" Opacity="0.5" IsVisible="False" HorizontalOptions="Center" VerticalOptions="CenterAndExpand">
+                                <Frame BackgroundColor="White" Padding="20" CornerRadius="10" HasShadow="True">
+                                    <StackLayout>
+                                        <Label Text="Edit Task" FontSize="18" HorizontalOptions="Center"/>
+                                        <Entry x:Name="EditTaskInput" Placeholder="Edit Task..." />
+
+                                        <StackLayout Orientation="Horizontal" HorizontalOptions="Center" Spacing="10">
+                                            <Button Text="Confirm" Clicked="OnEditConfirmClicked"/>
+                                            <Button Text="Cancel" Clicked="OnEditCancelClicked"/>
+                                        </StackLayout>
+                                    </StackLayout>
+                                </Frame>
+                            </Grid>
+                        </StackLayout>
+                    </Frame>
+                    <!-- Close this Frame and StackLayout properly -->
+                    <Frame>
+                        <Label Text="Today's Events" FontSize="20" HorizontalOptions="Center"/>
+                        <!-- Logic to fetch events from CalendarPage -->
+                    </Frame>
+                </StackLayout>
+            </Frame>
+        </StackLayout>
+    </ScrollView>
 </ContentPage>
+
