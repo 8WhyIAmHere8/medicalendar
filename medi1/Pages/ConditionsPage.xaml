@@ -2,11 +2,55 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="medi1.Pages.ConditionsPage"
-             Title="My Conditions">
-  <StackLayout Padding="20">
-    <Label Text="Manage Your Medical Conditions" 
-           FontSize="24" 
-           HorizontalOptions="Center" />
-    <!-- List and management controls for conditions -->
-  </StackLayout>
+             Title="Asthma Tracker">
+    <ScrollView>
+        <VerticalStackLayout Padding="20">
+            <!-- Medications Section -->
+            <Frame BackgroundColor="#E3F2FD" Padding="10">
+                <Label Text="Medications" FontSize="20" FontAttributes="Bold" />
+                <CollectionView ItemsSource="{Binding Medications}">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <Label Text="{Binding}" FontSize="16" />
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+                <Button Text="Add Medication" Command="{Binding AddMedicationCommand}" />
+            </Frame>
+
+            <!-- Notes Section -->
+            <Frame BackgroundColor="#E3F2FD" Padding="10">
+                <Label Text="My Notes" FontSize="20" FontAttributes="Bold" />
+                <Editor Text="{Binding Notes}" HeightRequest="100" />
+                <Button Text="Save Note" Command="{Binding SaveNoteCommand}" />
+            </Frame>
+
+            <!-- Calendar Section -->
+            <Label Text="Symptom Tracker" FontSize="20" FontAttributes="Bold" />
+            <Grid RowDefinitions="Auto,Auto,Auto,Auto"
+                  ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto">
+                <!-- Generate a simple calendar grid -->
+                <Label Text="Sun" Grid.Row="0" Grid.Column="0" />
+                <Label Text="Mon" Grid.Row="0" Grid.Column="1" />
+                <Label Text="Tue" Grid.Row="0" Grid.Column="2" />
+                <Label Text="Wed" Grid.Row="0" Grid.Column="3" />
+                <Label Text="Thu" Grid.Row="0" Grid.Column="4" />
+                <Label Text="Fri" Grid.Row="0" Grid.Column="5" />
+                <Label Text="Sat" Grid.Row="0" Grid.Column="6" />
+
+                <!-- Example: Calendar Items -->
+                <BoxView Grid.Row="1" Grid.Column="2" BackgroundColor="Red" />
+                <BoxView Grid.Row="1" Grid.Column="3" BackgroundColor="Green" />
+                <!-- Dynamically fill this based on symptom data -->
+            </Grid>
+
+            <!-- Legend -->
+            <HorizontalStackLayout>
+                <BoxView WidthRequest="20" HeightRequest="20" BackgroundColor="Green" />
+                <Label Text="No Symptoms" />
+                <BoxView WidthRequest="20" HeightRequest="20" BackgroundColor="Red" />
+                <Label Text="Used Inhaler" />
+            </HorizontalStackLayout>
+        </VerticalStackLayout>
+    </ScrollView>
 </ContentPage>
