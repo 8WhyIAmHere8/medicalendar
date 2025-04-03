@@ -2,11 +2,96 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="medi1.Pages.ConditionsPage"
-             Title="My Conditions">
-  <StackLayout Padding="20">
-    <Label Text="Manage Your Medical Conditions" 
-           FontSize="24" 
-           HorizontalOptions="Center" />
-    <!-- List and management controls for conditions -->
-  </StackLayout>
+             Title="Asthma Tracker">
+    <ScrollView>
+        <VerticalStackLayout Padding="20">
+            <!-- Condition Selector -->
+            <Frame BackgroundColor="#E3F2FD" Padding="10">
+                <VerticalStackLayout>
+                    <Label Text="Select Condition" FontSize="20" FontAttributes="Bold" />
+                    <Picker ItemsSource="{Binding Conditions}" 
+                            ItemDisplayBinding="{Binding Name}" 
+                            SelectedItem="{Binding SelectedCondition, Mode=TwoWay}" />
+                </VerticalStackLayout>
+            </Frame>
+            <!-- Conditions  -->
+            <Frame BackgroundColor="#E3F2FD" Padding="10">
+                <VerticalStackLayout>
+                    <Label Text="Conditions" FontSize="20" FontAttributes="Bold" />
+                    <CollectionView ItemsSource="{Binding Conditions}">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Label Text="{Binding Name}" FontSize="16" />
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </VerticalStackLayout>  
+            </Frame>
+            <!--Add Condition Section-->
+            <Frame BackgroundColor="#E3F2FD" Padding="10">
+                <VerticalStackLayout>
+                    <Label Text="Add New Condition" FontSize="20" FontAttributes="Bold" />
+                    <Entry Placeholder="Condition Name" Text="{Binding NewConditionName}" />
+                    <Button Text="Add Condition" Command="{Binding AddConditionCommand}" />
+                </VerticalStackLayout>
+            </Frame>
+            <!-- Medications Section -->
+            <Frame BackgroundColor="#E3F2FD" Padding="10">
+                <VerticalStackLayout>
+                    <Label Text="Medications" FontSize="20" FontAttributes="Bold" />
+                    <CollectionView ItemsSource="{Binding SelectedCondition.Medications}" HeightRequest="100">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Label Text="{Binding}" FontSize="16" />
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                    <Entry Placeholder="Enter medication" Text="{Binding NewMedication}" />
+                    <Button Text="Add Medication" Command="{Binding AddMedicationCommand}" />
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- Symptoms Section -->
+            <Frame BackgroundColor="#E3F2FD" Padding="10">
+                <VerticalStackLayout>
+                    <Label Text="Symptoms" FontSize="20" FontAttributes="Bold" />
+                    <CollectionView ItemsSource="{Binding SelectedCondition.Symptoms}">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Label Text="{Binding}" FontSize="16" />
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                    <Entry Placeholder="Enter symptom" Text="{Binding NewSymptom}" />
+                    <Button Text="Add Symptom" Command="{Binding AddSymptomCommand}" />
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- Treatments Section -->
+            <Frame BackgroundColor="#E3F2FD" Padding="10">
+                <VerticalStackLayout>
+                    <Label Text="Treatments" FontSize="20" FontAttributes="Bold" />
+                    <CollectionView ItemsSource="{Binding SelectedCondition.Treatments}">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Label Text="{Binding}" FontSize="16" />
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                    <Entry Placeholder="Enter treatment" Text="{Binding NewTreatment}" />
+                    <Button Text="Add Treatment" Command="{Binding AddTreatmentCommand}" />
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- Notes Section -->
+            <Frame BackgroundColor="#E3F2FD" Padding="10">
+                <VerticalStackLayout>
+                    <Label Text="My Notes" FontSize="20" FontAttributes="Bold" />
+                    <Editor Text="{Binding SelectedCondition.Notes}" HeightRequest="100" />
+                    <Button Text="Save Note" Command="{Binding SaveNoteCommand}" />
+                </VerticalStackLayout>
+            </Frame>
+           
+        </VerticalStackLayout>
+    </ScrollView>
 </ContentPage>
