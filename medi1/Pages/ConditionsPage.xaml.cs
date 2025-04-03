@@ -3,13 +3,14 @@ using medi1.Data.Models; // Import Condition model
 using Microsoft.EntityFrameworkCore;
 using System.Collections.ObjectModel; // Allows using ObservableCollection
 using System.Threading.Tasks; // Allows using async/await
-using System.Diagnostics; // Allows using Debug.WriteLine for logging
+using System.Diagnostics;
+using System.Linq.Expressions; // Allows using Debug.WriteLine for logging
 
 namespace medi1.Pages
 {
     public partial class ConditionsPage : ContentPage
     {
-        private readonly MedicalDbContext _dbContext = new MedicalDbContext(); // Create an instance of the database context
+        private readonly MedicalDbContext _dbContext = new MedicalDbContext("Conditions"); // Create an instance of the database context
 
         public ObservableCollection<Data.Models.Condition> Conditions { get; set; } = new ObservableCollection<Data.Models.Condition>(); // List of conditions
 
@@ -52,9 +53,8 @@ namespace medi1.Pages
             AddMedicationCommand = new Command(AddMedication);
             AddSymptomCommand = new Command(AddSymptom);
             AddTreatmentCommand = new Command(AddTreatment);
-
-            var dbContext = new MedicalDbContext();
-            TestDatabaseConnection(dbContext);
+            
+            TestDatabaseConnection(_dbContext);
             LoadConditions();
         }
 

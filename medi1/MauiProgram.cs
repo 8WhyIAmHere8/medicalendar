@@ -1,6 +1,9 @@
 ﻿using Microsoft.Maui;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Controls.Hosting;
+using Windows.Media.Capture.Core;
+using medi1.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace medi1
 {
@@ -15,6 +18,7 @@ namespace medi1
                 {
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
                 });
+            
 
             return builder.Build();
         }

@@ -5,11 +5,11 @@
              Title="Login">
   <StackLayout Padding="20">
     <Entry x:Name="UsernameEntry"
-           Placeholder="Enter Username"
+           Placeholder="Username"
            Keyboard="Text" />
 
     <Entry x:Name="PasswordEntry"
-           Placeholder="Enter Password"
+           Placeholder="Password"
            IsPassword="True" />
 
     <Button Text="Login" Clicked="OnLoginClicked"/>

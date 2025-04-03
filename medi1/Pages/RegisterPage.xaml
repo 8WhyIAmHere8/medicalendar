@@ -5,13 +5,26 @@
              Title="Register">
   <StackLayout Padding="20">
     
+    <Entry x:Name="NameEntry"
+           Placeholder="Name"
+           IsPassword="True" />
+
+    <Entry x:Name="EmailEntry"
+           Placeholder="Email"
+           IsPassword="True" />
+
+    <Entry x:Name="DOBEntry"
+           Placeholder="Date of Birth"
+           IsPassword="True" />
+       
     <Entry x:Name="UsernameEntry"
-           Placeholder="Enter Username"
+           Placeholder="Username"
            Keyboard="Text" />
 
     <Entry x:Name="PasswordEntry"
-           Placeholder="Enter Password"
-           IsPassword="True" />
+           Placeholder="Password"
+           IsPassword="True" />      
+       
     <Button Text="Register" Clicked="OnRegisterClicked"/>
     <!-- Add summary and quick notes here -->
   </StackLayout>

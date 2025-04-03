@@ -6,7 +6,16 @@ namespace medi1.Data
 {
     public class MedicalDbContext : DbContext
     {
+        private readonly string _containerName;
         public DbSet<Data.Models.Condition> Conditions { get; set; }
+
+         public MedicalDbContext(string containerName)
+        : base(new DbContextOptionsBuilder<MedicalDbContext>()
+            .UseCosmos("https://medicalendar-data.documents.azure.com:443/", "MedicalDatabase")
+            .Options)
+    {
+        _containerName = containerName;
+    }
        
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -22,7 +31,7 @@ namespace medi1.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Models.Condition>()
-        .ToContainer("Conditions")  // Maps to the "Conditions" container
+        .ToContainer(_containerName)  // Maps to the "Conditions" container
         .HasPartitionKey(c => c.Id) // ✅ Keep partitioning by `Id` for now
         .HasNoDiscriminator(); // ✅ This removes the discriminator requirement
         }
