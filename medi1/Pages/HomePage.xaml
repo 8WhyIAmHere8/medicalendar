@@ -36,6 +36,26 @@
                     </CollectionView.ItemTemplate>
                 </CollectionView>
             </Grid>
+            <!--s-->
+            
+            <!-- New: Condition Filter Section -->
+            <Label Text="Filter by Condition:" FontSize="18" HorizontalOptions="Center" Margin="0,10,0,5" />
+            <CollectionView x:Name="conditionsCollectionView" ItemsSource="{Binding Conditions}">
+                <CollectionView.ItemsLayout>
+                    <LinearItemsLayout Orientation="Horizontal"/>
+                </CollectionView.ItemsLayout>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <StackLayout Orientation="Horizontal" Padding="5">
+                            <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                                      CheckedChanged="OnConditionCheckedChanged"/>
+                            <Label Text="{Binding Name}" VerticalOptions="Center"/>
+                        </StackLayout>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+            <!--s-->
 
             <!-- Buttons below the calendar -->
             <FlexLayout Direction="Row" JustifyContent="Center" AlignItems="Center" Padding="30">

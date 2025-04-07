@@ -1,19 +1,56 @@
 using Microsoft.Maui.Controls;
+using System;
+using System.Collections.ObjectModel;
+using System.Collections.Generic;
+using System.Linq;
 using medi1.SplashPageComponents;
 
-namespace medi1.Pages  
+namespace medi1.Pages
 {
     public partial class HomePage : ContentPage
     {
+        // Calendar properties
+        public string CurrentMonth { get; set; }
+        public string FullDateToday { get; set; }
+        public ObservableCollection<DayItem> DaysInMonth { get; set; }
+
+        // Collection of conditions for filtering
+        public ObservableCollection<Condition> Conditions { get; set; }
+
         public HomePage()
         {
             InitializeComponent();
-            BindingContext = new CalendarViewModel();
+
+            // Dynamically set calendar properties to show today's date.
+            DateTime today = DateTime.Now;
+            CurrentMonth = today.ToString("MMMM yyyy");
+            FullDateToday = today.ToString("MMMM dd, yyyy");
+            DaysInMonth = new ObservableCollection<DayItem>();
+
+            int daysInMonth = DateTime.DaysInMonth(today.Year, today.Month);
+            for (int i = 1; i <= daysInMonth; i++)
+            {
+                DaysInMonth.Add(new DayItem { DayNumber = i, IsToday = (i == today.Day) });
+            }
+
+            // Initialize conditions collection
+            Conditions = new ObservableCollection<Condition>
+            {
+                new Condition { Name = "Diabetes", IsSelected = false },
+                new Condition { Name = "Hypertension", IsSelected = false },
+                new Condition { Name = "Asthma", IsSelected = false }
+                // Add more conditions as needed
+            };
+
+            // Set the BindingContext to this page instance so that XAML bindings work.
+            BindingContext = this;
         }
+
+        // Existing task functionality
 
         private void OnAddClicked(object sender, EventArgs e)
         {
-            //Show new task window
+            // Show new task window
             AddTaskPopup.IsVisible = true;
         }
 
@@ -22,7 +59,7 @@ namespace medi1.Pages
         private void OnConfirmClicked(object sender, EventArgs e)
         {
             string taskText = TaskInput.Text?.Trim();
-            
+
             if (!string.IsNullOrEmpty(taskText))
             {
                 // Create a horizontal StackLayout for the task item
@@ -84,24 +121,23 @@ namespace medi1.Pages
                 // Add the task to the TaskListContainer
                 TaskListContainer.Children.Add(taskItemLayout);
 
-                    // Close the pop-up 
+                // Close the pop-up 
                 AddTaskPopup.IsVisible = false;
 
-                //clear the input field
+                // Clear the input field
                 TaskInput.Text = string.Empty;
             }
-
         }
+
         private void OnCancelClicked(object sender, EventArgs e)
         {
             // Close the pop-up without doing anything
             AddTaskPopup.IsVisible = false;
-
-            //clear the input field
+            // Clear the input field
             TaskInput.Text = string.Empty;
         }
 
-        //Edit Confirm
+        // Edit Confirm
         private void OnEditConfirmClicked(object sender, EventArgs e)
         {
             if (_editingTaskLabel != null)
@@ -111,11 +147,13 @@ namespace medi1.Pages
             EditTaskPopup.IsVisible = false;
         }
 
-        //Edit Cancel
+        // Edit Cancel
         private void OnEditCancelClicked(object sender, EventArgs e)
         {
             EditTaskPopup.IsVisible = false;
         }
+
+        // Navigation functions
 
         private async void GoToConditions(object sender, EventArgs e)
         {
@@ -156,7 +194,50 @@ namespace medi1.Pages
             }
         }
 
+        // New: Event handler for condition CheckBox changes
+        private void OnConditionCheckedChanged(object sender, CheckedChangedEventArgs e)
+        {
+            // Build a list of selected condition names
+            List<string> selectedConditions = Conditions
+                .Where(c => c.IsSelected)
+                .Select(c => c.Name)
+                .ToList();
 
+            // (Optional) Display selected conditions for debugging/demo purposes
+            DisplayAlert("Selected Conditions", string.Join(", ", selectedConditions), "OK");
 
+            // Update the calendar view based on the selected conditions
+            UpdateCalendar(selectedConditions);
+        }
+
+        // Placeholder function to update the calendar view based on conditions.
+        private void UpdateCalendar(List<string> selectedConditions)
+        {
+            // For demonstration, update the page title.
+            // In a real application, you might filter DaysInMonth or update the calendar's data.
+            if (selectedConditions.Count > 0)
+            {
+                Title = $"Dashboard - Filter: {string.Join(", ", selectedConditions)}";
+            }
+            else
+            {
+                Title = "Dashboard";
+            }
+            System.Diagnostics.Debug.WriteLine("Filtering calendar by: " + string.Join(", ", selectedConditions));
+        }
+    }
+
+    // Simple model to represent a medical condition.
+    public class Condition
+    {
+        public string Name { get; set; }
+        public bool IsSelected { get; set; }
+    }
+
+    // Simple model to represent a day item in the calendar.
+    public class DayItem
+    {
+        public int DayNumber { get; set; }
+        public bool IsToday { get; set; }
     }
 }
