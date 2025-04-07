@@ -203,7 +203,7 @@ namespace medi1.Pages
                 .Select(c => c.Name)
                 .ToList();
 
-            // (Optional) Display selected conditions for debugging/demo purposes
+            // Display selected conditions for debugging/demo purposes
             DisplayAlert("Selected Conditions", string.Join(", ", selectedConditions), "OK");
 
             // Update the calendar view based on the selected conditions
@@ -214,7 +214,6 @@ namespace medi1.Pages
         private void UpdateCalendar(List<string> selectedConditions)
         {
             // For demonstration, update the page title.
-            // In a real application, you might filter DaysInMonth or update the calendar's data.
             if (selectedConditions.Count > 0)
             {
                 Title = $"Dashboard - Filter: {string.Join(", ", selectedConditions)}";
