@@ -36,7 +36,6 @@
                     </CollectionView.ItemTemplate>
                 </CollectionView>
             </Grid>
-            <!--s-->
             
             <!-- New: Condition Filter Section -->
             <Label Text="Filter by Condition:" FontSize="18" HorizontalOptions="Center" Margin="0,10,0,5" />
@@ -54,8 +53,6 @@
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
             </CollectionView>
-
-            <!--s-->
 
             <!-- Buttons below the calendar -->
             <FlexLayout Direction="Row" JustifyContent="Center" AlignItems="Center" Padding="30">

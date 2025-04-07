@@ -39,7 +39,6 @@ namespace medi1.Pages
                 new Condition { Name = "Diabetes", IsSelected = false },
                 new Condition { Name = "Hypertension", IsSelected = false },
                 new Condition { Name = "Asthma", IsSelected = false }
-                // Add more conditions as needed
             };
 
             // Set the BindingContext to this page instance so that XAML bindings work.
