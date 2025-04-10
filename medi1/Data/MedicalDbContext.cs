@@ -9,6 +9,8 @@ namespace medi1.Data
         private readonly string _containerName;
         public DbSet<Data.Models.Condition> Conditions { get; set; }
 
+        public DbSet<Data.Models.User> Users { get; set; }
+
          public MedicalDbContext(string containerName)
         : base(new DbContextOptionsBuilder<MedicalDbContext>()
             .UseCosmos("https://medicalendar-data.documents.azure.com:443/", "MedicalDatabase")
@@ -30,10 +32,22 @@ namespace medi1.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<Models.Condition>()
-        .ToContainer(_containerName)  // Maps to the "Conditions" container
-        .HasPartitionKey(c => c.Id) // ✅ Keep partitioning by `Id` for now
-        .HasNoDiscriminator(); // ✅ This removes the discriminator requirement
+            switch (_containerName)
+            {
+                case "Conditions":
+                    modelBuilder.Entity<Models.Condition>()
+                        .ToContainer("Conditions")  // Maps to the "Conditions" container
+                        .HasPartitionKey(c => c.Id) // ✅ Keep partitioning by `Id` for now
+                        .HasNoDiscriminator(); // ✅ This removes the discriminator requirement
+                    break;
+                case "Users":
+                    modelBuilder.Entity<Models.User>()
+                        .ToContainer("Users")  // Maps to the "Conditions" container
+                        .HasPartitionKey(u => u.Id) // ✅ Keep partitioning by `Id` for now
+                        .HasNoDiscriminator(); // ✅ This removes the discriminator requirement
+                    break;
+            }
+            
         }
 
         public async Task<bool> TestConnectionAsync()
