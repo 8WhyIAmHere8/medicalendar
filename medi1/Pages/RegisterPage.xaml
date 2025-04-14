@@ -7,15 +7,15 @@
     
     <Entry x:Name="NameEntry"
            Placeholder="Name"
-           IsPassword="True" />
+           Keyboard="Text" />
 
     <Entry x:Name="EmailEntry"
            Placeholder="Email"
-           IsPassword="True" />
+           Keyboard="Text" />
 
     <Entry x:Name="DOBEntry"
            Placeholder="Date of Birth"
-           IsPassword="True" />
+           Keyboard="Text" />
        
     <Entry x:Name="UsernameEntry"
            Placeholder="Username"
@@ -23,7 +23,12 @@
 
     <Entry x:Name="PasswordEntry"
            Placeholder="Password"
+           IsPassword="True" />
+
+    <Entry x:Name="ConfirmPasswordEntry"
+           Placeholder="Password"
            IsPassword="True" />      
+       
        
     <Button Text="Register" Clicked="OnRegisterClicked"/>
     <!-- Add summary and quick notes here -->

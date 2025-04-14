@@ -1,5 +1,6 @@
 using medi1.Data; // Import database context
 using medi1.Data.Models; // Import Condition model
+using medi1.Services; //used to import current user session
 using Microsoft.EntityFrameworkCore;
 using System.Collections.ObjectModel; // Allows using ObservableCollection
 using System.Threading.Tasks; // Allows using async/await
@@ -15,76 +16,49 @@ namespace medi1.Pages
 
         public ObservableCollection<Data.Models.User> Users { get; set; } = new ObservableCollection<Data.Models.User>();
 
-        private Data.Models.User _selectedUser;
-        public Data.Models.User SelectedUser
-        {
-            get => _selectedUser;
-            set
-            {
-                if (_selectedUser != value)
-                {
-                    _selectedUser = value;
-                    OnPropertyChanged(nameof(SelectedUser));
-                }
-            }
-        }
         public LoginPage()
         {
             InitializeComponent();
  
-
-            TestDatabaseConnection(_dbContext);
-            LoadUsers();
         }
 
-        private async Task<bool> TestDatabaseConnection(MedicalDbContext dbContext)
-        {
-            try
-            {
-                bool isConnected = await _dbContext.TestConnectionAsync();
-                if (isConnected)
+        private async void OnLoginClicked(object sender, EventArgs e)
+        {   
+            string inputuser = UsernameEntry.Text;
+            string inputpassword = PasswordEntry.Text;
+
+            UsernameError.IsVisible = false;
+            PasswordError.IsVisible = false;
+            GeneralError.IsVisible = false;
+
+            var userlist = await _dbContext.Users.ToListAsync();
+            Users.Clear();
+
+            if (string.IsNullOrWhiteSpace(inputuser) || string.IsNullOrWhiteSpace(inputpassword)) 
                 {
-                    await DisplayAlert("✅ Success", "Connected to Cosmos DB!", "OK");
-                    return true;
+                    GeneralError.IsVisible = true;
                 }
-                else
+            
+            else {
+
+                foreach (var user in userlist)
                 {
-                    await DisplayAlert("❌ Error", $"Failed to connect to Cosmos DB.", "OK");
-                    return false;
+                    if (user.UserName == inputuser)
+                    {
+                        if (user.Password == inputpassword){
+                            UserSession.Instance.Id = user.Id; //Accesses and changes session info
+                            UserSession.Instance.UserName = user.UserName;
+                            Application.Current.MainPage = new AppShell();
+                        }
+                        else {
+                            PasswordError.IsVisible = true;
+                        }
+                    }
+                    else {
+                        UsernameError.IsVisible = true;
+                    }
                 }
             }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"❌ Database connection error: {ex.Message}");
-                await DisplayAlert("Error", $"Database connection error: {ex.Message}", "OK");
-                return false;
-            }
-        }
-
-        private async Task LoadUsers()
-        {
-            try
-            {
-                var users = await _dbContext.Users.ToListAsync();
-
-                Users.Clear();
-                foreach (var user in users)
-                {
-                    Debug.WriteLine($"Loaded user: {user.Id}, ID: {user.UserName}");
-                    Users.Add(user);
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"❌ Failed to load conditions: {ex.Message}");
-                await DisplayAlert("Error", $"Failed to load conditions: {ex.Message}", "OK");
-            }
-        }
-
-
-        private void OnLoginClicked(object sender, EventArgs e)
-        {
-            Application.Current.MainPage = new AppShell();
         }
 
         private async void OnNewClicked(object sender, EventArgs e)

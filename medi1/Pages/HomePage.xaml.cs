@@ -1,5 +1,7 @@
 using Microsoft.Maui.Controls;
 using medi1.SplashPageComponents;
+using medi1.Services;
+using System.Diagnostics; //Import used login data
 
 namespace medi1.Pages  
 {
@@ -128,6 +130,7 @@ namespace medi1.Pages
             {
                 Console.WriteLine("Navigation error: " + ex.Message);
             }
+            Debug.WriteLine(UserSession.Instance.Id); // Check for data
         }
 
         private async void GoToAddEntry(object sender, EventArgs e)

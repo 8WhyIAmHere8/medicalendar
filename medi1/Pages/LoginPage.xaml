@@ -7,14 +7,29 @@
     <Entry x:Name="UsernameEntry"
            Placeholder="Username"
            Keyboard="Text" />
+    <Label x:Name="UsernameError" 
+           Text="User not found"
+           IsVisible="False"
+           TextColor="Red"
+           FontAttributes="Bold" />
 
     <Entry x:Name="PasswordEntry"
            Placeholder="Password"
            IsPassword="True" />
+    <Label x:Name="PasswordError" 
+           Text="Password Incorrect"
+           IsVisible="False"
+           TextColor="Red"
+           FontAttributes="Bold" />
 
     <Button Text="Login" Clicked="OnLoginClicked"/>
     
     <Button Text="New User" Clicked="OnNewClicked"/>
-    <!-- Add summary and quick notes here -->
+    
+    <Label x:Name="GeneralError" 
+           Text="All fields must be filled"
+           IsVisible="False"
+           TextColor="Red"
+           FontAttributes="Bold" />
   </StackLayout>
 </ContentPage>
