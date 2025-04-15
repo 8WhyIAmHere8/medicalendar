@@ -3,17 +3,18 @@ using medi1.Data.Models; // Import Condition model
 using Microsoft.EntityFrameworkCore;
 using System.Collections.ObjectModel; // Allows using ObservableCollection
 using System.Threading.Tasks; // Allows using async/await
-using System.Diagnostics; // Allows using Debug.WriteLine for logging
-
-namespace medi1.Pages
+using System.Diagnostics; // Allows using Console.WriteLine for logging
+using System.ComponentModel;
+namespace medi1.Pages.ConditionsPage
 {
-    public partial class ConditionsPage : ContentPage
+    public partial class ConditionsPage : ContentPage, INotifyPropertyChanged
     {
+    
         private readonly MedicalDbContext _dbContext = new MedicalDbContext(); // Create an instance of the database context
 
         public ObservableCollection<Data.Models.Condition> Conditions { get; set; } = new ObservableCollection<Data.Models.Condition>(); // List of conditions
 
-        private Data.Models.Condition _selectedCondition;
+        private Data.Models.Condition? _selectedCondition;
         public Data.Models.Condition SelectedCondition
         {
             get => _selectedCondition;
@@ -27,56 +28,89 @@ namespace medi1.Pages
                 }
             }
         }
+        public new event PropertyChangedEventHandler? PropertyChanged;
+
+        protected override void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            base.OnPropertyChanged(propertyName); // Call the base class implementation
+        }
 
         public ObservableCollection<string> Medications { get; set; } = new ObservableCollection<string>();
         public ObservableCollection<string> Symptoms { get; set; } = new ObservableCollection<string>();
         public ObservableCollection<string> Treatments { get; set; } = new ObservableCollection<string>();
 
-        public string NewMedication { get; set; }
+        private string? _newMedication;
+        public string NewMedication
+        {
+            get => _newMedication;
+            set
+            {
+                if (_newMedication != value)
+                {
+                    _newMedication = value;
+                    OnPropertyChanged(nameof(NewMedication));
+                }
+            }
+        }
         public string NewSymptom { get; set; }
         public string NewTreatment { get; set; }
 
         public Command AddConditionCommand { get; }
         public Command SaveNoteCommand { get; }
-        public Command AddMedicationCommand { get; }
+        public Command AddMedicationCommand { get; set; }
         public Command AddSymptomCommand { get; }
         public Command AddTreatmentCommand { get; }
+
+        public Command TestCommand { get; set; } 
 
         public ConditionsPage()
         {
             InitializeComponent();
-            BindingContext = this;
+            // Ensure BindingContext is set to the current instance
 
+            // Initialize commands
             AddConditionCommand = new Command(async () => await AddCondition());
             SaveNoteCommand = new Command(async () => await SaveCondition());
-            AddMedicationCommand = new Command(AddMedication);
-            AddSymptomCommand = new Command(AddSymptom);
-            AddTreatmentCommand = new Command(AddTreatment);
-
+            AddMedicationCommand = new Command(async () => await AddMedication());
+            AddSymptomCommand = new Command(async () => await AddSymptom());
+            AddTreatmentCommand = new Command(() => AddTreatment());
+            TestCommand = new Command(async () => await ButtonTest());
+            BindingContext = this;
+            // Test database connection and load conditions
             var dbContext = new MedicalDbContext();
             TestDatabaseConnection(dbContext);
             LoadConditions();
         }
-
+        
+        private async Task ButtonTest()
+        {
+            Console.WriteLine("ButtonTest method called");
+            await DisplayAlert("Info", "ButtonTest clicked", "OK");
+            // You can add more logic here if needed
+            // For example, you can call another method or perform some action
+            // await SomeOtherMethod();
+        }
+        
         private async Task<bool> TestDatabaseConnection(MedicalDbContext dbContext)
         {
             try
             {
                 bool isConnected = await _dbContext.TestConnectionAsync();
                 if (isConnected)
-                {
-                    await DisplayAlert("✅ Success", "Connected to Cosmos DB!", "OK");
+                {   Console.WriteLine("here");
+                    await DisplayAlert("Success", "Connected to Cosmos DB!", "OK");
                     return true;
                 }
                 else
                 {
-                    await DisplayAlert("❌ Error", "Failed to connect to Cosmos DB.", "OK");
+                    await DisplayAlert("Error", "Failed to connect to Cosmos DB.", "OK");
                     return false;
                 }
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"❌ Database connection error: {ex.Message}");
+                Console.WriteLine($"Database connection error: {ex.Message}");
                 await DisplayAlert("Error", $"Database connection error: {ex.Message}", "OK");
                 return false;
             }
@@ -97,7 +131,7 @@ namespace medi1.Pages
                 Conditions.Clear();
                 foreach (var condition in conditions)
                 {
-                    Debug.WriteLine($"Loaded condition: {condition.Name}, ID: {condition.Id}");
+                    Console.WriteLine($"Loaded condition: {condition.Name}, ID: {condition.Id}");
                     Conditions.Add(condition);
                 }
 
@@ -105,7 +139,7 @@ namespace medi1.Pages
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"❌ Failed to load conditions: {ex.Message}");
+                Console.WriteLine($"Failed to load conditions: {ex.Message}");
                 await DisplayAlert("Error", $"Failed to load conditions: {ex.Message}", "OK");
             }
         }
@@ -133,7 +167,7 @@ namespace medi1.Pages
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"❌ Failed to add condition: {ex.Message}");
+                Console.WriteLine($" Failed to add condition: {ex.Message}");
                 await DisplayAlert("Error", $"Failed to add condition: {ex.Message}", "OK");
             }
         }
@@ -150,7 +184,7 @@ namespace medi1.Pages
                 }
                 catch (Exception ex)
                 {
-                    Debug.WriteLine($"❌ Failed to update condition: {ex.Message}");
+                    Console.WriteLine($"Failed to update condition: {ex.Message}");
                     await DisplayAlert("Error", $"Failed to update condition: {ex.Message}", "OK");
                 }
             }
@@ -173,26 +207,38 @@ namespace medi1.Pages
             }
         }
 
-        private void AddMedication()
+        private async Task AddMedication()
         {
+           await DisplayAlert("Info", $"Condition is {(SelectedCondition != null ? SelectedCondition.Name : "not selected")}", "OK");
+           
+
             if (SelectedCondition != null && !string.IsNullOrWhiteSpace(NewMedication))
             {
                 SelectedCondition.Medications.Add(NewMedication);
                 Medications.Add(NewMedication);
-                NewMedication = string.Empty;
-                OnPropertyChanged(nameof(NewMedication));
+                try
+                {
+                    _dbContext.Conditions.Update(SelectedCondition);
+                    await _dbContext.SaveChangesAsync();
+                    await DisplayAlert("Yepp", "Medication added successfully!", "OK");
+                }
+                catch (Exception ex)
+                {
+                    await DisplayAlert("Error", $"Failed to update condition: {ex.Message}", "OK");
+                }
+            }
+            else
+            {
+                await DisplayAlert("Error", "Please select a condition and enter a valid medication.", "OK");
             }
         }
 
-        private void AddSymptom()
+        private async Task<bool> AddSymptom()
         {
-            if (SelectedCondition != null && !string.IsNullOrWhiteSpace(NewSymptom))
-            {
-                SelectedCondition.Symptoms.Add(NewSymptom);
-                Symptoms.Add(NewSymptom);
-                NewSymptom = string.Empty;
-                OnPropertyChanged(nameof(NewSymptom));
-            }
+            Console.WriteLine("AddSymptom method called");
+            await DisplayAlert("Info", "Clicked", "OK");
+            return true;
+           
         }
 
         private void AddTreatment()

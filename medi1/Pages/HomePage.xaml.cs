@@ -121,7 +121,7 @@ namespace medi1.Pages
         {
             try
             {
-                var conditionsPage = new ConditionsPage();
+                var conditionsPage = new ConditionsPage.ConditionsPage();
                 await Navigation.PushAsync(conditionsPage);
             }
             catch (Exception ex)

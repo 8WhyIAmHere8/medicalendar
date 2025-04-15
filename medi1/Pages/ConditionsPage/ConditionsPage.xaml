@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="medi1.Pages.ConditionsPage.ConditionsPage"
+             x:Name="MainPageRef"
+             Title="Conditions Tracker">
+
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <!-- Highlight the selected tab -->
+            <Style x:Key="TabButtonStyle" TargetType="Frame">
+                <Setter Property="Padding" Value="10" />
+                <Setter Property="Margin" Value="5" />
+                <Setter Property="CornerRadius" Value="10" />
+                <Setter Property="HasShadow" Value="True" />
+                <Setter Property="BackgroundColor" Value="#BBDEFB" />
+            </Style>
+        </ResourceDictionary>
+    </ContentPage.Resources>
+
+    <VerticalStackLayout Padding="10" Spacing="10">
+
+        <!-- Tabs Header Strip -->
+        <ScrollView Orientation="Horizontal" HeightRequest="60">
+            <HorizontalStackLayout Spacing="5">
+
+                <!-- Tab for each condition -->
+                <CollectionView ItemsSource="{Binding Conditions}"
+                                ItemsLayout="HorizontalList"
+                                SelectionMode="Single"
+                                SelectedItem="{Binding SelectedCondition, Mode=TwoWay}">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <Frame Style="{StaticResource TabButtonStyle}" BackgroundColor="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.SelectedCondition, Converter={StaticResource TabHighlightConverter}, ConverterParameter={Binding .}}">
+                                <Label Text="{Binding Name}" FontSize="16" HorizontalOptions="Center" VerticalOptions="Center" />
+                            </Frame>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+
+                <!-- "+" Tab to Add Condition -->
+                <Frame Style="{StaticResource TabButtonStyle}" BackgroundColor="#C8E6C9">
+                    <Label Text="＋" FontSize="24" HorizontalOptions="Center" VerticalOptions="Center">
+                        <Label.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding AddConditionCommand}" />
+                        </Label.GestureRecognizers>
+                    </Label>
+                </Frame>
+
+            </HorizontalStackLayout>
+        </ScrollView>
+
+        <!-- Tab Content -->
+        <ScrollView>
+            <VerticalStackLayout Spacing="15">
+
+                <Label Text="{Binding SelectedCondition.Name}" FontSize="24" FontAttributes="Bold" />
+
+                <!-- Medications Section -->
+                <Frame BackgroundColor="#E3F2FD" Padding="10">
+                    <VerticalStackLayout>
+                        <Label Text="Medications" FontSize="20" FontAttributes="Bold" />
+                        <CollectionView ItemsSource="{Binding SelectedCondition.Medications}">
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate>
+                                    <Label Text="{Binding}" FontSize="16" />
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+                        <Entry Placeholder="Enter medication" Text="{Binding NewMedication}" />
+                        <Button Text="Add Medication" Command="{Binding AddMedicationCommand}" />
+                    </VerticalStackLayout>
+                </Frame>
+
+                <!-- Symptoms Section -->
+                <Frame BackgroundColor="#E3F2FD" Padding="10">
+                    <VerticalStackLayout>
+                        <Label Text="Symptoms" FontSize="20" FontAttributes="Bold" />
+                        <CollectionView ItemsSource="{Binding SelectedCondition.Symptoms}">
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate>
+                                    <Label Text="{Binding}" FontSize="16" />
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+                        <Entry Placeholder="Enter symptom" Text="{Binding NewSymptom}" />
+                        <Button Text="Add Symptom" Command="{Binding AddSymptomCommand}" />
+                    </VerticalStackLayout>
+                </Frame>
+
+                <!-- Treatments Section -->
+                <Frame BackgroundColor="#E3F2FD" Padding="10">
+                    <VerticalStackLayout>
+                        <Label Text="Treatments" FontSize="20" FontAttributes="Bold" />
+                        <CollectionView ItemsSource="{Binding SelectedCondition.Treatments}">
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate>
+                                    <Label Text="{Binding}" FontSize="16" />
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+                        <Entry Placeholder="Enter treatment" Text="{Binding NewTreatment}" />
+                        <Button Text="Add Treatment" Command="{Binding AddTreatmentCommand}" />
+                    </VerticalStackLayout>
+                </Frame>
+
+                <!-- Notes Section -->
+                <Frame BackgroundColor="#E3F2FD" Padding="10">
+                    <VerticalStackLayout>
+                        <Label Text="My Notes" FontSize="20" FontAttributes="Bold" />
+                        <Editor Text="{Binding SelectedCondition.Notes}" HeightRequest="100" />
+                        <Button Text="Save Note" Command="{Binding SaveNoteCommand}" />
+                    </VerticalStackLayout>
+                </Frame>
+
+            </VerticalStackLayout>
+        </ScrollView>
+    </VerticalStackLayout>
+</ContentPage>
