@@ -1,12 +1,133 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:medi1.EntryComponents"
              x:Class="medi1.Pages.AddEntryPage"
-             Title="Add Entry">
-  <StackLayout Padding="20">
-    <Label Text="Log Your Health Data" 
-           FontSize="24" 
-           HorizontalOptions="Center" />
-    <!-- Form to add symptoms, medications, cycles, exercise, etc. -->
-  </StackLayout>
+             BackgroundColor="Black" Opacity="0.8">
+    <ScrollView>
+      <Frame BackgroundColor="Grey" Padding="20" CornerRadius="10" HasShadow="True"
+            HorizontalOptions="Center" VerticalOptions="CenterAndExpand">
+        <StackLayout>
+          <Label Text="Log an Event" FontSize="18" HorizontalOptions="Center"/>
+
+          <!-- Select the entry type, this will dynamically choose the fields available -->
+          <StackLayout x:Name="EventTypeContainer" Padding="10">
+            <Label Text="Event Type: " FontSize="18" />
+            <Picker x:Name="EntrySelecter"
+                SelectedIndexChanged="OnEntrySelected">
+              <Picker.ItemsSource>
+                  <x:Array Type="{x:Type x:String}">
+                      <x:String>Log Health Event</x:String>
+                      <x:String>Log Activity</x:String>
+                  </x:Array>
+              </Picker.ItemsSource>
+            </Picker>
+          </StackLayout>
+
+          <StackLayout x:Name="EventNameContainer" Padding="10" IsVisible="False">
+            <Label Text="Name: " FontSize="18" />
+            <Entry x:Name="NameEntry" Placeholder="Name..."/>
+          </StackLayout>
+
+          <!-- Health Entry Data -->
+        
+          <StackLayout x:Name="DateContainer" Padding="10" IsVisible="False">
+            <Label Text="Event Date" FontSize="16"/>
+            <Picker x:Name="DateSelecter"
+                SelectedIndexChanged="OnDateSelected">
+              <Picker.ItemsSource>
+                  <x:Array Type="{x:Type x:String}">
+                      <x:String>Single Date</x:String>
+                      <x:String>Date Range</x:String>
+                  </x:Array>
+              </Picker.ItemsSource>
+            </Picker>
+
+            <StackLayout x:Name="singleDateContainer" Padding="10" IsVisible="False">
+              <Label x:Name="entryDateLabel" Text="Date of Entry:" FontSize="16" IsVisible="True"/>
+              <DatePicker x:Name="entryDatePicker" IsVisible="True"/>
+              <Label Text="All Day?" FontSize="16"/>
+              <CheckBox 
+                x:Name="FullDayCheck"
+                IsChecked="True"
+                CheckedChanged="TemporaryEventConfirmed"
+              />
+              <StackLayout x:Name="DurationSpinnerContainer" Orientation="Vertical" IsVisible="False" Padding="10">
+                <Label Text="Event Duration [hours:mins]: " FontSize="18"/>
+                <StackLayout Orientation="Horizontal">
+                  <local:NumericSpinner x:Name="HourSpinner"/>
+                  <Label Text=":" FontSize="24"/>
+                  <local:NumericSpinner x:Name="MinuteSpinner"/>
+                </StackLayout>
+              </StackLayout>
+            </StackLayout>
+
+            <StackLayout x:Name="dateRangeContainer" Padding="10" IsVisible="False">
+              <Label Text="Start Date:" FontSize="16"/>
+              <DatePicker x:Name="StartDatePicker" Margin="0,0,10,0"/>
+              <Label Text="End Date:" FontSize="16"/>
+              <DatePicker x:Name="EndDatePicker"/>
+            </StackLayout>
+          </StackLayout>
+
+
+          <StackLayout x:Name="HealthRelationContainer" IsVisible="False" Padding="10">
+            <Label Text="How is this related to your overall health?" FontSize="20"/>
+            <Label Text="If selecting 'Part of a New Condition', you will also log a new condition." FontSize="12"/>
+
+            <Picker x:Name="HealthEventPicker" SelectedIndexChanged="HealthEventPicker_SelectedIndexChanged">
+              <Picker.ItemsSource>
+                <x:Array Type="{x:Type x:String}">
+                  <x:String>Independent Health Event</x:String>
+                  <x:String>Related to Condition</x:String>
+                  <x:String>Related to Menstrual Cycle</x:String>
+                  <x:String>Part of a New Condition</x:String>
+                </x:Array>
+              </Picker.ItemsSource>
+            </Picker>
+
+            <Picker x:Name="AssociatedConditionSelecter"
+              IsVisible="False" Title="Related Condition">
+              <Picker.ItemsSource>
+                <!-- Database Content -->
+              </Picker.ItemsSource>
+            </Picker>
+          </StackLayout>
+
+          
+
+          <Picker x:Name="ImpactSelecter"
+            Title="Impact of Event [1 = No Impact]" IsVisible="False">
+            <Picker.ItemsSource>
+              <x:Array Type="{x:Type x:String}">
+                <x:String>1</x:String>
+                <x:String>2</x:String>
+                <x:String>3</x:String>
+                <x:String>4</x:String>
+                <x:String>5</x:String>
+                <x:String>6</x:String>
+                <x:String>7</x:String>
+                <x:String>8</x:String>
+                <x:String>9</x:String>
+                <x:String>10</x:String>
+              </x:Array>
+            </Picker.ItemsSource>
+          </Picker>
+            
+
+
+          <!-- Activities -->
+
+
+          <!-- Other -->
+          <StackLayout x:Name="NotesContainer" Padding="10" IsVisible="False">
+            <Label Text="Notes: " FontSize="18" Padding="5"/>
+            <Entry x:Name="NotesEntry" Placeholder="Notes..." IsVisible="True"/>
+          </StackLayout>
+
+          <Button x:Name="ConfirmEntryButton" Text="Confirm" Padding="10" IsVisible="False" Clicked="OnConfirmEntryClicked"/>
+          <Button Text="Cancel" Padding="10" Clicked="OnCancelEntryClicked"/>
+        </StackLayout>
+      </Frame>
+    </ScrollView>
 </ContentPage>
