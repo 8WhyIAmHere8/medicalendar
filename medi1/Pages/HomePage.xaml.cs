@@ -1,4 +1,5 @@
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Graphics;  // For Color support.
 using System;
 using System.Collections.ObjectModel;
 using System.Collections.Generic;
@@ -21,7 +22,7 @@ namespace medi1.Pages
         {
             InitializeComponent();
 
-            // Dynamically set calendar properties to show today's date.
+            // Set today's date
             DateTime today = DateTime.Now;
             CurrentMonth = today.ToString("MMMM yyyy");
             FullDateToday = today.ToString("MMMM dd, yyyy");
@@ -33,27 +34,32 @@ namespace medi1.Pages
                 DaysInMonth.Add(new DayItem { DayNumber = i, IsToday = (i == today.Day) });
             }
 
-            // Initialize conditions collection
+            // Initialize conditions collection with default entries
             Conditions = new ObservableCollection<Condition>
             {
-                new Condition { Name = "Diabetes", IsSelected = false },
-                new Condition { Name = "Hypertension", IsSelected = false },
-                new Condition { Name = "Asthma", IsSelected = false }
+                new Condition { Name = "Diabetes", Description = "Type II Diabetes", IsSelected = false, Color = Colors.Orange },
+                new Condition { Name = "Hypertension", Description = "High blood pressure", IsSelected = false, Color = Colors.Red },
+                new Condition { Name = "Asthma", Description = "Chronic inflammatory disease of the airways", IsSelected = false, Color = Colors.Blue }
             };
 
-            // Set the BindingContext to this page instance so that XAML bindings work.
+            // Set the BindingContext so that XAML bindings work
             BindingContext = this;
+
+            // Subscribe for new condition entries from AddEntryPage
+            MessagingCenter.Subscribe<Condition>(this, "ConditionAdded", (newCondition) =>
+            {
+                Conditions.Add(newCondition);
+            });
         }
 
-        // Existing task functionality
-
+        // Task section event handlers
         private void OnAddClicked(object sender, EventArgs e)
         {
-            // Show new task window
+            // Show the new task pop-up.
             AddTaskPopup.IsVisible = true;
         }
 
-        private Label? _editingTaskLabel;
+        private Label _editingTaskLabel;
 
         private void OnConfirmClicked(object sender, EventArgs e)
         {
@@ -77,13 +83,13 @@ namespace medi1.Pages
                     VerticalOptions = LayoutOptions.Center
                 };
 
-                // When checkbox is checked, strike through text
+                // Strike through text when the checkbox is checked
                 taskCheckBox.CheckedChanged += (s, args) =>
                 {
                     taskLabel.TextDecorations = taskCheckBox.IsChecked ? TextDecorations.Strikethrough : TextDecorations.None;
                 };
 
-                // Edit button
+                // Edit button for the task
                 var editButton = new Button
                 {
                     Text = "✏️",
@@ -93,12 +99,12 @@ namespace medi1.Pages
                 };
                 editButton.Clicked += (s, args) =>
                 {
-                    _editingTaskLabel = taskLabel;  // Store reference to the label being edited
+                    _editingTaskLabel = taskLabel;  
                     EditTaskInput.Text = taskLabel.Text;
-                    EditTaskPopup.IsVisible = true;  // Show edit popup
+                    EditTaskPopup.IsVisible = true;
                 };
 
-                // Delete button
+                // Delete button for the task
                 var deleteButton = new Button
                 {
                     Text = "🗑️",
@@ -111,32 +117,28 @@ namespace medi1.Pages
                     TaskListContainer.Children.Remove(taskItemLayout);
                 };
 
-                // Add elements to the task item layout
+                // Add elements to the task layout
                 taskItemLayout.Children.Add(taskCheckBox);
                 taskItemLayout.Children.Add(taskLabel);
                 taskItemLayout.Children.Add(editButton);
                 taskItemLayout.Children.Add(deleteButton);
 
-                // Add the task to the TaskListContainer
+                // Add the task layout to the TaskListContainer
                 TaskListContainer.Children.Add(taskItemLayout);
 
-                // Close the pop-up 
+                // Hide the pop-up and clear the input field
                 AddTaskPopup.IsVisible = false;
-
-                // Clear the input field
                 TaskInput.Text = string.Empty;
             }
         }
 
         private void OnCancelClicked(object sender, EventArgs e)
         {
-            // Close the pop-up without doing anything
+            // Hide the task entry pop-up and clear the input
             AddTaskPopup.IsVisible = false;
-            // Clear the input field
             TaskInput.Text = string.Empty;
         }
 
-        // Edit Confirm
         private void OnEditConfirmClicked(object sender, EventArgs e)
         {
             if (_editingTaskLabel != null)
@@ -146,14 +148,12 @@ namespace medi1.Pages
             EditTaskPopup.IsVisible = false;
         }
 
-        // Edit Cancel
         private void OnEditCancelClicked(object sender, EventArgs e)
         {
             EditTaskPopup.IsVisible = false;
         }
 
-        // Navigation functions
-
+        // Navigation event handlers
         private async void GoToConditions(object sender, EventArgs e)
         {
             try
@@ -180,12 +180,12 @@ namespace medi1.Pages
             }
         }
 
-        private async void GoToCalendar(object sender, EventArgs e)
+        private async void GoToReports(object sender, EventArgs e)
         {
             try
             {
-                var calendarPage = new CalendarPage();
-                await Navigation.PushAsync(calendarPage);
+                var reportsPage = new ReportsPage();
+                await Navigation.PushAsync(reportsPage);
             }
             catch (Exception ex)
             {
@@ -193,26 +193,23 @@ namespace medi1.Pages
             }
         }
 
-        // New: Event handler for condition CheckBox changes
+        // Condition event handlers
+        // Called when a condition's checkbox state changes
         private void OnConditionCheckedChanged(object sender, CheckedChangedEventArgs e)
         {
-            // Build a list of selected condition names
             List<string> selectedConditions = Conditions
                 .Where(c => c.IsSelected)
                 .Select(c => c.Name)
                 .ToList();
 
-            // Display selected conditions for debugging/demo purposes
             DisplayAlert("Selected Conditions", string.Join(", ", selectedConditions), "OK");
 
-            // Update the calendar view based on the selected conditions
+            // Update the calendar title based on filtering
             UpdateCalendar(selectedConditions);
         }
 
-        // Placeholder function to update the calendar view based on conditions.
         private void UpdateCalendar(List<string> selectedConditions)
         {
-            // For demonstration, update the page title.
             if (selectedConditions.Count > 0)
             {
                 Title = $"Dashboard - Filter: {string.Join(", ", selectedConditions)}";
@@ -223,16 +220,29 @@ namespace medi1.Pages
             }
             System.Diagnostics.Debug.WriteLine("Filtering calendar by: " + string.Join(", ", selectedConditions));
         }
+
+        // Called when a condition is tapped, showing its details in a pop-up
+        private async void OnConditionTapped(object sender, EventArgs e)
+        {
+            if (sender is StackLayout layout && layout.BindingContext is Condition condition)
+            {
+                string message = $"Name: {condition.Name}\nDescription: {condition.Description}";
+                await DisplayAlert("Condition Details", message, "OK");
+            }
+        }
     }
 
-    // Simple model to represent a medical condition.
+    // Models
+    // Updated Condition model with a Color property
     public class Condition
     {
         public string Name { get; set; }
+        public string Description { get; set; }  
         public bool IsSelected { get; set; }
+        public Color Color { get; set; }       
     }
 
-    // Simple model to represent a day item in the calendar.
+    // Model to represent a day in the calendar
     public class DayItem
     {
         public int DayNumber { get; set; }

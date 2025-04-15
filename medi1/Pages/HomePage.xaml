@@ -37,7 +37,7 @@
                 </CollectionView>
             </Grid>
             
-            <!-- New: Condition Filter Section -->
+            <!-- Condition Filter Section -->
             <Label Text="Filter by Condition:" FontSize="18" HorizontalOptions="Center" Margin="0,10,0,5" />
             <CollectionView x:Name="conditionsCollectionView" ItemsSource="{Binding Conditions}">
                 <CollectionView.ItemsLayout>
@@ -46,6 +46,17 @@
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
                         <StackLayout Orientation="Horizontal" Padding="5">
+                            <!-- Add a tap gesture to show details -->
+                            <StackLayout.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnConditionTapped"/>
+                            </StackLayout.GestureRecognizers>
+                            <!-- Colored Dot -->
+                            <BoxView WidthRequest="10" HeightRequest="10"
+                                     Color="{Binding Color}"
+                                     CornerRadius="5"
+                                     VerticalOptions="Center"/>
+
+
                             <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay}"
                                       CheckedChanged="OnConditionCheckedChanged"/>
                             <Label Text="{Binding Name}" VerticalOptions="Center"/>
@@ -54,11 +65,11 @@
                 </CollectionView.ItemTemplate>
             </CollectionView>
 
-            <!-- Buttons below the calendar -->
+            <!-- Buttons -->
             <FlexLayout Direction="Row" JustifyContent="Center" AlignItems="Center" Padding="30">
                 <Button Text="My Conditions" BackgroundColor="Red" TextColor="White" FontSize="14" Padding="10" WidthRequest="120" HeightRequest="40" Clicked="GoToConditions"/>
                 <Button Text="Add Entry" BackgroundColor="LightGray" TextColor="Red" FontSize="14" Padding="10" WidthRequest="120" HeightRequest="40" Clicked="GoToAddEntry"/>
-                <Button Text="View Calendar" BackgroundColor="Blue" TextColor="White" FontSize="14" Padding="10" WidthRequest="120" HeightRequest="40" Clicked="GoToCalendar"/>               
+                <Button Text="Report" BackgroundColor="Blue" TextColor="White" FontSize="14" Padding="10" WidthRequest="120" HeightRequest="40" Clicked="GoToReports"/>               
             </FlexLayout>
 
             <!-- Frame displaying the current date and task input button -->
@@ -71,10 +82,10 @@
                             <Label Text="Today's Tasks" FontSize="20" HorizontalOptions="Center" Padding="20"/>
                             <Button Text="+ New Task" Clicked="OnAddClicked" />
 
-                            <!-- StackLayout for the task list (where tasks will be added) -->
+                            <!-- StackLayout for the task list -->
                             <StackLayout x:Name="TaskListContainer" Padding="10" Spacing="5" />
 
-                            <!-- Task input popup (visible only when the "+" button is clicked) -->
+                            <!-- Task input popup -->
                             <Grid x:Name="AddTaskPopup" BackgroundColor="Black" Opacity="0.5" IsVisible="False" HorizontalOptions="Center" VerticalOptions="CenterAndExpand">
                                 <Frame BackgroundColor="White" Padding="20" CornerRadius="10" HasShadow="True">
                                     <StackLayout>
@@ -112,4 +123,3 @@
         </StackLayout>
     </ScrollView>
 </ContentPage>
-

@@ -1,12 +1,20 @@
-<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="medi1.Pages.AddEntryPage"
-             Title="Add Entry">
-  <StackLayout Padding="20">
-    <Label Text="Log Your Health Data" 
-           FontSize="24" 
-           HorizontalOptions="Center" />
-    <!-- Form to add symptoms, medications, cycles, exercise, etc. -->
+             Title="Add Condition">
+  <StackLayout Padding="20" Spacing="15">
+    <!-- Ask user for condition name -->
+    <Label Text="Name of the Entry:" />
+    <Entry x:Name="NameEntry" Placeholder="Enter name" />
+
+    <!-- Ask user for condition description -->
+    <Label Text="Description:" />
+    <Editor x:Name="DescriptionEditor"
+            Placeholder="Enter description"
+            AutoSize="TextChanges"
+            HeightRequest="100"/>
+    
+    <!-- Button -->
+    <Button Text="Add Condition" Clicked="OnAddConditionClicked"/>
   </StackLayout>
 </ContentPage>
