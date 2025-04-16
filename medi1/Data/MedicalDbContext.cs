@@ -32,18 +32,18 @@ namespace medi1.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            switch (_containerName)
+            switch (_containerName) //switch statement that chooses connection type depending on 
             {
                 case "Conditions":
                     modelBuilder.Entity<Models.Condition>()
                         .ToContainer("Conditions")  // Maps to the "Conditions" container
-                        .HasPartitionKey(c => c.Id) // ✅ Keep partitioning by `Id` for now
+                        .HasPartitionKey(c => c.Id) // ✅ Keep partitioning by `Id`
                         .HasNoDiscriminator(); // ✅ This removes the discriminator requirement
                     break;
                 case "Users":
                     modelBuilder.Entity<Models.User>()
-                        .ToContainer("Users")  // Maps to the "Conditions" container
-                        .HasPartitionKey(u => u.Id) // ✅ Keep partitioning by `Id` for now
+                        .ToContainer("Users")  // Maps to the "Users" container
+                        .HasPartitionKey(u => u.Id) // ✅ Keep partitioning by `Id`
                         .HasNoDiscriminator(); // ✅ This removes the discriminator requirement
                     break;
             }

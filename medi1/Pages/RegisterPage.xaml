@@ -12,25 +12,52 @@
     <Entry x:Name="EmailEntry"
            Placeholder="Email"
            Keyboard="Text" />
-
-    <Entry x:Name="DOBEntry"
-           Placeholder="Date of Birth"
-           Keyboard="Text" />
+       <Label x:Name="EmailError" 
+           Text="Invalid email address"
+           IsVisible="False"
+           TextColor="Red"
+           FontAttributes="Bold" />
        
     <Entry x:Name="UsernameEntry"
            Placeholder="Username"
            Keyboard="Text" />
+       <Label x:Name="UsernameError" 
+           Text="Username already in use"
+           IsVisible="False"
+           TextColor="Red"
+           FontAttributes="Bold" />
 
     <Entry x:Name="PasswordEntry"
            Placeholder="Password"
            IsPassword="True" />
 
     <Entry x:Name="ConfirmPasswordEntry"
-           Placeholder="Password"
-           IsPassword="True" />      
+           Placeholder="Confirm Password"
+           IsPassword="True" />
+       <Label x:Name="PasswordError" 
+           Text="Passwords don't match"
+           IsVisible="False"
+           TextColor="Red"
+           FontAttributes="Bold" />
+
+     <VerticalStackLayout>
+       <Label Text="Date of Birth:" />
+       <DatePicker x:Name="DatePicker" Format="dd/MM/yyyy" />
+    </VerticalStackLayout>
+    
+    <Label x:Name="DOBError" 
+           Text="A date must be picked"
+           IsVisible="False"
+           TextColor="Red"
+           FontAttributes="Bold" />
        
        
     <Button Text="Register" Clicked="OnRegisterClicked"/>
-    <!-- Add summary and quick notes here -->
+
+    <Label x:Name="GeneralError" 
+           Text="All fields must be filled"
+           IsVisible="False"
+           TextColor="Red"
+           FontAttributes="Bold" />
   </StackLayout>
 </ContentPage>

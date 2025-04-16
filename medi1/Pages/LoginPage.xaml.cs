@@ -12,21 +12,22 @@ namespace medi1.Pages
 {
     public partial class LoginPage : ContentPage
     {
-        private readonly MedicalDbContext _dbContext = new MedicalDbContext("Users");
+        private readonly MedicalDbContext _dbContext = new MedicalDbContext("Users"); //creates dbcontext With the users container
 
         public ObservableCollection<Data.Models.User> Users { get; set; } = new ObservableCollection<Data.Models.User>();
 
         public LoginPage()
         {
             InitializeComponent();
- 
         }
 
-        private async void OnLoginClicked(object sender, EventArgs e)
+        private async void OnLoginClicked(object sender, EventArgs e) //Runs when Login is clicked
         {   
+            //Retrieves input
             string inputuser = UsernameEntry.Text;
             string inputpassword = PasswordEntry.Text;
 
+            //Resets Currently displayed errors
             UsernameError.IsVisible = false;
             PasswordError.IsVisible = false;
             GeneralError.IsVisible = false;
@@ -34,34 +35,34 @@ namespace medi1.Pages
             var userlist = await _dbContext.Users.ToListAsync();
             Users.Clear();
 
-            if (string.IsNullOrWhiteSpace(inputuser) || string.IsNullOrWhiteSpace(inputpassword)) 
+            if (string.IsNullOrWhiteSpace(inputuser) || string.IsNullOrWhiteSpace(inputpassword)) //Checks if both username and password were filled
                 {
                     GeneralError.IsVisible = true;
                 }
             
             else {
 
-                foreach (var user in userlist)
+                foreach (var user in userlist) //Goes through each user
                 {
                     if (user.UserName == inputuser)
                     {
-                        if (user.Password == inputpassword){
-                            UserSession.Instance.Id = user.Id; //Accesses and changes session info
+                        if (user.Password == inputpassword) {
+                            UserSession.Instance.Id = user.Id; //Accesses and changes Current logged in user
                             UserSession.Instance.UserName = user.UserName;
-                            Application.Current.MainPage = new AppShell();
+                            Application.Current.MainPage = new AppShell(); //Navigates to the mainpage
                         }
                         else {
-                            PasswordError.IsVisible = true;
+                            PasswordError.IsVisible = true; //Displays password error if it doesn't match the username given
                         }
                     }
                     else {
-                        UsernameError.IsVisible = true;
+                        UsernameError.IsVisible = true; //Displays an error if after checking each user no match is found
                     }
                 }
             }
         }
 
-        private async void OnNewClicked(object sender, EventArgs e)
+        private async void OnNewClicked(object sender, EventArgs e) //Navigates to the register page
         {
             await Navigation.PushAsync(new RegisterPage());
         }

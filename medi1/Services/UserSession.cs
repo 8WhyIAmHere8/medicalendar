@@ -1,6 +1,6 @@
 namespace medi1.Services
 {
-    public class UserSession //Session class that keeps track of user login
+    public class UserSession //Session class that keeps track of user login (Only 1 Instance exists)
     {
         private static UserSession _instance;
         private UserSession() { }
@@ -20,6 +20,7 @@ namespace medi1.Services
 
         public bool IsLoggedIn => !string.IsNullOrEmpty(Id);
 
+        //Methods Add Login method that retrieves all needed data ?
         public void Clear()
         {
             Id = null;
