@@ -1,61 +1,110 @@
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Graphics;  // For Color support.
+using Microsoft.Maui.Graphics;
 using System;
 using System.Collections.ObjectModel;
-using System.Collections.Generic;
+using System.ComponentModel; // For INotifyPropertyChanged
+using System.Runtime.CompilerServices;
 using System.Linq;
 using medi1.SplashPageComponents;
 
 namespace medi1.Pages
 {
-    public partial class HomePage : ContentPage
+    public partial class HomePage : ContentPage, INotifyPropertyChanged
     {
-        // Calendar properties
-        public string CurrentMonth { get; set; }
-        public string FullDateToday { get; set; }
-        public ObservableCollection<DayItem> DaysInMonth { get; set; }
+        // Backing field for the displayed month
+        private DateTime _displayDate;
 
-        // Collection of conditions for filtering
+        private string _currentMonth;
+        public string CurrentMonth
+        {
+            get => _currentMonth;
+            set { _currentMonth = value; OnPropertyChanged(); }
+        }
+
+        public string FullDateToday { get; set; }
+
+        // Backing field + full property for DaysInMonth
+        private ObservableCollection<DayItem> _daysInMonth = new();
+        public ObservableCollection<DayItem> DaysInMonth
+        {
+            get => _daysInMonth;
+            set
+            {
+                _daysInMonth = value;
+                OnPropertyChanged();
+            }
+        }
+
         public ObservableCollection<Condition> Conditions { get; set; }
 
         public HomePage()
         {
             InitializeComponent();
 
-            // Set today's date
-            DateTime today = DateTime.Now;
-            CurrentMonth = today.ToString("MMMM yyyy");
-            FullDateToday = today.ToString("MMMM dd, yyyy");
+            _displayDate = DateTime.Now.Date;
+            FullDateToday = _displayDate.ToString("MMMM dd, yyyy");
+
+            // Initialize via property so UI sees it
             DaysInMonth = new ObservableCollection<DayItem>();
 
-            int daysInMonth = DateTime.DaysInMonth(today.Year, today.Month);
-            for (int i = 1; i <= daysInMonth; i++)
-            {
-                DaysInMonth.Add(new DayItem { DayNumber = i, IsToday = (i == today.Day) });
-            }
+            // Start with an empty list of conditions
+            Conditions = new ObservableCollection<Condition>();
 
-            // Initialize conditions collection with default entries
-            Conditions = new ObservableCollection<Condition>
-            {
-                new Condition { Name = "Diabetes", Description = "Type II Diabetes", IsSelected = false, Color = Colors.Orange },
-                new Condition { Name = "Hypertension", Description = "High blood pressure", IsSelected = false, Color = Colors.Red },
-                new Condition { Name = "Asthma", Description = "Chronic inflammatory disease of the airways", IsSelected = false, Color = Colors.Blue }
-            };
-
-            // Set the BindingContext so that XAML bindings work
             BindingContext = this;
 
-            // Subscribe for new condition entries from AddEntryPage
+            LoadMonth(_displayDate);
+
             MessagingCenter.Subscribe<Condition>(this, "ConditionAdded", (newCondition) =>
             {
                 Conditions.Add(newCondition);
             });
         }
 
-        // Task section event handlers
+        // Load days for the given month by replacing the entire collection
+        private void LoadMonth(DateTime date)
+        {
+            var items = new ObservableCollection<DayItem>();
+
+            int offset = (int)new DateTime(date.Year, date.Month, 1).DayOfWeek;
+            for (int i = 0; i < offset; i++)
+            {
+                items.Add(new DayItem { DayNumber = 0, IsToday = false });
+            }
+
+            int daysInMonth = DateTime.DaysInMonth(date.Year, date.Month);
+            for (int i = 1; i <= daysInMonth; i++)
+            {
+                items.Add(new DayItem
+                {
+                    DayNumber = i,
+                    IsToday = (date.Year == DateTime.Now.Year && date.Month == DateTime.Now.Month && i == DateTime.Now.Day)
+                });
+            }
+
+            DaysInMonth = items;
+            CurrentMonth = date.ToString("MMMM yyyy");
+        }
+
+        private void OnPrevMonthClicked(object sender, EventArgs e)
+        {
+            _displayDate = _displayDate.AddMonths(-1);
+            LoadMonth(_displayDate);
+        }
+
+        private void OnNextMonthClicked(object sender, EventArgs e)
+        {
+            _displayDate = _displayDate.AddMonths(1);
+            LoadMonth(_displayDate);
+        }
+
+        public new event PropertyChangedEventHandler PropertyChanged;
+        protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
         private void OnAddClicked(object sender, EventArgs e)
         {
-            // Show the new task pop-up.
             AddTaskPopup.IsVisible = true;
         }
 
@@ -64,17 +113,15 @@ namespace medi1.Pages
         private void OnConfirmClicked(object sender, EventArgs e)
         {
             string taskText = TaskInput.Text?.Trim();
-
             if (!string.IsNullOrEmpty(taskText))
             {
-                // Create a horizontal StackLayout for the task item
                 var taskItemLayout = new StackLayout
                 {
                     Orientation = StackOrientation.Horizontal,
                     Spacing = 10
                 };
 
-                // Checkbox for task completion
+                // Tick/Untick checkbox for task
                 var taskCheckBox = new CheckBox();
                 var taskLabel = new Label
                 {
@@ -82,14 +129,13 @@ namespace medi1.Pages
                     HorizontalOptions = LayoutOptions.StartAndExpand,
                     VerticalOptions = LayoutOptions.Center
                 };
-
-                // Strike through text when the checkbox is checked
                 taskCheckBox.CheckedChanged += (s, args) =>
                 {
-                    taskLabel.TextDecorations = taskCheckBox.IsChecked ? TextDecorations.Strikethrough : TextDecorations.None;
+                    taskLabel.TextDecorations = taskCheckBox.IsChecked
+                        ? TextDecorations.Strikethrough
+                        : TextDecorations.None;
                 };
 
-                // Edit button for the task
                 var editButton = new Button
                 {
                     Text = "✏️",
@@ -99,12 +145,11 @@ namespace medi1.Pages
                 };
                 editButton.Clicked += (s, args) =>
                 {
-                    _editingTaskLabel = taskLabel;  
+                    _editingTaskLabel = taskLabel;
                     EditTaskInput.Text = taskLabel.Text;
                     EditTaskPopup.IsVisible = true;
                 };
 
-                // Delete button for the task
                 var deleteButton = new Button
                 {
                     Text = "🗑️",
@@ -117,16 +162,13 @@ namespace medi1.Pages
                     TaskListContainer.Children.Remove(taskItemLayout);
                 };
 
-                // Add elements to the task layout
                 taskItemLayout.Children.Add(taskCheckBox);
                 taskItemLayout.Children.Add(taskLabel);
                 taskItemLayout.Children.Add(editButton);
                 taskItemLayout.Children.Add(deleteButton);
 
-                // Add the task layout to the TaskListContainer
                 TaskListContainer.Children.Add(taskItemLayout);
 
-                // Hide the pop-up and clear the input field
                 AddTaskPopup.IsVisible = false;
                 TaskInput.Text = string.Empty;
             }
@@ -134,7 +176,6 @@ namespace medi1.Pages
 
         private void OnCancelClicked(object sender, EventArgs e)
         {
-            // Hide the task entry pop-up and clear the input
             AddTaskPopup.IsVisible = false;
             TaskInput.Text = string.Empty;
         }
@@ -142,9 +183,7 @@ namespace medi1.Pages
         private void OnEditConfirmClicked(object sender, EventArgs e)
         {
             if (_editingTaskLabel != null)
-            {
                 _editingTaskLabel.Text = EditTaskInput.Text;
-            }
             EditTaskPopup.IsVisible = false;
         }
 
@@ -153,75 +192,39 @@ namespace medi1.Pages
             EditTaskPopup.IsVisible = false;
         }
 
-        // Navigation event handlers
         private async void GoToConditions(object sender, EventArgs e)
         {
-            try
-            {
-                var conditionsPage = new ConditionsPage();
-                await Navigation.PushAsync(conditionsPage);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Navigation error: " + ex.Message);
-            }
+            await Navigation.PushAsync(new ConditionsPage());
         }
 
         private async void GoToAddEntry(object sender, EventArgs e)
         {
-            try
-            {
-                var addEntryPage = new AddEntryPage();
-                await Navigation.PushAsync(addEntryPage);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Navigation error: " + ex.Message);
-            }
+            await Navigation.PushAsync(new AddEntryPage());
         }
 
         private async void GoToReports(object sender, EventArgs e)
         {
-            try
-            {
-                var reportsPage = new ReportsPage();
-                await Navigation.PushAsync(reportsPage);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Navigation error: " + ex.Message);
-            }
+            await Navigation.PushAsync(new ReportsPage());
         }
 
-        // Condition event handlers
-        // Called when a condition's checkbox state changes
         private void OnConditionCheckedChanged(object sender, CheckedChangedEventArgs e)
         {
-            List<string> selectedConditions = Conditions
+            var selectedConditions = Conditions
                 .Where(c => c.IsSelected)
                 .Select(c => c.Name)
                 .ToList();
 
             DisplayAlert("Selected Conditions", string.Join(", ", selectedConditions), "OK");
-
-            // Update the calendar title based on filtering
             UpdateCalendar(selectedConditions);
         }
 
-        private void UpdateCalendar(List<string> selectedConditions)
+        private void UpdateCalendar(System.Collections.Generic.List<string> selectedConditions)
         {
-            if (selectedConditions.Count > 0)
-            {
-                Title = $"Dashboard - Filter: {string.Join(", ", selectedConditions)}";
-            }
-            else
-            {
-                Title = "Dashboard";
-            }
-            System.Diagnostics.Debug.WriteLine("Filtering calendar by: " + string.Join(", ", selectedConditions));
+            Title = selectedConditions.Any()
+                ? $"Dashboard - Filter: {string.Join(", ", selectedConditions)}"
+                : "Dashboard";
         }
 
-        // Called when a condition is tapped, showing its details in a pop-up
         private async void OnConditionTapped(object sender, EventArgs e)
         {
             if (sender is StackLayout layout && layout.BindingContext is Condition condition)
@@ -232,17 +235,14 @@ namespace medi1.Pages
         }
     }
 
-    // Models
-    // Updated Condition model with a Color property
     public class Condition
     {
         public string Name { get; set; }
-        public string Description { get; set; }  
+        public string Description { get; set; }
         public bool IsSelected { get; set; }
-        public Color Color { get; set; }       
+        public Color Color { get; set; }
     }
 
-    // Model to represent a day in the calendar
     public class DayItem
     {
         public int DayNumber { get; set; }
