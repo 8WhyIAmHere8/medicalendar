@@ -6,7 +6,9 @@ namespace medi1.SplashPageComponents
     public class CalendarViewModel
     {
         public ObservableCollection<DayModel> DaysInMonth { get; set; } = new();
+
         public string CurrentMonth { get; set; } = string.Empty;
+        
         public string FullDateToday { get; set; } = string.Empty;
 
         public CalendarViewModel()

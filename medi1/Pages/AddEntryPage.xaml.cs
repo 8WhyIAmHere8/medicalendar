@@ -34,8 +34,6 @@ namespace medi1.Pages
 
             // Send the new condition using MessagingCenter.
             MessagingCenter.Send(newCondition, "ConditionAdded");
-
-            // Navigate back to HomePage.
             await Navigation.PopAsync();
         }
 

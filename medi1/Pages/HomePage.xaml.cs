@@ -2,7 +2,7 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 using System;
 using System.Collections.ObjectModel;
-using System.ComponentModel; // For INotifyPropertyChanged
+using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Linq;
 using medi1.SplashPageComponents;

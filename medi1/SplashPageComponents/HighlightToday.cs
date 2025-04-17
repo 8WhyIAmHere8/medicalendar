@@ -12,10 +12,10 @@ namespace medi1.SplashPageComponents
             if (value is bool isToday && isToday) 
             {
                 // Highlight today with primary palette color
-                return Color.FromArgb("#007AFF"); // iOS blue (replace with your hex)
+                return Color.FromArgb("#007AFF"); 
             }
             // Non-today dates use light gray
-            return Color.FromArgb("#D1D5DB"); // Tailwind gray-300
+            return Color.FromArgb("#D1D5DB"); 
         }
 
         public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)

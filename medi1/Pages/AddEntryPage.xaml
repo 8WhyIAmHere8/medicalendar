@@ -3,6 +3,7 @@
              x:Class="medi1.Pages.AddEntryPage"
              Title="Add Condition">
   <StackLayout Padding="20" Spacing="15">
+    
     <!-- Ask user for condition name -->
     <Label Text="Name of the Entry:" />
     <Entry x:Name="NameEntry" Placeholder="Enter name" />

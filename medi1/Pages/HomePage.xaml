@@ -57,14 +57,14 @@
                                        FontSize="18"
                                        FontAttributes="Bold">
                                 <Label.Triggers>
-                                    <!-- hide any placeholder cells (DayNumber == 0) -->
+                                    <!-- hide any placeholder cells -->
                                     <DataTrigger TargetType="Label"
                                                  Binding="{Binding DayNumber}"
                                                  Value="0">
                                             <Setter Property="Text" Value="" />
                                     </DataTrigger>
                                 </Label.Triggers>
-                               </Label>
+                               </Label>                             
                             </Frame>
                         </DataTemplate>
                     </CollectionView.ItemTemplate>    
@@ -74,7 +74,7 @@
             <BoxView HeightRequest="1" Color="LightGray" HorizontalOptions="FillAndExpand" Margin="0,10,0,10"/>
 
             <!-- Condition Filter Section -->
-            <Label Text="Conditions:" FontSize="20" Margin="0,10,0,5"/>
+            <Label Text="↓  List of Conditions:" FontSize="20" Margin="0,10,0,5"/>
             <CollectionView x:Name="conditionsCollectionView" ItemsSource="{Binding Conditions}">
                 <CollectionView.ItemsLayout>
                     <LinearItemsLayout Orientation="Horizontal"/>
