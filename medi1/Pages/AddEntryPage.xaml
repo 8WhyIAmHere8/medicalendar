@@ -120,13 +120,9 @@
           <StackLayout x:Name="ActivityNameContainer" Padding="10" IsVisible="False">
             <Label Text="Name: " FontSize="18" />
             <Picker x:Name="ActivityNameSelecter"
-                Title="Select the Activity you're logging: ">
-                <Picker.ItemsSource>
-                  <x:Array Type="{x:Type x:String}">
-                    <!--Database Content Here-->
-                  </x:Array>
-                </Picker.ItemsSource>
-            </Picker>
+                Title="Select the Activity you're logging: " 
+                ItemsSource="{Binding Activities}"
+                ItemDisplayBinding="{Binding Name}" SelectedIndexChanged="OnEntrySelected"/>
           </StackLayout>
 
           <StackLayout x:Name="activityTimingContainer" Padding="10" IsVisible="False">
@@ -166,13 +162,9 @@
             </StackLayout>
             <StackLayout x:Name="whichConditionContainer" Padding="10" IsVisible="False">
               <Picker x:Name="ConditionSelecter"
-                Title="Select the Aggravated Condition: ">
-                <Picker.ItemsSource>
-                  <x:Array Type="{x:Type x:String}">
-                    <!--Database Content Here-->
-                  </x:Array>
-                </Picker.ItemsSource>
-              </Picker>
+                Title="Select the Aggravated Condition: "
+                ItemsSource="{Binding Conditions}"
+                ItemDisplayBinding="{Binding Name}" SelectedIndexChanged="OnEntrySelected" />
             </StackLayout>
           </StackLayout>
 

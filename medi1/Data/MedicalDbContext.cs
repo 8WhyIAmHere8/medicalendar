@@ -8,7 +8,9 @@ namespace medi1.Data
     {
         public DbSet<Data.Models.Condition> Conditions { get; set; }
         public DbSet<Data.Models.HealthEvent> HealthEvents { get; set; }
-       
+        public DbSet<Data.Models.Activity> Activities { get; set; }
+        public DbSet<Data.Models.ActivityLog> ActivityEventLog { get; set; }
+
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             optionsBuilder.UseCosmos(
@@ -33,6 +35,17 @@ namespace medi1.Data
                 .ToContainer("HealthEvent")
                 .HasPartitionKey(e => e.Id)
                 .HasNoDiscriminator();
+
+            modelBuilder.Entity<Models.Activity>()
+        .ToContainer("Activities")
+        .HasPartitionKey(a => a.ActivityId)
+        .HasNoDiscriminator();
+            
+            modelBuilder.Entity<Models.ActivityLog>()
+        .ToContainer("ActivityEventLog")
+        .HasPartitionKey(al => al.ActivityLogId)
+        .HasNoDiscriminator();
+        
         }
 
         public async Task<bool> TestConnectionAsync()
