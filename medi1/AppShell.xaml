@@ -18,8 +18,8 @@
     <ShellContent ContentTemplate="{DataTemplate pages:CalendarPage}" Route="calendar" />
   </FlyoutItem>
 
-  <FlyoutItem Title="My Conditions">
-    <ShellContent ContentTemplate="{DataTemplate pages:ConditionsPage}" Route="conditions" />
+  <FlyoutItem Title="My Conditions"> 
+    <ShellContent ContentTemplate="{DataTemplate pages:ConditionsPage.ConditionsPage}" Route="conditions" />
   </FlyoutItem>
 
   <FlyoutItem Title="Add Entry">

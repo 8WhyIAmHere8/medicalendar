@@ -1,8 +1,11 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <Application xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:converters="clr-namespace:medi1.Pages.ConditionsPage"
              x:Class="medi1.App">
   <Application.Resources>
-   
+    <ResourceDictionary>
+      <converters:TabHighlightConverter x:Key="TabHighlightConverter" />
+    </ResourceDictionary>
   </Application.Resources>
 </Application>

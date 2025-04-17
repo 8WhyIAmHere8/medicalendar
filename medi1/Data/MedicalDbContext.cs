@@ -7,13 +7,14 @@ namespace medi1.Data
     public class MedicalDbContext : DbContext
     {
         public DbSet<Data.Models.Condition> Conditions { get; set; }
+        public DbSet<Data.Models.HealthEvent> HealthEvents { get; set; }
        
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             optionsBuilder.UseCosmos(
                 "https://medicalendar-data.documents.azure.com:443/", // Cosmos DB endpoint
                 "ukEwRy20KzAics3MYQfmnzwXC0IxPQMGd8MfvPCQthLpkW691AMAqS1cSPz5aS6z77WAz3Sgy9I8ACDbywHjig==", // Cosmos DB key
-                "MedicalDatabase"); // Database name
+                "MedicalDatabase"); // Database name 
 
             optionsBuilder.LogTo(Console.WriteLine); // Log database queries
             base.OnConfiguring(optionsBuilder);
@@ -25,6 +26,11 @@ namespace medi1.Data
         .ToContainer("Conditions")  // Maps to the "Conditions" container
         .HasPartitionKey(c => c.Id) // ✅ Keep partitioning by `Id` for now
         .HasNoDiscriminator(); // ✅ This removes the discriminator requirement
+       
+            modelBuilder.Entity<Models.HealthEvent>()
+        .ToContainer("HealthEvent")
+        .HasPartitionKey(e => e.Id)
+        .HasNoDiscriminator();
         }
 
         public async Task<bool> TestConnectionAsync()
