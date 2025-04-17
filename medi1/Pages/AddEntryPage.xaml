@@ -117,6 +117,18 @@
 
           <!-- Activities -->
 
+          <StackLayout x:Name="ActivityNameContainer" Padding="10" IsVisible="False">
+            <Label Text="Name: " FontSize="18" />
+            <Picker x:Name="ActivityNameSelecter"
+                Title="Select the Activity you're logging: ">
+                <Picker.ItemsSource>
+                  <x:Array Type="{x:Type x:String}">
+                    <!--Database Content Here-->
+                  </x:Array>
+                </Picker.ItemsSource>
+            </Picker>
+          </StackLayout>
+
           <StackLayout x:Name="activityTimingContainer" Padding="10" IsVisible="False">
             <StackLayout x:Name="activityDateContainer" Padding="10" IsVisible="True">
               <Label x:Name="activityDateLabel" Text="Date of Activity:" FontSize="16" IsVisible="True"/>

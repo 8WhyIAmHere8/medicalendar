@@ -21,6 +21,7 @@ namespace medi1.Pages
             if (entryType == "Log Health Event")
             {
                 EventNameContainer.IsVisible = true;
+                ActivityNameContainer.IsVisible = false;
                 DateContainer.IsVisible = true;
                 HealthRelationContainer.IsVisible = true;
                 ImpactSelecter.IsVisible = true;
@@ -32,7 +33,8 @@ namespace medi1.Pages
             }
             else if (entryType == "Log Activity")
             {
-                EventNameContainer.IsVisible = true;
+                ActivityNameContainer.IsVisible = true;
+                EventNameContainer.IsVisible = false;
                 DateContainer.IsVisible = false;
                 HealthRelationContainer.IsVisible = false;
                 ImpactSelecter.IsVisible = false;
@@ -92,12 +94,13 @@ namespace medi1.Pages
             // COMMON DATA //
             //--------------- Entry Type ----------------------//
             string entryType = EntrySelecter.SelectedItem.ToString();
-            //------------------- Logging Name -----------------//
-            string entryName = NameEntry.Text.ToString();
             //------------------- Entry Notes -----------------------//
             string entryNotes = NotesEntry.Text.ToString();
 
             if (entryType == "Log Health Event"){
+                
+                //------------------- Logging Name -----------------//
+                string eventName = NameEntry.Text.ToString();
                 // ------------- Logging Duration ------------- //
                 string dateRange = DateSelecter.SelectedItem?.ToString();
                  //------------------ Health Event Relation -----------//
@@ -156,6 +159,9 @@ namespace medi1.Pages
 
             } else if (entryType == "Log Activity")
             {
+                //----------Activity Name---------//
+                string activityName = ActivityNameSelecter.SelectedItem?.ToString();
+                
                 //-------------Date and Duration----------//
                 string activityDate = activityDatePicker.Date.ToString("d");
                 int hours = AHourSpinner.Value;  
