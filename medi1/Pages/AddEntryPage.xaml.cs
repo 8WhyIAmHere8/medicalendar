@@ -1,17 +1,78 @@
 using Microsoft.Maui.Controls;
+using medi1.Data;
+using medi1.Data.Models;
 using medi1.SplashPageComponents;
 using System.Drawing.Text;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Diagnostics;
+using Microsoft.EntityFrameworkCore;
 
 namespace medi1.Pages
 {
-    public partial class AddEntryPage : ContentPage
+    public partial class AddEntryPage : ContentPage, INotifyPropertyChanged
     {
         public AddEntryPage()
         {
             InitializeComponent();
+            BindingContext = this;
+
+            LoadActivities();
+            LoadConditions();
         }
 
-        private void OnEntrySelected(object sender, EventArgs e)
+
+        //Set up collection of activities from database
+        public ObservableCollection<Data.Models.Activity> Activities { get; set; } = new();
+        public ObservableCollection<Data.Models.Condition> Conditions { get; set; } = new();
+
+        
+        //Load activities to bind to the picker
+        private async Task LoadActivities()
+        {
+            try
+            {
+                using var dbContext = new MedicalDbContext();
+                var activitiesFromDb = await Task.Run(() => dbContext.Activities.ToListAsync());
+
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    Activities.Clear();
+                    foreach (var activity in activitiesFromDb)
+                    {
+                        Activities.Add(activity);
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error loading activities: {ex.Message}");
+            }
+        }
+
+        private async Task LoadConditions()
+        {
+            try
+            {
+                using var dbContext = new MedicalDbContext();
+                var conditionsFromDb = await Task.Run(() => dbContext.Conditions.ToListAsync());
+
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    Conditions.Clear();
+                    foreach (var condition in conditionsFromDb)
+                    {
+                        Conditions.Add(condition);
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error loading conditions: {ex.Message}");
+            }
+        }
+
+        private async void OnEntrySelected(object sender, EventArgs e)
         {
             if (EntrySelecter.SelectedItem == null)
                 return;
@@ -46,6 +107,11 @@ namespace medi1.Pages
             }
         }
 
+        //private void OnActivitySelected(object sender, EventArgs e)
+       // {
+            //var selectedActivity = ActivityNameSelecter.SelectedItem as Data.Models.Activity;
+       // }
+                
         private void OnDateSelected(object sender, EventArgs e)
         {
             string dateRange = DateSelecter.SelectedItem?.ToString();
@@ -68,10 +134,11 @@ namespace medi1.Pages
 
         }
 
-        private void AggravatedConfirmed(object sender, CheckedChangedEventArgs e)
+        private async void AggravatedConfirmed(object sender, CheckedChangedEventArgs e)
         {
             //If Checkbox is checked, make condition picker visible
             whichConditionContainer.IsVisible = e.Value;
+            await LoadConditions();
         }
 
         private void HealthEventPicker_SelectedIndexChanged(object sender, EventArgs e)
@@ -94,8 +161,6 @@ namespace medi1.Pages
             // COMMON DATA //
             //--------------- Entry Type ----------------------//
             string entryType = EntrySelecter.SelectedItem.ToString();
-            //------------------- Entry Notes -----------------------//
-            string entryNotes = NotesEntry.Text.ToString();
 
             if (entryType == "Log Health Event"){
                 
@@ -156,6 +221,7 @@ namespace medi1.Pages
                     //Open new condition page
                 }
 
+                string entryNotes = NotesEntry.Text.ToString();
 
             } else if (entryType == "Log Activity")
             {
@@ -163,10 +229,11 @@ namespace medi1.Pages
                 string activityName = ActivityNameSelecter.SelectedItem?.ToString();
                 
                 //-------------Date and Duration----------//
-                string activityDate = activityDatePicker.Date.ToString("d");
+                DateTime activityDate = activityDatePicker.Date;
                 int hours = AHourSpinner.Value;  
                 int minutes = AMinuteSpinner.Value;
-                int activityDuration = minutes + (hours*60);
+                int tempDuration = minutes + (hours*60);
+                string activityDuration = tempDuration.ToString();
 
                 //----------------Intensity-------------------//
                 string activityIntensity = IntensitySelecter.SelectedItem?.ToString();
@@ -174,6 +241,36 @@ namespace medi1.Pages
                 //-----------------Aggravated Condition-----------//
                 string aggedCondition = ConditionSelecter.SelectedItem?.ToString();
                 //Log name of activity in "triggers" of the names health condition
+
+                string entryNotes = NotesEntry.Text.ToString();
+
+                //INFORMATION UPLOAD
+                var newLog = new ActivityLog
+                {
+                    id = Guid.NewGuid().ToString(),
+                    ActivityLogId = Guid.NewGuid().ToString(),
+                    Name = activityName,
+                    Intensity = activityIntensity,
+                    Date = activityDate,
+                    Duration = activityDuration,
+                    AggravatedCondition = aggedCondition,
+                    Notes = entryNotes
+                };
+                try
+                {
+                    using var dbContext = new MedicalDbContext();
+                    await dbContext.ActivityEventLog.AddAsync(newLog);
+                    await dbContext.SaveChangesAsync();
+                }
+                catch (DbUpdateException dbEx)
+                {
+                    Console.WriteLine($"Database Update Error: {dbEx.Message}");
+                    if (dbEx.InnerException != null)
+                    {
+                        Console.WriteLine($"Inner Exception: {dbEx.InnerException.Message}");
+                    }
+                    await DisplayAlert("Error", "Failed to save your activity log.", "OK");
+                }
 
             }
             // Handle task addition logic here
