@@ -11,7 +11,17 @@ namespace medi1.Pages
             BindingContext = new CalendarViewModel();
         }
 
-        private void OnAddClicked(object sender, EventArgs e)
+//----------------------- ADDING ENTRIES: LAUNCHES ADD ENTRY PAGE -------------------------//
+
+        private async void AddNewEntry(object sender, EventArgs e)
+        {
+            await Navigation.PushModalAsync(new AddEntryPage());
+        }
+
+
+//--------------------- TASK MANAGEMENT ---------------------------//
+
+        private void OnAddTaskClicked(object sender, EventArgs e)
         {
             //Show new task window
             AddTaskPopup.IsVisible = true;
@@ -19,7 +29,7 @@ namespace medi1.Pages
 
         private Label? _editingTaskLabel;
 
-        private void OnConfirmClicked(object sender, EventArgs e)
+        private void OnConfirmTaskClicked(object sender, EventArgs e)
         {
             string taskText = TaskInput.Text?.Trim();
             
@@ -92,7 +102,7 @@ namespace medi1.Pages
             }
 
         }
-        private void OnCancelClicked(object sender, EventArgs e)
+        private void OnCancelTaskClicked(object sender, EventArgs e)
         {
             // Close the pop-up without doing anything
             AddTaskPopup.IsVisible = false;
@@ -102,7 +112,7 @@ namespace medi1.Pages
         }
 
         //Edit Confirm
-        private void OnEditConfirmClicked(object sender, EventArgs e)
+        private void TaskEditConfirmClicked(object sender, EventArgs e)
         {
             if (_editingTaskLabel != null)
             {
@@ -112,50 +122,10 @@ namespace medi1.Pages
         }
 
         //Edit Cancel
-        private void OnEditCancelClicked(object sender, EventArgs e)
+        private void TaskEditCancelClicked(object sender, EventArgs e)
         {
             EditTaskPopup.IsVisible = false;
         }
-
-        private async void GoToConditions(object sender, EventArgs e)
-        {
-            try
-            {
-                var conditionsPage = new ConditionsPage.ConditionsPage();
-                await Navigation.PushAsync(conditionsPage);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Navigation error: " + ex.Message);
-            }
-        }
-
-        private async void GoToAddEntry(object sender, EventArgs e)
-        {
-            try
-            {
-                var addEntryPage = new AddEntryPage();
-                await Navigation.PushAsync(addEntryPage);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Navigation error: " + ex.Message);
-            }
-        }
-
-        private async void GoToCalendar(object sender, EventArgs e)
-        {
-            try
-            {
-                var calendarPage = new CalendarPage();
-                await Navigation.PushAsync(calendarPage);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Navigation error: " + ex.Message);
-            }
-        }
-
 
 
     }

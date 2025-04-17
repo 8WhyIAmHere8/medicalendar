@@ -37,22 +37,52 @@
                 </CollectionView>
             </Grid>
 
+
+<!--                               DELETE THESE ENTRIES                                                         -->
+
             <!-- Buttons below the calendar -->
+            <!--
             <FlexLayout Direction="Row" JustifyContent="Center" AlignItems="Center" Padding="30">
                 <Button Text="My Conditions" BackgroundColor="Red" TextColor="White" FontSize="14" Padding="10" WidthRequest="120" HeightRequest="40" Clicked="GoToConditions"/>
                 <Button Text="Add Entry" BackgroundColor="LightGray" TextColor="Red" FontSize="14" Padding="10" WidthRequest="120" HeightRequest="40" Clicked="GoToAddEntry"/>
                 <Button Text="View Calendar" BackgroundColor="Blue" TextColor="White" FontSize="14" Padding="10" WidthRequest="120" HeightRequest="40" Clicked="GoToCalendar"/>               
             </FlexLayout>
+            -->
 
-            <!-- Frame displaying the current date and task input button -->
+
+<!--                                                 FRAN CODE HERE                                                  -->
+
+            <!-- Frame displaying the current date and containing all other content -->
             <Frame BorderColor="Gray" Padding="20" CornerRadius="10" HasShadow="True" BackgroundColor="Transparent" Margin="0,30,0,0">
-                <Label Text="{Binding FullDateToday}" FontSize="24" HorizontalOptions="Center"/>
-
                 <StackLayout Orientation="Vertical" Spacing="10">
+                    <Label Text="{Binding FullDateToday}" FontSize="24" HorizontalOptions="Center"/>
+
+                    <!--                        PANE FOR ADDING A NEW CONDITION              -->
+                    <!--
+                    <Frame>
+                        <StackLayout>
+                            <Button Text="+ New Condition" Clicked="AddNewCondition"/>
+                        </StackLayout>
+                    </Frame>
+                    -->
+
+                    <!--                        PANE FOR ADDING A NEW ENTRY              -->
+                    <Frame>
+                        <StackLayout>
+                            <Button Text="+ Log an Entry" Clicked="AddNewEntry"/>
+                        </StackLayout>
+                    </Frame>
+
+                    <!--                         PANE FOR VIEWING TODAY'S ENTRIES            -->
+                    <Frame>
+                        <Label Text="Today's Entries" FontSize="20" HorizontalOptions="Center"/>
+                    </Frame>
+
+                    <!--                          PANE FOR ADDING NEW TASKS                  -->
                     <Frame>
                         <StackLayout>
                             <Label Text="Today's Tasks" FontSize="20" HorizontalOptions="Center" Padding="20"/>
-                            <Button Text="+ New Task" Clicked="OnAddClicked" />
+                            <Button Text="+ New Task" Clicked="OnAddTaskClicked" />
 
                             <!-- StackLayout for the task list (where tasks will be added) -->
                             <StackLayout x:Name="TaskListContainer" Padding="10" Spacing="5" />
@@ -64,8 +94,8 @@
                                         <Label Text="Add Task" FontSize="18" HorizontalOptions="Center"/>
                                         <Entry x:Name="TaskInput" Placeholder="New Task..." />
                                         <StackLayout Orientation="Horizontal" HorizontalOptions="Center" Spacing="10">
-                                            <Button Text="Confirm" Clicked="OnConfirmClicked"/>
-                                            <Button Text="Cancel" Clicked="OnCancelClicked"/>
+                                            <Button Text="Confirm" Clicked="OnConfirmTaskClicked"/>
+                                            <Button Text="Cancel" Clicked="OnCancelTaskClicked"/>
                                         </StackLayout>
                                     </StackLayout>
                                 </Frame>
@@ -77,22 +107,16 @@
                                         <Entry x:Name="EditTaskInput" Placeholder="Edit Task..." />
 
                                         <StackLayout Orientation="Horizontal" HorizontalOptions="Center" Spacing="10">
-                                            <Button Text="Confirm" Clicked="OnEditConfirmClicked"/>
-                                            <Button Text="Cancel" Clicked="OnEditCancelClicked"/>
+                                            <Button Text="Confirm" Clicked="TaskEditConfirmClicked"/>
+                                            <Button Text="Cancel" Clicked="TaskEditCancelClicked"/>
                                         </StackLayout>
                                     </StackLayout>
                                 </Frame>
                             </Grid>
                         </StackLayout>
                     </Frame>
-                    <!-- Close this Frame and StackLayout properly -->
-                    <Frame>
-                        <Label Text="Today's Events" FontSize="20" HorizontalOptions="Center"/>
-                        <!-- Logic to fetch events from CalendarPage -->
-                    </Frame>
                 </StackLayout>
             </Frame>
         </StackLayout>
     </ScrollView>
 </ContentPage>
-
