@@ -8,6 +8,7 @@ namespace medi1.Data.Models
         public string Id { get; set; } = string.Empty; // Ensure manual assignment (e.g., "1")
         public string Name { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
+        public bool Archived { get; set; } = false; // New field to mark conditions as archived
 
         public List<string> Symptoms { get; set; } = new List<string>();
         public List<string> Medications { get; set; } = new List<string>();
