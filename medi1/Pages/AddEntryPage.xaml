@@ -28,7 +28,8 @@
             <Label Text="Name: " FontSize="18" />
             <Entry x:Name="NameEntry" Placeholder="Name..."/>
           </StackLayout>
-
+          
+          
           <!-- Health Entry Data -->
         
           <StackLayout x:Name="DateContainer" Padding="10" IsVisible="False">
@@ -97,10 +98,10 @@
           
 
           <Picker x:Name="ImpactSelecter"
-            Title="Impact of Event [1 = No Impact]" IsVisible="False">
+            Title="Impact of Event" IsVisible="False">
             <Picker.ItemsSource>
               <x:Array Type="{x:Type x:String}">
-                <x:String>1</x:String>
+                <x:String>1 [No Impact]</x:String>
                 <x:String>2</x:String>
                 <x:String>3</x:String>
                 <x:String>4</x:String>
@@ -109,14 +110,59 @@
                 <x:String>7</x:String>
                 <x:String>8</x:String>
                 <x:String>9</x:String>
-                <x:String>10</x:String>
+                <x:String>10 [Cannot function at all]</x:String>
               </x:Array>
             </Picker.ItemsSource>
           </Picker>
-            
-
 
           <!-- Activities -->
+
+          <StackLayout x:Name="activityTimingContainer" Padding="10" IsVisible="False">
+            <StackLayout x:Name="activityDateContainer" Padding="10" IsVisible="True">
+              <Label x:Name="activityDateLabel" Text="Date of Activity:" FontSize="16" IsVisible="True"/>
+              <DatePicker x:Name="activityDatePicker" IsVisible="True"/>
+            </StackLayout>
+            <StackLayout x:Name="ActivityDurationContainer" Orientation="Vertical" IsVisible="True" Padding="10">
+                  <Label Text="Activity Duration [hours:mins]: " FontSize="18"/>
+                  <StackLayout Orientation="Horizontal">
+                    <local:NumericSpinner x:Name="AHourSpinner"/>
+                    <Label Text=":" FontSize="24"/>
+                    <local:NumericSpinner x:Name="AMinuteSpinner"/>
+                  </StackLayout>
+            </StackLayout>
+          </StackLayout>
+
+          <Picker x:Name="IntensitySelecter"
+            Title="Intensity of Activity" IsVisible="False">
+            <Picker.ItemsSource>
+              <x:Array Type="{x:Type x:String}">
+                <x:String>Low Intensity</x:String>
+                <x:String>Medium Intensity</x:String>
+                <x:String>High Intensity</x:String>
+              </x:Array>
+            </Picker.ItemsSource>
+          </Picker>
+
+          <StackLayout x:Name="aggravationContainer" Padding="10" IsVisible="False">
+            <StackLayout x:Name="confirmAggravationContainer" Padding="10" IsVisible="True">
+              <Label Text="Did this activity aggravate an existing condition?" FontSize="16"/>
+              <CheckBox 
+                x:Name="AggravatedCheck"
+                IsChecked="False"
+                CheckedChanged="AggravatedConfirmed"
+              />
+            </StackLayout>
+            <StackLayout x:Name="whichConditionContainer" Padding="10" IsVisible="False">
+              <Picker x:Name="ConditionSelecter"
+                Title="Select the Aggravated Condition: ">
+                <Picker.ItemsSource>
+                  <x:Array Type="{x:Type x:String}">
+                    <!--Database Content Here-->
+                  </x:Array>
+                </Picker.ItemsSource>
+              </Picker>
+            </StackLayout>
+          </StackLayout>
 
 
           <!-- Other -->
