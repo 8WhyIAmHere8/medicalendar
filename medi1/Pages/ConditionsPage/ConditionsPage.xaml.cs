@@ -5,6 +5,8 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.Messaging;
+using CommunityToolkit.Mvvm.Messaging.Messages;
 
 namespace medi1.Pages.ConditionsPage
 {
@@ -82,13 +84,27 @@ namespace medi1.Pages.ConditionsPage
             AddSymptomCommand = new Command(async () => await AddSymptom());
             AddTreatmentCommand = new Command(() => AddTreatment());
             TestCommand = new Command(async () => await ButtonTest());
+            AddConditionCommand = new Command(() => OnAddConditionTapped());
 
             BindingContext = this;
 
             var dbContext = new MedicalDbContext();
             TestDatabaseConnection(dbContext);
             LoadConditions();
+
+            WeakReferenceMessenger.Default.Register<AddConditionMessage>(this, (recipient, message) =>
+            {
+                var newCondition = new Data.Models.Condition { Name = message.Value };
+                Conditions.Add(newCondition);
+                SelectedCondition = newCondition;
+            });
+
         }
+        private async void OnAddConditionTapped()
+        {
+            await Shell.Current.Navigation.PushModalAsync(new AddConditionPopup());
+        }
+
 
         private async Task LoadDataAsync(string conditionId)
         {
