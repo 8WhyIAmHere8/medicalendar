@@ -1,7 +1,7 @@
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Graphics; 
+using Microsoft.Maui.Graphics;
 using System;
-using medi1.Pages; 
+using medi1.Pages;               // for ConditionViewModel
 
 namespace medi1.Pages
 {
@@ -23,27 +23,33 @@ namespace medi1.Pages
                 return;
             }
 
-            // Create a new condition with a random color.
-            var newCondition = new Condition 
+            // Instantiate the same view-model your HomePage is expecting
+            var newCondition = new ConditionViewModel
             {
-                Name = name,
+                Name        = name,
                 Description = description,
-                IsSelected = false,
-                Color = GetRandomColor()
+                IsSelected  = false,
+                Color       = GetRandomColor()
             };
 
-            // Send the new condition using MessagingCenter.
-            MessagingCenter.Send(newCondition, "ConditionAdded");
+            // Send it *from this page* so the HomePage subscription matches:
+            MessagingCenter.Send<AddEntryPage, ConditionViewModel>(
+                this,
+                "ConditionAdded",
+                newCondition
+            );
+
             await Navigation.PopAsync();
         }
 
         private Color GetRandomColor()
         {
-            Random random = new Random();
-            int r = random.Next(0, 256);
-            int g = random.Next(0, 256);
-            int b = random.Next(0, 256);
-            return Color.FromRgb(r, g, b);
+            var random = new Random();
+            return Color.FromRgb(
+                random.Next(0, 256),
+                random.Next(0, 256),
+                random.Next(0, 256)
+            );
         }
     }
 }

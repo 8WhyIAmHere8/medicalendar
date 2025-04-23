@@ -1,4 +1,5 @@
 using medi1.Data; // Import database context
+using medi1.Pages;  
 using medi1.Data.Models; // Import Condition model
 using Microsoft.EntityFrameworkCore;
 using System.Collections.ObjectModel; // Allows using ObservableCollection
@@ -129,6 +130,10 @@ namespace medi1.Pages
 
                 Conditions.Add(newCondition);
                 SelectedCondition = newCondition;
+
+                MessagingCenter.Send(this, "ConditionAdded", newCondition);
+
+
                 await DisplayAlert("Success", "Condition added successfully!", "OK");
             }
             catch (Exception ex)

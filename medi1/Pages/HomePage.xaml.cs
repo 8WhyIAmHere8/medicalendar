@@ -1,19 +1,30 @@
+using medi1.Data;
+using medi1.Data.Models;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using System.Linq;
-using medi1.SplashPageComponents;
+using System.Threading.Tasks;
 
 namespace medi1.Pages
 {
     public partial class HomePage : ContentPage, INotifyPropertyChanged
     {
-        // Backing field for the displayed month
-        private DateTime _displayDate;
+        // EF Core context for reading stored conditions
+        private readonly MedicalDbContext _dbContext = new MedicalDbContext();
 
+        // Calendar data with notification on change
+        private ObservableCollection<DayItem> _daysInMonth = new();
+        public ObservableCollection<DayItem> DaysInMonth
+        {
+            get => _daysInMonth;
+            set { _daysInMonth = value; OnPropertyChanged(); }
+        }
+
+        private DateTime _displayDate;
         private string _currentMonth;
         public string CurrentMonth
         {
@@ -23,53 +34,72 @@ namespace medi1.Pages
 
         public string FullDateToday { get; set; }
 
-        // Backing field + full property for DaysInMonth
-        private ObservableCollection<DayItem> _daysInMonth = new();
-        public ObservableCollection<DayItem> DaysInMonth
+        // Conditions list with notification on change
+        private ObservableCollection<ConditionViewModel> _conditions = new();
+        public ObservableCollection<ConditionViewModel> Conditions
         {
-            get => _daysInMonth;
-            set
-            {
-                _daysInMonth = value;
-                OnPropertyChanged();
-            }
+            get => _conditions;
+            set { _conditions = value; OnPropertyChanged(); }
         }
 
-        public ObservableCollection<Condition> Conditions { get; set; }
+        // For editing tasks
+        private Label _editingTaskLabel;
 
         public HomePage()
         {
             InitializeComponent();
-
-            _displayDate = DateTime.Now.Date;
-            FullDateToday = _displayDate.ToString("MMMM dd, yyyy");
-
-            // Initialize via property so UI sees it
-            DaysInMonth = new ObservableCollection<DayItem>();
-
-            // Start with an empty list of conditions
-            Conditions = new ObservableCollection<Condition>();
-
             BindingContext = this;
 
+            // Initialize calendar
+            _displayDate  = DateTime.Now.Date;
+            FullDateToday = _displayDate.ToString("MMMM dd, yyyy");
             LoadMonth(_displayDate);
 
-            MessagingCenter.Subscribe<Condition>(this, "ConditionAdded", (newCondition) =>
-            {
-                Conditions.Add(newCondition);
-            });
+            // Subscribe to new conditions from AddEntryPage
+            MessagingCenter.Subscribe<AddEntryPage, ConditionViewModel>(
+                this,
+                "ConditionAdded",
+                (sender, vm) => Conditions.Add(vm)
+            );
+
+            // Subscribe to new conditions from ConditionsPage (if used)
+            MessagingCenter.Subscribe<ConditionsPage, Data.Models.Condition>(
+                this,
+                "ConditionAdded",
+                (sender, entity) => Conditions.Add(MapToVm(entity))
+            );
         }
 
-        // Load days for the given month by replacing the entire collection
+        protected override async void OnAppearing()
+        {
+            base.OnAppearing();
+            await LoadConditionsFromDbAsync();
+        }
+
+        private async Task LoadConditionsFromDbAsync()
+        {
+            var list = await _dbContext.Conditions.ToListAsync();
+            Conditions.Clear();
+            foreach (var e in list)
+                Conditions.Add(MapToVm(e));
+        }
+
+        private ConditionViewModel MapToVm(Data.Models.Condition e) =>
+            new ConditionViewModel
+            {
+                Name        = e.Name,
+                Description = e.Description,
+                Color       = Colors.LightBlue,
+                IsSelected  = false
+            };
+
+        // --- Calendar logic ---
         private void LoadMonth(DateTime date)
         {
             var items = new ObservableCollection<DayItem>();
-
             int offset = (int)new DateTime(date.Year, date.Month, 1).DayOfWeek;
             for (int i = 0; i < offset; i++)
-            {
                 items.Add(new DayItem { DayNumber = 0, IsToday = false });
-            }
 
             int daysInMonth = DateTime.DaysInMonth(date.Year, date.Month);
             for (int i = 1; i <= daysInMonth; i++)
@@ -77,11 +107,13 @@ namespace medi1.Pages
                 items.Add(new DayItem
                 {
                     DayNumber = i,
-                    IsToday = (date.Year == DateTime.Now.Year && date.Month == DateTime.Now.Month && i == DateTime.Now.Day)
+                    IsToday   = date.Year == DateTime.Now.Year
+                              && date.Month == DateTime.Now.Month
+                              && i == DateTime.Now.Day
                 });
             }
 
-            DaysInMonth = items;
+            DaysInMonth  = items;
             CurrentMonth = date.ToString("MMMM yyyy");
         }
 
@@ -97,155 +129,128 @@ namespace medi1.Pages
             LoadMonth(_displayDate);
         }
 
-        public new event PropertyChangedEventHandler PropertyChanged;
-        protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-
+        // --- Task UI logic ---
         private void OnAddClicked(object sender, EventArgs e)
-        {
-            AddTaskPopup.IsVisible = true;
-        }
-
-        private Label _editingTaskLabel;
+            => AddTaskPopup.IsVisible = true;
 
         private void OnConfirmClicked(object sender, EventArgs e)
         {
-            string taskText = TaskInput.Text?.Trim();
-            if (!string.IsNullOrEmpty(taskText))
+            var taskText = TaskInput.Text?.Trim();
+            if (string.IsNullOrEmpty(taskText))
+                return;
+
+            var taskLayout = new StackLayout
             {
-                var taskItemLayout = new StackLayout
-                {
-                    Orientation = StackOrientation.Horizontal,
-                    Spacing = 10
-                };
+                Orientation = StackOrientation.Horizontal,
+                Spacing     = 10
+            };
 
-                // Tick/Untick checkbox for task
-                var taskCheckBox = new CheckBox();
-                var taskLabel = new Label
-                {
-                    Text = taskText,
-                    HorizontalOptions = LayoutOptions.StartAndExpand,
-                    VerticalOptions = LayoutOptions.Center
-                };
-                taskCheckBox.CheckedChanged += (s, args) =>
-                {
-                    taskLabel.TextDecorations = taskCheckBox.IsChecked
-                        ? TextDecorations.Strikethrough
-                        : TextDecorations.None;
-                };
+            var checkBox = new CheckBox();
+            var label    = new Label
+            {
+                Text            = taskText,
+                VerticalOptions = LayoutOptions.Center
+            };
+            checkBox.CheckedChanged += (s, a) =>
+                label.TextDecorations = checkBox.IsChecked
+                    ? TextDecorations.Strikethrough
+                    : TextDecorations.None;
 
-                var editButton = new Button
-                {
-                    Text = "✏️",
-                    FontSize = 12,
-                    BackgroundColor = Colors.Transparent,
-                    WidthRequest = 40
-                };
-                editButton.Clicked += (s, args) =>
-                {
-                    _editingTaskLabel = taskLabel;
-                    EditTaskInput.Text = taskLabel.Text;
-                    EditTaskPopup.IsVisible = true;
-                };
+            var editBtn = new Button
+            {
+                Text            = "✏️",
+                FontSize        = 12,
+                BackgroundColor = Colors.Transparent,
+                WidthRequest    = 40
+            };
+            editBtn.Clicked += (s, a) =>
+            {
+                _editingTaskLabel          = label;
+                EditTaskInput.Text         = label.Text;
+                EditTaskPopup.IsVisible    = true;
+            };
 
-                var deleteButton = new Button
-                {
-                    Text = "🗑️",
-                    FontSize = 12,
-                    BackgroundColor = Colors.Transparent,
-                    WidthRequest = 40
-                };
-                deleteButton.Clicked += (s, args) =>
-                {
-                    TaskListContainer.Children.Remove(taskItemLayout);
-                };
+            var deleteBtn = new Button
+            {
+                Text            = "🗑️",
+                FontSize        = 12,
+                BackgroundColor = Colors.Transparent,
+                WidthRequest    = 40
+            };
+            deleteBtn.Clicked += (s, a) =>
+                TaskListContainer.Children.Remove(taskLayout);
 
-                taskItemLayout.Children.Add(taskCheckBox);
-                taskItemLayout.Children.Add(taskLabel);
-                taskItemLayout.Children.Add(editButton);
-                taskItemLayout.Children.Add(deleteButton);
+            taskLayout.Children.Add(checkBox);
+            taskLayout.Children.Add(label);
+            taskLayout.Children.Add(editBtn);
+            taskLayout.Children.Add(deleteBtn);
 
-                TaskListContainer.Children.Add(taskItemLayout);
+            TaskListContainer.Children.Add(taskLayout);
 
-                AddTaskPopup.IsVisible = false;
-                TaskInput.Text = string.Empty;
-            }
+            AddTaskPopup.IsVisible = false;
+            TaskInput.Text        = string.Empty;
         }
 
         private void OnCancelClicked(object sender, EventArgs e)
         {
             AddTaskPopup.IsVisible = false;
-            TaskInput.Text = string.Empty;
+            TaskInput.Text        = string.Empty;
         }
 
         private void OnEditConfirmClicked(object sender, EventArgs e)
         {
             if (_editingTaskLabel != null)
                 _editingTaskLabel.Text = EditTaskInput.Text;
+
             EditTaskPopup.IsVisible = false;
         }
 
         private void OnEditCancelClicked(object sender, EventArgs e)
-        {
-            EditTaskPopup.IsVisible = false;
-        }
+            => EditTaskPopup.IsVisible = false;
 
+        // --- Navigation ---
         private async void GoToConditions(object sender, EventArgs e)
-        {
-            await Navigation.PushAsync(new ConditionsPage());
-        }
+            => await Navigation.PushAsync(new ConditionsPage());
 
         private async void GoToAddEntry(object sender, EventArgs e)
-        {
-            await Navigation.PushAsync(new AddEntryPage());
-        }
+            => await Navigation.PushAsync(new AddEntryPage());
 
         private async void GoToReports(object sender, EventArgs e)
-        {
-            await Navigation.PushAsync(new ReportsPage());
-        }
+            => await Navigation.PushAsync(new ReportsPage());
 
-        private void OnConditionCheckedChanged(object sender, CheckedChangedEventArgs e)
-        {
-            var selectedConditions = Conditions
-                .Where(c => c.IsSelected)
-                .Select(c => c.Name)
-                .ToList();
-
-            DisplayAlert("Selected Conditions", string.Join(", ", selectedConditions), "OK");
-            UpdateCalendar(selectedConditions);
-        }
-
-        private void UpdateCalendar(System.Collections.Generic.List<string> selectedConditions)
-        {
-            Title = selectedConditions.Any()
-                ? $"Dashboard - Filter: {string.Join(", ", selectedConditions)}"
-                : "Dashboard";
-        }
-
+        // --- Condition tap handler ---
         private async void OnConditionTapped(object sender, EventArgs e)
         {
-            if (sender is StackLayout layout && layout.BindingContext is Condition condition)
+            if (sender is StackLayout sl && sl.BindingContext is ConditionViewModel cvm)
             {
-                string message = $"Name: {condition.Name}\nDescription: {condition.Description}";
-                await DisplayAlert("Condition Details", message, "OK");
+                await DisplayAlert(
+                    "Condition Details",
+                    $"Name: {cvm.Name}\nDescription: {cvm.Description}",
+                    "OK"
+                );
             }
         }
+
+        #region INotifyPropertyChanged
+        public new event PropertyChangedEventHandler PropertyChanged;
+        protected void OnPropertyChanged([CallerMemberName] string propName = null) =>
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName));
+        #endregion
     }
 
-    public class Condition
+    // View‐model for binding into HomePage
+    public class ConditionViewModel
     {
-        public string Name { get; set; }
+        public string Name        { get; set; }
         public string Description { get; set; }
-        public bool IsSelected { get; set; }
-        public Color Color { get; set; }
+        public bool   IsSelected  { get; set; }
+        public Color  Color       { get; set; }
     }
 
+    // Day item for the calendar grid
     public class DayItem
     {
-        public int DayNumber { get; set; }
-        public bool IsToday { get; set; }
+        public int  DayNumber { get; set; }
+        public bool IsToday   { get; set; }
     }
 }

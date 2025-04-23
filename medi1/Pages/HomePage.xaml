@@ -1,158 +1,214 @@
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:components="clr-namespace:medi1.SplashPageComponents"
-             x:Class="medi1.Pages.HomePage"
-             Title="Dashboard">
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:components="clr-namespace:medi1.SplashPageComponents"
+    x:Class="medi1.Pages.HomePage"
+    Title="Dashboard">
 
-    <!-- Converter to highlight the current day -->
-    <ContentPage.Resources>
-        <ResourceDictionary>
-            <components:HighlightToday x:Key="HighlightToday"/>
-        </ResourceDictionary>
-    </ContentPage.Resources>
+  <!-- Converter to highlight the current day -->
+  <ContentPage.Resources>
+    <ResourceDictionary>
+      <components:HighlightToday x:Key="HighlightToday"/>
+    </ResourceDictionary>
+  </ContentPage.Resources>
 
-    <ScrollView>
-        <StackLayout Padding="20">
-            <!-- Month Navigation -->
-            <FlexLayout Direction="Row" HorizontalOptions="Center">
-                <Button Text="◀" Clicked="OnPrevMonthClicked" Margin="0,0,10,0"/>
-                <Label Text="{Binding CurrentMonth}" FontSize="24" HorizontalOptions="Center"/>
-                <Button Text="▶" Clicked="OnNextMonthClicked" Margin="10,0,0,0"/>
-            </FlexLayout>
+  <ScrollView>
+    <StackLayout Padding="20">
 
-            <!-- Weekday Headers -->
-            <Grid HorizontalOptions="Center" ColumnSpacing="20" Margin="0,20,0,0">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-                <Label Text="Sunday" Grid.Column="0" HorizontalOptions="Center" FontAttributes="Bold"/>
-                <Label Text="Monday" Grid.Column="1" HorizontalOptions="Center" FontAttributes="Bold"/>
-                <Label Text="Tuesday" Grid.Column="2" HorizontalOptions="Center" FontAttributes="Bold"/>
-                <Label Text="Wednesday" Grid.Column="3" HorizontalOptions="Center" FontAttributes="Bold"/>
-                <Label Text="Thursday" Grid.Column="4" HorizontalOptions="Center" FontAttributes="Bold"/>
-                <Label Text="Friday" Grid.Column="5" HorizontalOptions="Center" FontAttributes="Bold"/>
-                <Label Text="Saturday" Grid.Column="6" HorizontalOptions="Center" FontAttributes="Bold"/>
-            </Grid>
+      <!-- Month Navigation -->
+      <FlexLayout Direction="Row" HorizontalOptions="Center">
+        <Button Text="◀" Clicked="OnPrevMonthClicked" Margin="0,0,10,0"/>
+        <Label Text="{Binding CurrentMonth}" FontSize="24" HorizontalOptions="Center"/>
+        <Button Text="▶" Clicked="OnNextMonthClicked" Margin="10,0,0,0"/>
+      </FlexLayout>
 
-            <!-- Calendar Display -->
-            <Grid HorizontalOptions="Center" VerticalOptions="Center" Padding="30" Margin="0,-10,0,0">
-                <CollectionView ItemsSource="{Binding DaysInMonth}">
-                    <CollectionView.ItemsLayout>
-                        <GridItemsLayout Orientation="Vertical" Span="7"/>
-                    </CollectionView.ItemsLayout>
-                    <CollectionView.ItemTemplate>
-                        <DataTemplate>
-                            <Frame Padding="10" Margin="2"
-                                   CornerRadius="5"
-                                   WidthRequest="75"
-                                   BackgroundColor="{Binding IsToday, Converter={StaticResource HighlightToday}}">
-                                <Label Text="{Binding DayNumber}"
-                                       HorizontalOptions="Center"
-                                       FontSize="18"
-                                       FontAttributes="Bold">
-                                <Label.Triggers>
-                                    <!-- hide any placeholder cells -->
-                                    <DataTrigger TargetType="Label"
-                                                 Binding="{Binding DayNumber}"
-                                                 Value="0">
-                                            <Setter Property="Text" Value="" />
-                                    </DataTrigger>
-                                </Label.Triggers>
-                               </Label>                             
-                            </Frame>
-                        </DataTemplate>
-                    </CollectionView.ItemTemplate>    
-                </CollectionView>
-            </Grid>
+      <!-- Weekday Headers -->
+      <Grid HorizontalOptions="Center" ColumnSpacing="20" Margin="0,20,0,0">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="*"/>
+          <ColumnDefinition Width="*"/>
+          <ColumnDefinition Width="*"/>
+          <ColumnDefinition Width="*"/>
+          <ColumnDefinition Width="*"/>
+          <ColumnDefinition Width="*"/>
+          <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <Label Text="Sunday"    Grid.Column="0" HorizontalOptions="Center" FontAttributes="Bold"/>
+        <Label Text="Monday"    Grid.Column="1" HorizontalOptions="Center" FontAttributes="Bold"/>
+        <Label Text="Tuesday"   Grid.Column="2" HorizontalOptions="Center" FontAttributes="Bold"/>
+        <Label Text="Wednesday" Grid.Column="3" HorizontalOptions="Center" FontAttributes="Bold"/>
+        <Label Text="Thursday"  Grid.Column="4" HorizontalOptions="Center" FontAttributes="Bold"/>
+        <Label Text="Friday"    Grid.Column="5" HorizontalOptions="Center" FontAttributes="Bold"/>
+        <Label Text="Saturday"  Grid.Column="6" HorizontalOptions="Center" FontAttributes="Bold"/>
+      </Grid>
 
-            <BoxView HeightRequest="1" Color="LightGray" HorizontalOptions="FillAndExpand" Margin="0,10,0,10"/>
+      <!-- Calendar Display -->
+      <Grid HorizontalOptions="Center" VerticalOptions="Center" Padding="30" Margin="0,-10,0,0">
+        <CollectionView ItemsSource="{Binding DaysInMonth}">
+          <CollectionView.ItemsLayout>
+            <GridItemsLayout Orientation="Vertical" Span="7"/>
+          </CollectionView.ItemsLayout>
+          <CollectionView.ItemTemplate>
+            <DataTemplate>
+              <Frame
+                  Padding="10"
+                  Margin="2"
+                  CornerRadius="5"
+                  WidthRequest="75"
+                  BackgroundColor="{Binding IsToday, Converter={StaticResource HighlightToday}}">
+                <Label
+                    Text="{Binding DayNumber}"
+                    HorizontalOptions="Center"
+                    FontSize="18"
+                    FontAttributes="Bold">
+                  <Label.Triggers>
+                    <!-- hide any placeholder cells -->
+                    <DataTrigger TargetType="Label"
+                                 Binding="{Binding DayNumber}"
+                                 Value="0">
+                      <Setter Property="Text" Value="" />
+                    </DataTrigger>
+                  </Label.Triggers>
+                </Label>
+              </Frame>
+            </DataTemplate>
+          </CollectionView.ItemTemplate>
+        </CollectionView>
+      </Grid>
 
-            <!-- Condition Filter Section -->
-            <Label Text="↓  List of Conditions:" FontSize="20" Margin="0,10,0,5"/>
-            <CollectionView x:Name="conditionsCollectionView" ItemsSource="{Binding Conditions}">
-                <CollectionView.ItemsLayout>
-                    <LinearItemsLayout Orientation="Horizontal"/>
-                </CollectionView.ItemsLayout>
-                <CollectionView.ItemTemplate>
-                    <DataTemplate>
-                        <StackLayout Orientation="Horizontal" Padding="5">
-                            <!-- Add a tap gesture to show details -->
-                            <StackLayout.GestureRecognizers>
-                                <TapGestureRecognizer Tapped="OnConditionTapped"/>
-                            </StackLayout.GestureRecognizers>
-                            <!-- Colored Dot -->
-                            <BoxView WidthRequest="10" HeightRequest="10"
-                                     Color="{Binding Color}"
-                                     CornerRadius="5"
-                                     VerticalOptions="Center"/>
+      <BoxView HeightRequest="1" Color="LightGray" HorizontalOptions="FillAndExpand" Margin="0,10,0,10"/>
 
-                            <!-- Condition Name -->
-                            <Label Text="{Binding Name}" VerticalOptions="Center" Margin="10,0,0,0"/>
-                        </StackLayout>
-                    </DataTemplate>
-                </CollectionView.ItemTemplate>
-            </CollectionView>
+      <!-- Condition Filter Section -->
+      <Label Text="↓  List of Conditions:" FontSize="20" Margin="0,10,0,5"/>
+      <CollectionView x:Name="conditionsCollectionView"
+                      ItemsSource="{Binding Conditions}">
+        <CollectionView.ItemsLayout>
+          <LinearItemsLayout Orientation="Horizontal"/>
+        </CollectionView.ItemsLayout>
+        <CollectionView.ItemTemplate>
+          <DataTemplate>
+            <StackLayout Orientation="Horizontal" Padding="5">
+              <StackLayout.GestureRecognizers>
+                <TapGestureRecognizer Tapped="OnConditionTapped"/>
+              </StackLayout.GestureRecognizers>
+              <BoxView WidthRequest="10"
+                       HeightRequest="10"
+                       Color="{Binding Color}"
+                       CornerRadius="5"
+                       VerticalOptions="Center"/>
+              <Label Text="{Binding Name}" VerticalOptions="Center" Margin="10,0,0,0"/>
+            </StackLayout>
+          </DataTemplate>
+        </CollectionView.ItemTemplate>
+      </CollectionView>
 
-            <!-- Buttons -->
-            <FlexLayout Direction="Row" JustifyContent="Center" AlignItems="Center" Padding="30">
-                <Button Text="My Conditions" BackgroundColor="Red" TextColor="White" FontSize="14" Padding="10" WidthRequest="120" HeightRequest="40" Clicked="GoToConditions" Margin="5"/>
-                <Button Text="Add Entry" BackgroundColor="LightGray" TextColor="Red" FontSize="14" Padding="10" WidthRequest="120" HeightRequest="40" Clicked="GoToAddEntry" Margin="5"/>
-                <Button Text="Report" BackgroundColor="Blue" TextColor="White" FontSize="14" Padding="10" WidthRequest="120" HeightRequest="40" Clicked="GoToReports" Margin="5"/>               
-            </FlexLayout>
+      <!-- Navigation Buttons -->
+      <FlexLayout Direction="Row" JustifyContent="Center" AlignItems="Center" Padding="30">
+        <Button Text="My Conditions"
+                BackgroundColor="Red"
+                TextColor="White"
+                FontSize="14"
+                WidthRequest="120"
+                HeightRequest="40"
+                Clicked="GoToConditions"
+                Margin="5"/>
+        <Button Text="Add Entry"
+                BackgroundColor="LightGray"
+                TextColor="Red"
+                FontSize="14"
+                WidthRequest="120"
+                HeightRequest="40"
+                Clicked="GoToAddEntry"
+                Margin="5"/>
+        <Button Text="Report"
+                BackgroundColor="Blue"
+                TextColor="White"
+                FontSize="14"
+                WidthRequest="120"
+                HeightRequest="40"
+                Clicked="GoToReports"
+                Margin="5"/>
+      </FlexLayout>
 
-            <!-- Frame displaying the current date and task input button -->
-            <Frame BorderColor="Gray" Padding="20" CornerRadius="10" HasShadow="True" BackgroundColor="Transparent" Margin="0,30,0,0">
-                <Label Text="{Binding FullDateToday}" FontSize="24" HorizontalOptions="Center"/>
+      <!-- Today's Date, Tasks & Events -->
+      <Frame
+          BorderColor="Gray"
+          Padding="20"
+          CornerRadius="10"
+          HasShadow="True"
+          BackgroundColor="Transparent"
+          Margin="0,30,0,0">
+        <!-- Wrap EVERYTHING inside a single container -->
+        <StackLayout Orientation="Vertical" Spacing="10">
+          <!-- Current Date -->
+          <Label Text="{Binding FullDateToday}" FontSize="24" HorizontalOptions="Center"/>
 
-                <StackLayout Orientation="Vertical" Spacing="10">
-                    <Frame>
-                        <StackLayout>
-                            <Label Text="Today's Tasks" FontSize="20" HorizontalOptions="Center" Padding="20"/>
-                            <Button Text="+ New Task" Clicked="OnAddClicked" />
+          <!-- Tasks Section -->
+          <Frame>
+            <StackLayout>
+              <Label Text="Today's Tasks" FontSize="20" HorizontalOptions="Center" Padding="20"/>
+              <Button Text="+ New Task" Clicked="OnAddClicked"/>
 
-                            <!-- StackLayout for the task list -->
-                            <StackLayout x:Name="TaskListContainer" Padding="10" Spacing="5" />
+              <!-- Where task items get injected -->
+              <StackLayout x:Name="TaskListContainer" Padding="10" Spacing="5"/>
 
-                            <!-- Task input popup -->
-                            <Grid x:Name="AddTaskPopup" BackgroundColor="Black" Opacity="0.5" IsVisible="False" HorizontalOptions="Center" VerticalOptions="CenterAndExpand">
-                                <Frame BackgroundColor="White" Padding="20" CornerRadius="10" HasShadow="True">
-                                    <StackLayout>
-                                        <Label Text="Add Task" FontSize="18" HorizontalOptions="Center"/>
-                                        <Entry x:Name="TaskInput" Placeholder="New Task..." />
-                                        <StackLayout Orientation="Horizontal" HorizontalOptions="Center" Spacing="10">
-                                            <Button Text="Confirm" Clicked="OnConfirmClicked"/>
-                                            <Button Text="Cancel" Clicked="OnCancelClicked"/>
-                                        </StackLayout>
-                                    </StackLayout>
-                                </Frame>
-                            </Grid>
-                            <Grid x:Name="EditTaskPopup" BackgroundColor="Black" Opacity="0.5" IsVisible="False" HorizontalOptions="Center" VerticalOptions="CenterAndExpand">
-                                <Frame BackgroundColor="White" Padding="20" CornerRadius="10" HasShadow="True">
-                                    <StackLayout>
-                                        <Label Text="Edit Task" FontSize="18" HorizontalOptions="Center"/>
-                                        <Entry x:Name="EditTaskInput" Placeholder="Edit Task..." />
-                                        <StackLayout Orientation="Horizontal" HorizontalOptions="Center" Spacing="10">
-                                            <Button Text="Confirm" Clicked="OnEditConfirmClicked"/>
-                                            <Button Text="Cancel" Clicked="OnEditCancelClicked"/>
-                                        </StackLayout>
-                                    </StackLayout>
-                                </Frame>
-                            </Grid>
-                        </StackLayout>
-                    </Frame>
+              <!-- Add Task Popup -->
+              <Grid x:Name="AddTaskPopup"
+                    BackgroundColor="Black"
+                    Opacity="0.5"
+                    IsVisible="False"
+                    HorizontalOptions="Center"
+                    VerticalOptions="CenterAndExpand">
+                <Frame BackgroundColor="White"
+                       Padding="20"
+                       CornerRadius="10"
+                       HasShadow="True">
+                  <StackLayout>
+                    <Label Text="Add Task" FontSize="18" HorizontalOptions="Center"/>
+                    <Entry x:Name="TaskInput" Placeholder="New Task..."/>
+                    <StackLayout Orientation="Horizontal" HorizontalOptions="Center" Spacing="10">
+                      <Button Text="Confirm" Clicked="OnConfirmClicked"/>
+                      <Button Text="Cancel"  Clicked="OnCancelClicked"/>
+                    </StackLayout>
+                  </StackLayout>
+                </Frame>
+              </Grid>
 
-                    <Frame>
-                        <Label Text="Today's Events" FontSize="20" HorizontalOptions="Center"/>
-                        <!-- Logic to fetch events from CalendarPage -->
-                    </Frame>
-                </StackLayout>
-            </Frame>
+              <!-- Edit Task Popup -->
+              <Grid x:Name="EditTaskPopup"
+                    BackgroundColor="Black"
+                    Opacity="0.5"
+                    IsVisible="False"
+                    HorizontalOptions="Center"
+                    VerticalOptions="CenterAndExpand">
+                <Frame BackgroundColor="White"
+                       Padding="20"
+                       CornerRadius="10"
+                       HasShadow="True">
+                  <StackLayout>
+                    <Label Text="Edit Task" FontSize="18" HorizontalOptions="Center"/>
+                    <Entry x:Name="EditTaskInput" Placeholder="Edit Task..."/>
+                    <StackLayout Orientation="Horizontal" HorizontalOptions="Center" Spacing="10">
+                      <Button Text="Confirm" Clicked="OnEditConfirmClicked"/>
+                      <Button Text="Cancel"  Clicked="OnEditCancelClicked"/>
+                    </StackLayout>
+                  </StackLayout>
+                </Frame>
+              </Grid>
+            </StackLayout>
+          </Frame>
+
+          <!-- Events Section -->
+          <Frame>
+            <StackLayout>
+              <Label Text="Today's Events" FontSize="20" HorizontalOptions="Center"/>
+              <!-- (Hook up your CalendarPage events here) -->
+            </StackLayout>
+          </Frame>
         </StackLayout>
-    </ScrollView>
+      </Frame>
+
+    </StackLayout>
+  </ScrollView>
 </ContentPage>
