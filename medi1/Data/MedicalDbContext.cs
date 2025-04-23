@@ -13,7 +13,6 @@ namespace medi1.Data
 
          public MedicalDbContext(string containerName)
         : base(new DbContextOptionsBuilder<MedicalDbContext>()
-            .UseCosmos("https://medicalendar-data.documents.azure.com:443/", "MedicalDatabase")
             .Options)
     {
         _containerName = containerName;

@@ -15,7 +15,7 @@ namespace medi1.Data.Models
 
         public string DateOfBirth { get; set; } = string.Empty;
 
-        public List<string> Conditions { get; set; } = new List<string>();
+        public List<string> Conditions { get; set; } = new List<string>(); // Currently string, change later to proper datamodel class
         
         public List<string> Activities { get; set; } = new List<string>();
         public List<string> Symptoms { get; set; } = new List<string>();

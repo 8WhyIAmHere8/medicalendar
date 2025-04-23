@@ -46,7 +46,7 @@
     </VerticalStackLayout>
     
     <Label x:Name="DOBError" 
-           Text="A date must be picked"
+           Text="Invalid Date"
            IsVisible="False"
            TextColor="Red"
            FontAttributes="Bold" />

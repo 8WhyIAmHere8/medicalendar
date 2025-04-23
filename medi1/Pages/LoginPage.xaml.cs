@@ -12,7 +12,6 @@ namespace medi1.Pages
 {
     public partial class LoginPage : ContentPage
     {
-        private readonly MedicalDbContext _dbContext = new MedicalDbContext("Users"); //creates dbcontext With the users container
 
         public ObservableCollection<Data.Models.User> Users { get; set; } = new ObservableCollection<Data.Models.User>();
 
@@ -31,32 +30,34 @@ namespace medi1.Pages
             UsernameError.IsVisible = false;
             PasswordError.IsVisible = false;
             GeneralError.IsVisible = false;
-
-            var userlist = await _dbContext.Users.ToListAsync();
-            Users.Clear();
-
-            if (string.IsNullOrWhiteSpace(inputuser) || string.IsNullOrWhiteSpace(inputpassword)) //Checks if both username and password were filled
-                {
-                    GeneralError.IsVisible = true;
-                }
             
-            else {
+            using (var _dbContext = new MedicalDbContext("Users"))
+            {
+                var userlist = await _dbContext.Users.ToListAsync();
+                Users.Clear();
 
-                foreach (var user in userlist) //Goes through each user
-                {
-                    if (user.UserName == inputuser)
+                if (string.IsNullOrWhiteSpace(inputuser) || string.IsNullOrWhiteSpace(inputpassword)) //Checks if both username and password were filled
                     {
-                        if (user.Password == inputpassword) {
-                            UserSession.Instance.Id = user.Id; //Accesses and changes Current logged in user
-                            UserSession.Instance.UserName = user.UserName;
-                            Application.Current.MainPage = new AppShell(); //Navigates to the mainpage
+                        GeneralError.IsVisible = true;
+                    }
+            
+                else {
+
+                    foreach (var user in userlist) //Goes through each user
+                    {
+                        if (user.UserName == inputuser) // Checks users password if a user is found
+                        {
+                            if (user.Password == inputpassword) {
+                                UserSession.Instance.LoginUser(user); //Logs in user if password is correct
+                                Application.Current.MainPage = new AppShell(); //Navigates to the mainpage
+                            }
+                            else {
+                                PasswordError.IsVisible = true; //Displays password error if it doesn't match the username given
+                            }
                         }
                         else {
-                            PasswordError.IsVisible = true; //Displays password error if it doesn't match the username given
+                            UsernameError.IsVisible = true; //Displays an error if after checking each user no match is found
                         }
-                    }
-                    else {
-                        UsernameError.IsVisible = true; //Displays an error if after checking each user no match is found
                     }
                 }
             }
