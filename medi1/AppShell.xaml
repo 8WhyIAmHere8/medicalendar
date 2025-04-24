@@ -22,10 +22,6 @@
     <ShellContent ContentTemplate="{DataTemplate pages:ConditionsPage.ConditionsPage}" Route="conditions" />
   </FlyoutItem>
 
-  <FlyoutItem Title="Add Entry">
-    <ShellContent ContentTemplate="{DataTemplate pages:AddEntryPage}" Route="addentry" />
-  </FlyoutItem>
-
   <FlyoutItem Title="Reports &amp; Comparisons">
     <ShellContent ContentTemplate="{DataTemplate pages:ReportsPage}" Route="reports" />
   </FlyoutItem>

@@ -10,9 +10,10 @@ namespace medi1.Data.Models
         public string Description { get; set; } = string.Empty;
         public bool Archived { get; set; } = false;
 
-        public List<string> Symptoms { get; set; } = new();
-        public List<string> Medications { get; set; } = new();
-        public List<string> Treatments { get; set; } = new();
+        public List<string> Symptoms { get; set; } = new List<string>();
+        public List<string> Medications { get; set; } = new List<string>();
+        public List<string> Treatments { get; set; } = new List<string>();
+        public List<string> Triggers {get; set; } = new List<string>();
 
         public string Notes { get; set; } = string.Empty;
     }

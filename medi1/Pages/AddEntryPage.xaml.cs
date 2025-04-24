@@ -7,6 +7,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using Microsoft.EntityFrameworkCore;
+using System.Net;
 
 namespace medi1.Pages
 {
@@ -200,7 +201,6 @@ namespace medi1.Pages
                     string eventDurationDays = totalDuration.ToString();
                     //save to ConditionLog in database
                 }
-
                 // ---------------- LOGGING RELATIONSHIP TO EXISTING HEALTH ---------------//
 
                 if (healthEvent == "Independent Health Evemt")
@@ -226,7 +226,8 @@ namespace medi1.Pages
             } else if (entryType == "Log Activity")
             {
                 //----------Activity Name---------//
-                string activityName = ActivityNameSelecter.SelectedItem?.ToString();
+                var activitySelected = ActivityNameSelecter.SelectedItem as medi1.Data.Models.Activity;
+                string activityName = activitySelected?.Name;
                 
                 //-------------Date and Duration----------//
                 DateTime activityDate = activityDatePicker.Date;
@@ -239,7 +240,8 @@ namespace medi1.Pages
                 string activityIntensity = IntensitySelecter.SelectedItem?.ToString();
                 
                 //-----------------Aggravated Condition-----------//
-                string aggedCondition = ConditionSelecter.SelectedItem?.ToString();
+                var aggedConditionSelected = ConditionSelecter.SelectedItem as medi1.Data.Models.Condition;
+                string aggedConditionName = aggedConditionSelected?.Name;
                 //Log name of activity in "triggers" of the names health condition
 
                 string entryNotes = NotesEntry.Text.ToString();
@@ -253,7 +255,7 @@ namespace medi1.Pages
                     Intensity = activityIntensity,
                     Date = activityDate,
                     Duration = activityDuration,
-                    AggravatedCondition = aggedCondition,
+                    AggravatedCondition = aggedConditionName,
                     Notes = entryNotes
                 };
                 try
@@ -261,6 +263,19 @@ namespace medi1.Pages
                     using var dbContext = new MedicalDbContext();
                     await dbContext.ActivityEventLog.AddAsync(newLog);
                     await dbContext.SaveChangesAsync();
+
+                    if (AggravatedCheck.IsChecked) {
+                            var selectedCondition = await dbContext.Conditions
+                            .FirstOrDefaultAsync(c => c.Name == aggedConditionName);
+
+                            if (selectedCondition != null)
+                            {
+                                selectedCondition.Triggers.Add(activityName);
+                                await dbContext.SaveChangesAsync();
+                            } else {
+                                Console.WriteLine($"{aggedConditionName} condition not found");
+                            }
+                    }
                 }
                 catch (DbUpdateException dbEx)
                 {
