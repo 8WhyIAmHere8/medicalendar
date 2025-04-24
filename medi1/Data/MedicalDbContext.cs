@@ -11,6 +11,7 @@ namespace medi1.Data
         public DbSet<Data.Models.HealthEvent> HealthEvents { get; set; }
         public DbSet<Data.Models.Activity> Activities { get; set; }
         public DbSet<Data.Models.ActivityLog> ActivityEventLog { get; set; }
+        public DbSet<Data.Models.User> Users { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {

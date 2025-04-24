@@ -31,7 +31,7 @@ namespace medi1.Pages
             UsernameError.IsVisible = false;
             PasswordError.IsVisible = false;
             
-            using (var _dbContext = new MedicalDbContext("Users"))
+            using (var _dbContext = new MedicalDbContext())
             {
                 var userlist = await _dbContext.Users.ToListAsync();
                 Users.Clear();

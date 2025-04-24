@@ -41,7 +41,7 @@ namespace medi1.Pages
                                       string.IsNullOrWhiteSpace(inputpassword),
                                       string.IsNullOrWhiteSpace(confirminputpassword)]; //Each entry is checked
             
-            using (var _dbContext = new MedicalDbContext("Users"))
+            using (var _dbContext = new MedicalDbContext())
             {
                 var userlist = await _dbContext.Users.ToListAsync(); //Gets a list of all users
                 Users.Clear();
