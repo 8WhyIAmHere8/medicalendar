@@ -95,10 +95,9 @@ namespace medi1.Pages.ConditionsPage
             WeakReferenceMessenger.Default.Register<AddConditionMessage>(this, (recipient, message) =>
             {
                 var newCondition = new Data.Models.Condition { Name = message.Value };
-                Conditions.Add(newCondition);
+                Conditions.Add(newCondition); // Add to in-memory collection
                 SelectedCondition = newCondition;
             });
-
         }
         private async void OnAddConditionTapped()
         {

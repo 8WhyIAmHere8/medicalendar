@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.Messaging;
 using medi1.Data;
 using medi1.Data.Models;
 using Microsoft.EntityFrameworkCore;
+
 public class AddConditionPopupViewModel : INotifyPropertyChanged
 {
     public event PropertyChangedEventHandler PropertyChanged;
@@ -25,13 +26,40 @@ public class AddConditionPopupViewModel : INotifyPropertyChanged
     public AddConditionPopupViewModel()
     {
         ClosePopupCommand = new Command(async () => await Shell.Current.Navigation.PopModalAsync());
+
         ConfirmAddCommand = new Command(async () =>
         {
-            if (!string.IsNullOrWhiteSpace(NewConditionName))
+            if (string.IsNullOrWhiteSpace(NewConditionName))
             {
-                // Add to your collection logic here
-                WeakReferenceMessenger.Default.Send(new AddConditionMessage(NewConditionName));
+                await Application.Current.MainPage.DisplayAlert("Validation", "Condition name cannot be empty.", "OK");
+                return;
+            }
+
+            var newCondition = new medi1.Data.Models.Condition
+            {
+                Id = Guid.NewGuid().ToString(),
+                Name = NewConditionName.Trim(),
+                Archived = false,
+                Description = string.Empty,
+                Notes = string.Empty,
+                Symptoms = new(),
+                Medications = new(),
+                Treatments = new()
+            };
+
+            try
+            {
+                using var dbContext = new MedicalDbContext();
+                dbContext.Conditions.Add(newCondition);
+                await dbContext.SaveChangesAsync();
+
+                WeakReferenceMessenger.Default.Send(new AddConditionMessage(newCondition.Name));
                 await Shell.Current.Navigation.PopModalAsync();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error adding condition: {ex.Message}");
+                await Application.Current.MainPage.DisplayAlert("Error", "Failed to save condition.", "OK");
             }
         });
     }
