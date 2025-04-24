@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="medi1.Pages.LoginPage"
+             Title="Login">
+  <StackLayout Padding="20">
+    <Entry x:Name="UsernameEntry"
+           Placeholder="Username"
+           Keyboard="Text" />
+    <Label x:Name="UsernameError" 
+           Text="User not found"
+           IsVisible="False"
+           TextColor="Red"
+           FontAttributes="Bold" />
+
+    <Entry x:Name="PasswordEntry"
+           Placeholder="Password"
+           IsPassword="True" />
+    <Label x:Name="PasswordError" 
+           Text="Password Incorrect"
+           IsVisible="False"
+           TextColor="Red"
+           FontAttributes="Bold" />
+
+    <Button Text="Login" Clicked="OnLoginClicked"/>
+    
+    <Button Text="New User" Clicked="OnNewClicked"/>
+    
+    <Label x:Name="GeneralError" 
+           Text="All fields must be filled"
+           IsVisible="False"
+           TextColor="Red"
+           FontAttributes="Bold" />
+  </StackLayout>
+</ContentPage>

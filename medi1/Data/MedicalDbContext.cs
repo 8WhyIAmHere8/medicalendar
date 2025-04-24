@@ -6,6 +6,7 @@ namespace medi1.Data
 {
     public class MedicalDbContext : DbContext
     {
+        private readonly string _containerName;
         public DbSet<Data.Models.Condition> Conditions { get; set; }
         public DbSet<Data.Models.HealthEvent> HealthEvents { get; set; }
         public DbSet<Data.Models.Activity> Activities { get; set; }
@@ -45,6 +46,11 @@ namespace medi1.Data
         .ToContainer("ActivityEventLog")
         .HasPartitionKey(al => al.ActivityLogId)
         .HasNoDiscriminator();
+
+            modelBuilder.Entity<Models.User>()
+                        .ToContainer("Users")  // Maps to the "Users" container
+                        .HasPartitionKey(u => u.Id) // ✅ Keep partitioning by `Id`
+                        .HasNoDiscriminator();
         
         }
 

@@ -1,4 +1,5 @@
-﻿using Microsoft.Maui.Controls;
+﻿using medi1.Pages;
+using Microsoft.Maui.Controls;
 
 namespace medi1
 {
@@ -7,7 +8,7 @@ namespace medi1
         public App()
         {
             InitializeComponent();
-            MainPage = new AppShell();
+            MainPage = new NavigationPage(new LoginPage());
         }
     }
 }

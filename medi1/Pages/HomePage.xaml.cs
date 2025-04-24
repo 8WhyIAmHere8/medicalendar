@@ -1,5 +1,7 @@
 using Microsoft.Maui.Controls;
 using medi1.SplashPageComponents;
+using medi1.Services;
+using System.Diagnostics; //Import used login data
 
 namespace medi1.Pages  
 {
@@ -9,6 +11,7 @@ namespace medi1.Pages
         {
             InitializeComponent();
             BindingContext = new CalendarViewModel();
+            Debug.WriteLine((UserSession.Instance.Id,UserSession.Instance.UserName,UserSession.Instance.Password)); // Check for data
         }
 
 //----------------------- ADDING ENTRIES: LAUNCHES ADD ENTRY PAGE -------------------------//
