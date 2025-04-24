@@ -14,10 +14,6 @@
     <ShellContent ContentTemplate="{DataTemplate pages:HomePage}" Route="home" />
   </FlyoutItem>
 
-  <FlyoutItem Title="Calendar">
-    <ShellContent ContentTemplate="{DataTemplate pages:CalendarPage}" Route="calendar" />
-  </FlyoutItem>
-
   <FlyoutItem Title="My Conditions"> 
     <ShellContent ContentTemplate="{DataTemplate pages:ConditionsPage.ConditionsPage}" Route="conditions" />
   </FlyoutItem>

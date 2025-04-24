@@ -6,17 +6,19 @@ namespace medi1.Data
 {
     public class MedicalDbContext : DbContext
     {
+        private readonly string _containerName;
         public DbSet<Data.Models.Condition> Conditions { get; set; }
         public DbSet<Data.Models.HealthEvent> HealthEvents { get; set; }
         public DbSet<Data.Models.Activity> Activities { get; set; }
         public DbSet<Data.Models.ActivityLog> ActivityEventLog { get; set; }
+        public DbSet<Data.Models.User> Users { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             optionsBuilder.UseCosmos(
                 "https://medicalendar-data.documents.azure.com:443/", // Cosmos DB endpoint
                 "ukEwRy20KzAics3MYQfmnzwXC0IxPQMGd8MfvPCQthLpkW691AMAqS1cSPz5aS6z77WAz3Sgy9I8ACDbywHjig==", // Cosmos DB key
-                "MedicalDatabase"); // Database name 
+                "MedicalDatabase"); // Database name
 
             optionsBuilder.LogTo(Console.WriteLine); // Log database queries
             base.OnConfiguring(optionsBuilder);
@@ -24,15 +26,17 @@ namespace medi1.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            // Map Conditions to its container
             modelBuilder.Entity<Models.Condition>()
-        .ToContainer("Conditions")  // Maps to the "Conditions" container
-        .HasPartitionKey(c => c.Id) // ✅ Keep partitioning by `Id` for now
-        .HasNoDiscriminator(); // ✅ This removes the discriminator requirement
-       
+                .ToContainer("Conditions")
+                .HasPartitionKey(c => c.Id)
+                .HasNoDiscriminator();
+
+            // ✅ Map HealthEvents to its own container
             modelBuilder.Entity<Models.HealthEvent>()
-        .ToContainer("HealthEvent")
-        .HasPartitionKey(e => e.Id)
-        .HasNoDiscriminator();
+                .ToContainer("HealthEvent")
+                .HasPartitionKey(e => e.Id)
+                .HasNoDiscriminator();
 
             modelBuilder.Entity<Models.Activity>()
         .ToContainer("Activities")
@@ -43,6 +47,11 @@ namespace medi1.Data
         .ToContainer("ActivityEventLog")
         .HasPartitionKey(al => al.ActivityLogId)
         .HasNoDiscriminator();
+
+            modelBuilder.Entity<Models.User>()
+                        .ToContainer("Users")  // Maps to the "Users" container
+                        .HasPartitionKey(u => u.Id) // ✅ Keep partitioning by `Id`
+                        .HasNoDiscriminator();
         
         }
 

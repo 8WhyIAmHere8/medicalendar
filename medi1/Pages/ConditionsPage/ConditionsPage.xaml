@@ -7,12 +7,11 @@
 
     <ContentPage.Resources>
         <ResourceDictionary>
-            <!-- Highlight the selected tab -->
             <Style x:Key="TabButtonStyle" TargetType="Frame">
-                <Setter Property="Padding" Value="10" />
+                <Setter Property="Padding" Value="10,5" />
                 <Setter Property="Margin" Value="5" />
-                <Setter Property="CornerRadius" Value="10" />
-                <Setter Property="HasShadow" Value="True" />
+                <Setter Property="CornerRadius" Value="20" />
+                <Setter Property="HasShadow" Value="False" />
                 <Setter Property="BackgroundColor" Value="#BBDEFB" />
             </Style>
         </ResourceDictionary>
@@ -21,99 +20,123 @@
     <VerticalStackLayout Padding="10" Spacing="10">
 
         <!-- Tabs Header Strip -->
-        <ScrollView Orientation="Horizontal" HeightRequest="60">
-            <HorizontalStackLayout Spacing="5">
+        <HorizontalStackLayout Spacing="10" VerticalOptions="Center">
+            <ScrollView Orientation="Horizontal" HeightRequest="50">
+                <HorizontalStackLayout Spacing="10">
+                    <CollectionView ItemsSource="{Binding Conditions}"
+                                    ItemsLayout="HorizontalList"
+                                    SelectionMode="Single"
+                                    SelectedItem="{Binding SelectedCondition}">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Frame Padding="10,5"
+                                       CornerRadius="20"
+                                       BackgroundColor="{Binding ., Converter={StaticResource TabHighlightConverter}, ConverterParameter={Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.SelectedCondition}}">
+                                    <Label Text="{Binding Name}" FontSize="16" />
+                                </Frame>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
 
-                <!-- Tab for each condition -->
-                <CollectionView ItemsSource="{Binding Conditions}"
-                                ItemsLayout="HorizontalList"
-                                SelectionMode="Single"
-                                SelectedItem="{Binding SelectedCondition, Mode=TwoWay}">
-                    <CollectionView.ItemTemplate>
-                        <DataTemplate>
-                            <Frame Style="{StaticResource TabButtonStyle}" BackgroundColor="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.SelectedCondition, Converter={StaticResource TabHighlightConverter}, ConverterParameter={Binding .}}">
-                                <Label Text="{Binding Name}" FontSize="16" HorizontalOptions="Center" VerticalOptions="Center" />
-                            </Frame>
-                        </DataTemplate>
-                    </CollectionView.ItemTemplate>
-                </CollectionView>
+                    <!-- Add Tab -->
+                    <Frame Style="{StaticResource TabButtonStyle}" BackgroundColor="#BBDEFB">
+                        <Label Text="＋" FontSize="20">
+                            <Label.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding AddConditionCommand}" />
+                            </Label.GestureRecognizers>
+                        </Label>
+                    </Frame>
+                </HorizontalStackLayout>
+            </ScrollView>
 
-                <!-- "+" Tab to Add Condition -->
-                <Frame Style="{StaticResource TabButtonStyle}" BackgroundColor="#C8E6C9">
-                    <Label Text="＋" FontSize="24" HorizontalOptions="Center" VerticalOptions="Center">
-                        <Label.GestureRecognizers>
-                            <TapGestureRecognizer Command="{Binding AddConditionCommand}" />
-                        </Label.GestureRecognizers>
-                    </Label>
-                </Frame>
+            <!-- Archived Conditions Button -->
+            <Button Text="Archived Conditions"
+                    BackgroundColor="#69F0AE"
+                    TextColor="Black"
+                    CornerRadius="20"
+                    Margin="10,0"
+                    VerticalOptions="Center"
+                    Command="{Binding OpenArchivedCommand}" />
+        </HorizontalStackLayout>
 
-            </HorizontalStackLayout>
-        </ScrollView>
+        <!-- Main Content Split View -->
+        <Grid ColumnDefinitions="*,2*" RowDefinitions="Auto">
 
-        <!-- Tab Content -->
-        <ScrollView>
-            <VerticalStackLayout Spacing="15">
+            <!-- Left Panel -->
+            <ScrollView Grid.Column="0">
+                <VerticalStackLayout Spacing="15">
 
-                <Label Text="{Binding SelectedCondition.Name}" FontSize="24" FontAttributes="Bold" />
+                    <!-- Medications -->
+                    <Frame BackgroundColor="#E3F2FD" CornerRadius="20" Padding="10">
+                        <VerticalStackLayout>
+                            <Label Text="Medications" FontSize="20" FontAttributes="Bold" TextColor="#1A237E" />
+                            <CollectionView ItemsSource="{Binding SelectedCondition.Medications}">
+                                <CollectionView.ItemTemplate>
+                                    <DataTemplate>
+                                        <Label Text="{Binding}" FontSize="16" />
+                                    </DataTemplate>
+                                </CollectionView.ItemTemplate>
+                            </CollectionView>
+                            <Entry Placeholder="Enter medication" Text="{Binding NewMedication}" />
+                            <Button Text="＋" Command="{Binding AddMedicationCommand}" HorizontalOptions="Start" WidthRequest="40" />
+                        </VerticalStackLayout>
+                    </Frame>
 
-                <!-- Medications Section -->
-                <Frame BackgroundColor="#E3F2FD" Padding="10">
+                    <!-- Symptoms -->
+                    <Frame BackgroundColor="#E3F2FD" CornerRadius="20" Padding="10">
+                        <VerticalStackLayout>
+                            <Label Text="Symptoms" FontSize="20" FontAttributes="Bold" TextColor="#1A237E" />
+                            <CollectionView ItemsSource="{Binding SelectedCondition.Symptoms}">
+                                <CollectionView.ItemTemplate>
+                                    <DataTemplate>
+                                        <Label Text="{Binding}" FontSize="16" />
+                                    </DataTemplate>
+                                </CollectionView.ItemTemplate>
+                            </CollectionView>
+                            <Button Text="＋" Command="{Binding AddSymptomCommand}" HorizontalOptions="Start" WidthRequest="40" />
+                        </VerticalStackLayout>
+                    </Frame>
+
+                    <!-- Notes -->
+                    <Frame BackgroundColor="#E3F2FD" CornerRadius="20" Padding="10">
+                        <VerticalStackLayout>
+                            <Label Text="My Notes" FontSize="20" FontAttributes="Bold" TextColor="#1A237E" />
+                            <Editor Text="{Binding SelectedCondition.Notes}" HeightRequest="80" />
+                            <Button Text="＋" Command="{Binding SaveNoteCommand}" HorizontalOptions="Start" WidthRequest="40" />
+                        </VerticalStackLayout>
+                    </Frame>
+                </VerticalStackLayout>
+            </ScrollView>
+
+            <!-- Right Panel - Recent Events -->
+            <Frame Grid.Column="1" BackgroundColor="#E3F7FE" CornerRadius="20" Padding="10" Margin="10,0">
+                <ScrollView>
                     <VerticalStackLayout>
-                        <Label Text="Medications" FontSize="20" FontAttributes="Bold" />
-                        <CollectionView ItemsSource="{Binding SelectedCondition.Medications}">
+                        <Label Text="Recent events" FontSize="20" FontAttributes="Bold" TextColor="Black" />
+                        <CollectionView ItemsSource="{Binding RecentHealthEvents}">
                             <CollectionView.ItemTemplate>
                                 <DataTemplate>
-                                    <Label Text="{Binding}" FontSize="16" />
+                                    <Frame BackgroundColor="White" CornerRadius="10" Padding="10" Margin="5">
+                                        <VerticalStackLayout>
+                                            <Label Text="{Binding Title}" FontSize="16" FontAttributes="Bold" />
+                                            <Label Text="{Binding StartDate, StringFormat='Start Date: {0:MM/dd/yyyy}'}" FontSize="14" />
+                                            <Label Text="{Binding Length, StringFormat='Length: {0} days'}" FontSize="14" />
+                                        </VerticalStackLayout>
+                                    </Frame>
                                 </DataTemplate>
                             </CollectionView.ItemTemplate>
                         </CollectionView>
-                        <Entry Placeholder="Enter medication" Text="{Binding NewMedication}" />
-                        <Button Text="Add Medication" Command="{Binding AddMedicationCommand}" />
                     </VerticalStackLayout>
-                </Frame>
+                </ScrollView>
+            </Frame>
+        </Grid>
 
-                <!-- Symptoms Section -->
-                <Frame BackgroundColor="#E3F2FD" Padding="10">
-                    <VerticalStackLayout>
-                        <Label Text="Symptoms" FontSize="20" FontAttributes="Bold" />
-                        <CollectionView ItemsSource="{Binding SelectedCondition.Symptoms}">
-                            <CollectionView.ItemTemplate>
-                                <DataTemplate>
-                                    <Label Text="{Binding}" FontSize="16" />
-                                </DataTemplate>
-                            </CollectionView.ItemTemplate>
-                        </CollectionView>
-                        <Entry Placeholder="Enter symptom" Text="{Binding NewSymptom}" />
-                        <Button Text="Add Symptom" Command="{Binding AddSymptomCommand}" />
-                    </VerticalStackLayout>
-                </Frame>
-
-                <!-- Treatments Section -->
-                <Frame BackgroundColor="#E3F2FD" Padding="10">
-                    <VerticalStackLayout>
-                        <Label Text="Treatments" FontSize="20" FontAttributes="Bold" />
-                        <CollectionView ItemsSource="{Binding SelectedCondition.Treatments}">
-                            <CollectionView.ItemTemplate>
-                                <DataTemplate>
-                                    <Label Text="{Binding}" FontSize="16" />
-                                </DataTemplate>
-                            </CollectionView.ItemTemplate>
-                        </CollectionView>
-                        <Entry Placeholder="Enter treatment" Text="{Binding NewTreatment}" />
-                        <Button Text="Add Treatment" Command="{Binding AddTreatmentCommand}" />
-                    </VerticalStackLayout>
-                </Frame>
-
-                <!-- Notes Section -->
-                <Frame BackgroundColor="#E3F2FD" Padding="10">
-                    <VerticalStackLayout>
-                        <Label Text="My Notes" FontSize="20" FontAttributes="Bold" />
-                        <Editor Text="{Binding SelectedCondition.Notes}" HeightRequest="100" />
-                        <Button Text="Save Note" Command="{Binding SaveNoteCommand}" />
-                    </VerticalStackLayout>
-                </Frame>
-
-            </VerticalStackLayout>
-        </ScrollView>
+        <!-- Archive Button -->
+        <Button Text="Archive this condition"
+                BackgroundColor="#E0E0E0"
+                TextColor="Black"
+                HorizontalOptions="End"
+                Margin="0,20"
+                Command="{Binding ArchiveConditionCommand}" />
     </VerticalStackLayout>
 </ContentPage>

@@ -1,6 +1,8 @@
 ﻿using Microsoft.Maui;
 using Microsoft.Maui.Hosting;
-
+using Microsoft.Maui.Controls.Hosting;
+using medi1.Data;
+using medi1.Services;
 
 namespace medi1
 {
@@ -11,12 +13,13 @@ namespace medi1
             var builder = MauiApp.CreateBuilder();
             builder
                 .UseMauiApp<App>()
-
                 .ConfigureFonts(fonts =>
                 {
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
                     fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
                 });
+
+            builder.Services.AddSingleton<UserSession>(); // Registers UserSession class
 
             return builder.Build();
         }
