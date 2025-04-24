@@ -6,15 +6,17 @@ namespace medi1.SplashPageComponents
     public class CalendarViewModel
     {
         public ObservableCollection<DayModel> DaysInMonth { get; set; } = new();
-        public string CurrentMonth { get; set; } = string.Empty; // current month not yet retrieved, so set as empty
-        public string FullDateToday { get; set; } = string.Empty; // Full date string for today's date
+
+        public string CurrentMonth { get; set; } = string.Empty;
+        
+        public string FullDateToday { get; set; } = string.Empty;
 
         public CalendarViewModel()
         {
             LoadCalendar(DateTime.Now);
         }
 
-        private void LoadCalendar(DateTime date)
+        public void LoadCalendar(DateTime date)
         {
             CurrentMonth = date.ToString("MMMM yyyy");
             DaysInMonth.Clear();
@@ -31,7 +33,6 @@ namespace medi1.SplashPageComponents
                 });
             }
 
-            // Format and set the full date for today
             FullDateToday = DateTime.Today.ToString("dd'th' MMMM yyyy");
         }
     }
@@ -43,4 +44,3 @@ namespace medi1.SplashPageComponents
         public bool IsToday { get; set; }
     }
 }
-

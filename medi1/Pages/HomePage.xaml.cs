@@ -1,126 +1,214 @@
+using medi1.Data;
+using medi1.Data.Models;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Maui.Controls;
-using medi1.SplashPageComponents;
+using Microsoft.Maui.Graphics;
+using System;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using medi1.Services;
 using System.Diagnostics; //Import used login data
 
-namespace medi1.Pages  
+namespace medi1.Pages
 {
-    public partial class HomePage : ContentPage
+    public partial class HomePage : ContentPage, INotifyPropertyChanged
     {
+        // EF Core context for reading stored conditions
+        private readonly MedicalDbContext _dbContext = new MedicalDbContext();
+
+        // Calendar data with notification on change
+        private ObservableCollection<DayItem> _daysInMonth = new();
+        public ObservableCollection<DayItem> DaysInMonth
+        {
+            get => _daysInMonth;
+            set { _daysInMonth = value; OnPropertyChanged(); }
+        }
+
+        private DateTime _displayDate;
+        private string _currentMonth;
+        public string CurrentMonth
+        {
+            get => _currentMonth;
+            set { _currentMonth = value; OnPropertyChanged(); }
+        }
+
+        public string FullDateToday { get; set; }
+
+        // Conditions list with notification on change
+        private ObservableCollection<ConditionViewModel> _conditions = new();
+        public ObservableCollection<ConditionViewModel> Conditions
+        {
+            get => _conditions;
+            set { _conditions = value; OnPropertyChanged(); }
+        }
+
+        // For editing tasks
+        private Label _editingTaskLabel;
+
         public HomePage()
         {
             InitializeComponent();
-            BindingContext = new CalendarViewModel();
-            Debug.WriteLine((UserSession.Instance.Id,UserSession.Instance.UserName,UserSession.Instance.Password)); // Check for data
+            BindingContext = this;
+
+            // Initialize calendar
+            _displayDate  = DateTime.Now.Date;
+            FullDateToday = _displayDate.ToString("MMMM dd, yyyy");
+            LoadMonth(_displayDate);
+
+            // Subscribe to new conditions from AddEntryPage
+            MessagingCenter.Subscribe<AddEntryPage, ConditionViewModel>(
+                this,
+                "ConditionAdded",
+                (sender, vm) => Conditions.Add(vm)
+            );
+
+            // Subscribe to new conditions from ConditionsPage (if used)
+            MessagingCenter.Subscribe<ConditionsPage.ConditionsPage, Data.Models.Condition>(
+                this,
+                "ConditionAdded",
+                (sender, entity) => Conditions.Add(MapToVm(entity))
+            );
         }
-
-//----------------------- ADDING ENTRIES: LAUNCHES ADD ENTRY PAGE -------------------------//
-
         private async void AddNewEntry(object sender, EventArgs e)
         {
             await Navigation.PushModalAsync(new AddEntryPage());
         }
-
-
-//--------------------- TASK MANAGEMENT ---------------------------//
-
-        private void OnAddTaskClicked(object sender, EventArgs e)
+        protected override async void OnAppearing()
         {
-            //Show new task window
-            AddTaskPopup.IsVisible = true;
+            base.OnAppearing();
+            await LoadConditionsFromDbAsync();
         }
 
-        private Label? _editingTaskLabel;
+        private async Task LoadConditionsFromDbAsync()
+        {
+            var list = await _dbContext.Conditions.ToListAsync();
+            Conditions.Clear();
+            foreach (var e in list)
+                Conditions.Add(MapToVm(e));
+        }
+
+        private ConditionViewModel MapToVm(Data.Models.Condition e) =>
+            new ConditionViewModel
+            {
+                Name        = e.Name,
+                Description = e.Description,
+                Color       = Colors.LightBlue,
+                IsSelected  = false
+            };
+
+        // --- Calendar logic ---
+        private void LoadMonth(DateTime date)
+        {
+            var items = new ObservableCollection<DayItem>();
+            int offset = (int)new DateTime(date.Year, date.Month, 1).DayOfWeek;
+            for (int i = 0; i < offset; i++)
+                items.Add(new DayItem { DayNumber = 0, IsToday = false });
+
+            int daysInMonth = DateTime.DaysInMonth(date.Year, date.Month);
+            for (int i = 1; i <= daysInMonth; i++)
+            {
+                items.Add(new DayItem
+                {
+                    DayNumber = i,
+                    IsToday   = date.Year == DateTime.Now.Year
+                            && date.Month == DateTime.Now.Month
+                            && i == DateTime.Now.Day
+                });
+            }
+
+            DaysInMonth  = items;
+            CurrentMonth = date.ToString("MMMM yyyy");
+        }
+
+        private void OnPrevMonthClicked(object sender, EventArgs e)
+        {
+            _displayDate = _displayDate.AddMonths(-1);
+            LoadMonth(_displayDate);
+        }
+
+        private void OnNextMonthClicked(object sender, EventArgs e)
+        {
+            _displayDate = _displayDate.AddMonths(1);
+            LoadMonth(_displayDate);
+        }
+
+        // --- Task UI logic ---
+        private void OnAddTaskClicked(object sender, EventArgs e)
+            => AddTaskPopup.IsVisible = true;
 
         private void OnConfirmTaskClicked(object sender, EventArgs e)
         {
-            string taskText = TaskInput.Text?.Trim();
-            
-            if (!string.IsNullOrEmpty(taskText))
+            var taskText = TaskInput.Text?.Trim();
+            if (string.IsNullOrEmpty(taskText))
+                return;
+
+            var taskLayout = new StackLayout
             {
-                // Create a horizontal StackLayout for the task item
-                var taskItemLayout = new StackLayout
-                {
-                    Orientation = StackOrientation.Horizontal,
-                    Spacing = 10
-                };
+                Orientation = StackOrientation.Horizontal,
+                Spacing     = 10
+            };
 
-                // Checkbox for task completion
-                var taskCheckBox = new CheckBox();
-                var taskLabel = new Label
-                {
-                    Text = taskText,
-                    HorizontalOptions = LayoutOptions.StartAndExpand,
-                    VerticalOptions = LayoutOptions.Center
-                };
+            var checkBox = new CheckBox();
+            var label    = new Label
+            {
+                Text            = taskText,
+                VerticalOptions = LayoutOptions.Center
+            };
+            checkBox.CheckedChanged += (s, a) =>
+                label.TextDecorations = checkBox.IsChecked
+                    ? TextDecorations.Strikethrough
+                    : TextDecorations.None;
 
-                // When checkbox is checked, strike through text
-                taskCheckBox.CheckedChanged += (s, args) =>
-                {
-                    taskLabel.TextDecorations = taskCheckBox.IsChecked ? TextDecorations.Strikethrough : TextDecorations.None;
-                };
+            var editBtn = new Button
+            {
+                Text            = "✏️",
+                FontSize        = 12,
+                BackgroundColor = Colors.Transparent,
+                WidthRequest    = 40
+            };
+            editBtn.Clicked += (s, a) =>
+            {
+                _editingTaskLabel          = label;
+                EditTaskInput.Text         = label.Text;
+                EditTaskPopup.IsVisible    = true;
+            };
 
-                // Edit button
-                var editButton = new Button
-                {
-                    Text = "✏️",
-                    FontSize = 12,
-                    BackgroundColor = Colors.Transparent,
-                    WidthRequest = 40
-                };
-                editButton.Clicked += (s, args) =>
-                {
-                    _editingTaskLabel = taskLabel;  // Store reference to the label being edited
-                    EditTaskInput.Text = taskLabel.Text;
-                    EditTaskPopup.IsVisible = true;  // Show edit popup
-                };
+            var deleteBtn = new Button
+            {
+                Text            = "🗑️",
+                FontSize        = 12,
+                BackgroundColor = Colors.Transparent,
+                WidthRequest    = 40
+            };
+            deleteBtn.Clicked += (s, a) =>
+                TaskListContainer.Children.Remove(taskLayout);
 
-                // Delete button
-                var deleteButton = new Button
-                {
-                    Text = "🗑️",
-                    FontSize = 12,
-                    BackgroundColor = Colors.Transparent,
-                    WidthRequest = 40
-                };
-                deleteButton.Clicked += (s, args) =>
-                {
-                    TaskListContainer.Children.Remove(taskItemLayout);
-                };
+            taskLayout.Children.Add(checkBox);
+            taskLayout.Children.Add(label);
+            taskLayout.Children.Add(editBtn);
+            taskLayout.Children.Add(deleteBtn);
 
-                // Add elements to the task item layout
-                taskItemLayout.Children.Add(taskCheckBox);
-                taskItemLayout.Children.Add(taskLabel);
-                taskItemLayout.Children.Add(editButton);
-                taskItemLayout.Children.Add(deleteButton);
+            TaskListContainer.Children.Add(taskLayout);
 
-                // Add the task to the TaskListContainer
-                TaskListContainer.Children.Add(taskItemLayout);
-
-                    // Close the pop-up 
-                AddTaskPopup.IsVisible = false;
-
-                //clear the input field
-                TaskInput.Text = string.Empty;
-            }
-
+            AddTaskPopup.IsVisible = false;
+            TaskInput.Text        = string.Empty;
         }
+
+        
         private void OnCancelTaskClicked(object sender, EventArgs e)
         {
-            // Close the pop-up without doing anything
             AddTaskPopup.IsVisible = false;
-
-            //clear the input field
-            TaskInput.Text = string.Empty;
+            TaskInput.Text        = string.Empty;
         }
 
         //Edit Confirm
         private void TaskEditConfirmClicked(object sender, EventArgs e)
         {
             if (_editingTaskLabel != null)
-            {
                 _editingTaskLabel.Text = EditTaskInput.Text;
-            }
+
             EditTaskPopup.IsVisible = false;
         }
 
@@ -130,6 +218,49 @@ namespace medi1.Pages
             EditTaskPopup.IsVisible = false;
         }
 
+        // --- Navigation ---
+        private async void GoToConditions(object sender, EventArgs e)
+            => await Navigation.PushAsync(new ConditionsPage.ConditionsPage());
 
+        private async void GoToAddEntry(object sender, EventArgs e)
+            => await Navigation.PushAsync(new AddEntryPage());
+
+        private async void GoToReports(object sender, EventArgs e)
+            => await Navigation.PushAsync(new ReportsPage());
+
+        // --- Condition tap handler ---
+        private async void OnConditionTapped(object sender, EventArgs e)
+        {
+            if (sender is StackLayout sl && sl.BindingContext is ConditionViewModel cvm)
+            {
+                await DisplayAlert(
+                    "Condition Details",
+                    $"Name: {cvm.Name}\nDescription: {cvm.Description}",
+                    "OK"
+                );
+            }
+        }
+
+        #region INotifyPropertyChanged
+        public new event PropertyChangedEventHandler PropertyChanged;
+        protected void OnPropertyChanged([CallerMemberName] string propName = null) =>
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName));
+        #endregion
+    }
+
+    // View‐model for binding into HomePage
+    public class ConditionViewModel
+    {
+        public string Name        { get; set; }
+        public string Description { get; set; }
+        public bool   IsSelected  { get; set; }
+        public Color  Color       { get; set; }
+    }
+
+    // Day item for the calendar grid
+    public class DayItem
+    {
+        public int  DayNumber { get; set; }
+        public bool IsToday   { get; set; }
     }
 }
