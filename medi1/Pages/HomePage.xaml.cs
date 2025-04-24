@@ -130,7 +130,7 @@ namespace medi1.Pages
             {
                 Console.WriteLine("Navigation error: " + ex.Message);
             }
-            Debug.WriteLine(UserSession.Instance.Id); // Check for data
+            Debug.WriteLine((UserSession.Instance.Id,UserSession.Instance.UserName,UserSession.Instance.Password)); // Check for data
         }
 
         private async void GoToAddEntry(object sender, EventArgs e)

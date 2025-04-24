@@ -26,10 +26,10 @@ namespace medi1.Pages
             string inputuser = UsernameEntry.Text;
             string inputpassword = PasswordEntry.Text;
 
-            //Resets Currently displayed errors
+            //Clears errors
+            GeneralError.IsVisible = false;
             UsernameError.IsVisible = false;
             PasswordError.IsVisible = false;
-            GeneralError.IsVisible = false;
             
             using (var _dbContext = new MedicalDbContext("Users"))
             {
@@ -43,10 +43,12 @@ namespace medi1.Pages
             
                 else {
 
+                    bool userfound = false; //used to check if user is in database
                     foreach (var user in userlist) //Goes through each user
                     {
                         if (user.UserName == inputuser) // Checks users password if a user is found
                         {
+                            userfound = true;
                             if (user.Password == inputpassword) {
                                 UserSession.Instance.LoginUser(user); //Logs in user if password is correct
                                 Application.Current.MainPage = new AppShell(); //Navigates to the mainpage
@@ -55,9 +57,9 @@ namespace medi1.Pages
                                 PasswordError.IsVisible = true; //Displays password error if it doesn't match the username given
                             }
                         }
-                        else {
-                            UsernameError.IsVisible = true; //Displays an error if after checking each user no match is found
-                        }
+                    }
+                    if (!userfound) {
+                        UsernameError.IsVisible = true; //Displays an error if after checking each user no match is found
                     }
                 }
             }

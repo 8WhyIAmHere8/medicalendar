@@ -63,7 +63,7 @@ namespace medi1.Services
             Email = null;
             DateOfBirth = null;
             Conditions = null;
-            Activities = null;
+            Activities = null; //change this later
             Symptoms = null;            
         }
     }
