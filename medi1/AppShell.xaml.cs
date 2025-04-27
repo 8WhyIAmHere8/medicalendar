@@ -1,4 +1,5 @@
 ﻿using medi1.Pages;
+using medi1.Pages.ConditionsPage;
 using Microsoft.Maui.Controls;
 
 namespace medi1
@@ -9,6 +10,7 @@ namespace medi1
         {
             InitializeComponent();
             Routing.RegisterRoute(nameof(LoginPage), typeof(LoginPage));
+            Routing.RegisterRoute(nameof(ArchivedConditionsPage), typeof(Pages.ConditionsPage.ArchivedConditionsPage));
 
             this.FlyoutBehavior = FlyoutBehavior.Disabled;
 

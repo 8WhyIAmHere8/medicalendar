@@ -2,6 +2,7 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="medi1.Pages.ConditionsPage.ConditionsPage"
+             xmlns:microcharts="clr-namespace:Microcharts.Maui;assembly=Microcharts.Maui"
              x:Name="MainPageRef"
              Title="Conditions Tracker">
 
@@ -17,54 +18,54 @@
         </ResourceDictionary>
     </ContentPage.Resources>
 
-    <VerticalStackLayout Padding="10" Spacing="10">
+    <ScrollView>
+        <VerticalStackLayout Padding="10" Spacing="10">
 
-        <!-- Tabs Header Strip -->
-        <HorizontalStackLayout Spacing="10" VerticalOptions="Center">
-            <ScrollView Orientation="Horizontal" HeightRequest="50">
-                <HorizontalStackLayout Spacing="10">
-                    <CollectionView ItemsSource="{Binding Conditions}"
-                                    ItemsLayout="HorizontalList"
-                                    SelectionMode="Single"
-                                    SelectedItem="{Binding SelectedCondition}">
-                        <CollectionView.ItemTemplate>
-                            <DataTemplate>
-                                <Frame Padding="10,5"
-                                       CornerRadius="20"
-                                       BackgroundColor="{Binding ., Converter={StaticResource TabHighlightConverter}, ConverterParameter={Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.SelectedCondition}}">
-                                    <Label Text="{Binding Name}" FontSize="16" />
-                                </Frame>
-                            </DataTemplate>
-                        </CollectionView.ItemTemplate>
-                    </CollectionView>
+            <!-- Tabs Header Strip -->
+            <HorizontalStackLayout Spacing="10" VerticalOptions="Center">
+                <ScrollView Orientation="Horizontal" HeightRequest="50">
+                    <HorizontalStackLayout Spacing="10">
+                        <CollectionView ItemsSource="{Binding Conditions}"
+                                        ItemsLayout="HorizontalList"
+                                        SelectionMode="Single"
+                                        SelectedItem="{Binding SelectedCondition}">
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate>
+                                    <Frame Padding="10,5"
+                                           CornerRadius="20"
+                                           BackgroundColor="{Binding ., Converter={StaticResource TabHighlightConverter}, ConverterParameter={Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.SelectedCondition}}">
+                                        <Label Text="{Binding Name}" FontSize="16" />
+                                    </Frame>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
 
-                    <!-- Add Tab -->
-                    <Frame Style="{StaticResource TabButtonStyle}" BackgroundColor="#BBDEFB">
-                        <Label Text="＋" FontSize="20">
-                            <Label.GestureRecognizers>
-                                <TapGestureRecognizer Command="{Binding AddConditionCommand}" />
-                            </Label.GestureRecognizers>
-                        </Label>
-                    </Frame>
-                </HorizontalStackLayout>
-            </ScrollView>
+                        <!-- Add Tab -->
+                        <Frame Style="{StaticResource TabButtonStyle}" BackgroundColor="#BBDEFB">
+                            <Label Text="＋" FontSize="20">
+                                <Label.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding AddConditionCommand}" />
+                                </Label.GestureRecognizers>
+                            </Label>
+                        </Frame>
+                    </HorizontalStackLayout>
+                </ScrollView>
 
-            <!-- Archived Conditions Button -->
-            <Button Text="Archived Conditions"
-                    BackgroundColor="#69F0AE"
-                    TextColor="Black"
-                    CornerRadius="20"
-                    Margin="10,0"
-                    VerticalOptions="Center"
-                    Command="{Binding OpenArchivedCommand}" />
-        </HorizontalStackLayout>
+                <!-- Archived Conditions Button -->
+                <Button Text="Archived Conditions"
+                        BackgroundColor="#69F0AE"
+                        TextColor="Black"
+                        CornerRadius="20"
+                        Margin="10,0"
+                        VerticalOptions="Center"
+                        Command="{Binding OpenArchivedCommand}" />
+            </HorizontalStackLayout>
 
-        <!-- Main Content Split View -->
-        <Grid ColumnDefinitions="*,2*" RowDefinitions="Auto">
+            <!-- Main Content Split View -->
+            <Grid ColumnDefinitions="*,2*" RowDefinitions="Auto">
 
-            <!-- Left Panel -->
-            <ScrollView Grid.Column="0">
-                <VerticalStackLayout Spacing="15">
+                <!-- Left Panel -->
+                <VerticalStackLayout Grid.Column="0" Spacing="15">
 
                     <!-- Medications -->
                     <Frame BackgroundColor="#E3F2FD" CornerRadius="20" Padding="10">
@@ -81,6 +82,21 @@
                             <Button Text="＋" Command="{Binding AddMedicationCommand}" HorizontalOptions="Start" WidthRequest="40" />
                         </VerticalStackLayout>
                     </Frame>
+                    <!-- Treatments -->
+                    <Frame BackgroundColor="#E3F2FD" CornerRadius="20" Padding="10">
+                        <VerticalStackLayout>
+                            <Label Text="Treatments" FontSize="20" FontAttributes="Bold" TextColor="#1A237E" />
+                            <CollectionView ItemsSource="{Binding SelectedCondition.Treatments}">
+                                <CollectionView.ItemTemplate>
+                                    <DataTemplate>
+                                        <Label Text="{Binding}" FontSize="16" />
+                                    </DataTemplate>
+                                </CollectionView.ItemTemplate>
+                            </CollectionView>
+                            <Entry Placeholder="Enter treatment" Text="{Binding NewTreatment}" />
+                            <Button Text="＋" Command="{Binding AddTreatmentCommand}" HorizontalOptions="Start" WidthRequest="40" />
+                        </VerticalStackLayout>
+                    </Frame>
 
                     <!-- Symptoms -->
                     <Frame BackgroundColor="#E3F2FD" CornerRadius="20" Padding="10">
@@ -93,7 +109,23 @@
                                     </DataTemplate>
                                 </CollectionView.ItemTemplate>
                             </CollectionView>
+                            <Entry Placeholder="Enter symptoms" Text="{Binding NewSymptom}" />
                             <Button Text="＋" Command="{Binding AddSymptomCommand}" HorizontalOptions="Start" WidthRequest="40" />
+                        </VerticalStackLayout>
+                    </Frame>
+                    <!-- Triggesrs -->
+                    <Frame BackgroundColor="#E3F2FD" CornerRadius="20" Padding="10">
+                        <VerticalStackLayout>
+                            <Label Text="Triggers" FontSize="20" FontAttributes="Bold" TextColor="#1A237E" />
+                            <CollectionView ItemsSource="{Binding SelectedCondition.Triggers}">
+                                <CollectionView.ItemTemplate>
+                                    <DataTemplate>
+                                        <Label Text="{Binding}" FontSize="16" />
+                                    </DataTemplate>
+                                </CollectionView.ItemTemplate>
+                            </CollectionView>
+                            <Entry Placeholder="Enter triggers" Text="{Binding NewTrigger}" />
+                            <Button Text="＋" Command="{Binding AddTriggerCommand}" HorizontalOptions="Start" WidthRequest="40" />
                         </VerticalStackLayout>
                     </Frame>
 
@@ -106,12 +138,18 @@
                         </VerticalStackLayout>
                     </Frame>
                 </VerticalStackLayout>
-            </ScrollView>
 
-            <!-- Right Panel - Recent Events -->
-            <Frame Grid.Column="1" BackgroundColor="#E3F7FE" CornerRadius="20" Padding="10" Margin="10,0">
-                <ScrollView>
+                <!-- Right Panel - Recent Events -->
+                <Frame Grid.Column="1" BackgroundColor="#E3F7FE" CornerRadius="20" Padding="10" Margin="10,0">
                     <VerticalStackLayout>
+                        <VerticalStackLayout>
+    <Label Text="Recent Health Events" FontSize="20" FontAttributes="Bold" />
+    <microcharts:ChartView 
+        Chart="{Binding HealthEventsChart}" 
+        HeightRequest="200" 
+        WidthRequest="350"
+        VerticalOptions="Center" />
+</VerticalStackLayout>
                         <Label Text="Recent events" FontSize="20" FontAttributes="Bold" TextColor="Black" />
                         <CollectionView ItemsSource="{Binding RecentHealthEvents}">
                             <CollectionView.ItemTemplate>
@@ -126,17 +164,22 @@
                                 </DataTemplate>
                             </CollectionView.ItemTemplate>
                         </CollectionView>
+                        <Frame>
+                            <StackLayout>
+                                <Button Text="+ Log an Entry" Clicked="AddNewEntry" />
+                            </StackLayout>
+                        </Frame>
                     </VerticalStackLayout>
-                </ScrollView>
-            </Frame>
-        </Grid>
+                </Frame>
+            </Grid>
 
-        <!-- Archive Button -->
-        <Button Text="Archive this condition"
-                BackgroundColor="#E0E0E0"
-                TextColor="Black"
-                HorizontalOptions="End"
-                Margin="0,20"
-                Command="{Binding ArchiveConditionCommand}" />
-    </VerticalStackLayout>
+            <!-- Archive Button -->
+            <Button Text="Archive this condition"
+                    BackgroundColor="#E0E0E0"
+                    TextColor="Black"
+                    HorizontalOptions="End"
+                    Margin="0,20"
+                    Command="{Binding ArchiveConditionCommand}" />
+        </VerticalStackLayout>
+    </ScrollView>
 </ContentPage>

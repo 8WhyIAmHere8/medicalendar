@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="medi1.Pages.ConditionsPage.ArchivedConditionsPage"
+             BackgroundColor="#80000000"
+             Padding="30"
+           >
+
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <Style x:Key="TabButtonStyle" TargetType="Frame">
+                <Setter Property="Padding" Value="10,5" />
+                <Setter Property="Margin" Value="5" />
+                <Setter Property="CornerRadius" Value="20" />
+                <Setter Property="HasShadow" Value="False" />
+                <Setter Property="BackgroundColor" Value="#BBDEFB" />
+            </Style>
+        </ResourceDictionary>
+    </ContentPage.Resources>
+
+    <VerticalStackLayout Padding="10" Spacing="10">
+        <Frame Grid.Column="1" BackgroundColor="#E3F7FE" CornerRadius="20" Padding="10" Margin="10,0">
+                <ScrollView>
+                    <VerticalStackLayout>
+                        <Label Text="Archived Conditions" FontSize="20" FontAttributes="Bold" TextColor="Black" />
+                        <CollectionView ItemsSource="{Binding ArchivedConditions}" SelectionMode="Single">
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate>
+                                    <Frame BackgroundColor="White" CornerRadius="10" Padding="10" Margin="5">
+                                        <VerticalStackLayout>
+                                            <Label Text="{Binding Name}" FontSize="16" FontAttributes="Bold" />
+                                            <Label Text="{Binding Description}" FontSize="14" />
+                                            <Label Text="{Binding Symptoms}" FontSize="14" />
+
+                                        </VerticalStackLayout>
+                                    </Frame>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+                    </VerticalStackLayout>
+                </ScrollView>
+                    </Frame>
+    </VerticalStackLayout>
+</ContentPage>

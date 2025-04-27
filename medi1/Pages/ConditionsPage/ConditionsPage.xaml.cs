@@ -7,6 +7,9 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.Mvvm.Messaging.Messages;
+using Microcharts;
+using SkiaSharp;
+using System.Linq;
 
 namespace medi1.Pages.ConditionsPage
 {
@@ -52,7 +55,14 @@ namespace medi1.Pages.ConditionsPage
         public ObservableCollection<string> HETitles { get; set; } = new ObservableCollection<string>();
 
         public string NewSymptom { get; set; }
+
         public string NewTreatment { get; set; }
+        public string NewTrigger { get; set; }
+        public string NewNote { get; set; }
+
+        private Microcharts.Maui.ChartView HealthEventsChartView;
+        
+        
 
         private string? _newMedication;
         public string NewMedication
@@ -69,28 +79,35 @@ namespace medi1.Pages.ConditionsPage
         }
 
         public Command AddConditionCommand { get; }
-        public Command SaveNoteCommand { get; }
+        public Command UpdateNoteCommand { get; }
         public Command AddMedicationCommand { get; set; }
         public Command AddSymptomCommand { get; }
+
+        public Command AddTriggerCommand { get; set; }
         public Command AddTreatmentCommand { get; }
         public Command TestCommand { get; set; }
+        public Command OpenArchivedCommand { get; }
+        public Command ArchiveConditionCommand { get; set; }
 
         public ConditionsPage()
         {
             InitializeComponent();
 
-            SaveNoteCommand = new Command(async () => await SaveCondition());
+            UpdateNoteCommand = new Command(async () => await UpdateNote());
             AddMedicationCommand = new Command(async () => await AddMedication());
             AddSymptomCommand = new Command(async () => await AddSymptom());
-            AddTreatmentCommand = new Command(() => AddTreatment());
+            AddTreatmentCommand = new Command(async() => await AddTreatment());
             TestCommand = new Command(async () => await ButtonTest());
             AddConditionCommand = new Command(() => OnAddConditionTapped());
-
+            AddTriggerCommand = new Command(async () => await AddTrigger());
+            OpenArchivedCommand = new Command(async () => await OpenArchivedConditionsPage());
+            ArchiveConditionCommand = new Command(async () => await OnArchiveCondition());
             BindingContext = this;
 
             var dbContext = new MedicalDbContext();
             TestDatabaseConnection(dbContext);
             LoadConditions();
+            UpdateHealthEventsChart();
 
             WeakReferenceMessenger.Default.Register<AddConditionMessage>(this, (recipient, message) =>
             {
@@ -104,6 +121,10 @@ namespace medi1.Pages.ConditionsPage
             await Shell.Current.Navigation.PushModalAsync(new AddConditionPopup());
         }
 
+        private async void AddNewEntry(object sender, EventArgs e)
+        {
+            await Navigation.PushModalAsync(new AddEntryPage());
+        }
 
         private async Task LoadDataAsync(string conditionId)
         {
@@ -146,11 +167,13 @@ namespace medi1.Pages.ConditionsPage
         {
             try
             {
-                var conditions = await _dbContext.Conditions.ToListAsync();
+                var conditions = await _dbContext.Conditions
+                    .Where(c => !c.Archived) // Filter out archived conditions
+                    .ToListAsync();
 
                 if (conditions == null || conditions.Count == 0)
                 {
-                    await DisplayAlert("Info", "No conditions found in the database.", "OK");
+                    await DisplayAlert("Info", "No active conditions found in the database.", "OK");
                     return;
                 }
 
@@ -187,6 +210,28 @@ namespace medi1.Pages.ConditionsPage
                 }
             }
         }
+        private void UpdateHealthEventsChart()
+        {
+            // Example: assuming you have SelectedCondition from your BindingContext
+            if (SelectedCondition != null)
+            {
+                var entries = HealthEvents?.Select(he => new Microcharts.ChartEntry((float)(he.EndDate - he.StartDate).TotalHours)
+                {
+                    Label = he.Title,
+                    ValueLabel = ((int)(he.EndDate - he.StartDate).TotalHours).ToString() + "h",
+                    Color = SKColor.Parse("#4CAF50") // Green color
+                }).ToList();
+
+                if (entries != null && entries.Any())
+                {
+                    HealthEventsChartView.Chart = new BarChart
+                    {
+                        Entries = entries,
+                        LabelTextSize = 24
+                    };
+                }
+            }
+        }
 
         private void UpdateCollections()
         {
@@ -215,7 +260,28 @@ namespace medi1.Pages.ConditionsPage
                 }
             }
         }
+         private async Task OnArchiveCondition()
+        {
+            if (SelectedCondition != null)
+            {
+                SelectedCondition.Archived = true;
+                try
+                {
+                    _dbContext.Conditions.Update(SelectedCondition);
+                    await _dbContext.SaveChangesAsync();
+                    await DisplayAlert("Success", "Condition archived successfully!", "OK");
+                    Conditions.Remove(SelectedCondition);
+                    SelectedCondition = null;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Failed to archive condition: {ex.Message}");
+                    await DisplayAlert("Error", $"Failed to archive condition: {ex.Message}", "OK");
+                }
+            }
+        }
 
+// Adding condition attributes 
         private async Task AddMedication()
         {
             await DisplayAlert("Info", $"Condition is {(SelectedCondition != null ? SelectedCondition.Name : "not selected")}", "OK");
@@ -249,21 +315,124 @@ namespace medi1.Pages.ConditionsPage
 
         private async Task<bool> AddSymptom()
         {
-            Console.WriteLine("AddSymptom method called");
-            await DisplayAlert("Info", "Clicked", "OK");
-            return true;
+            if (SelectedCondition != null && !string.IsNullOrWhiteSpace(NewSymptom))
+            {
+                if (SelectedCondition.Symptoms == null)
+                {
+                    SelectedCondition.Symptoms = new List<string>();
+                }
+
+                SelectedCondition.Symptoms.Add(NewSymptom);
+                Symptoms.Add(NewSymptom);
+
+                try
+                {
+                    _dbContext.Conditions.Update(SelectedCondition);
+                    await _dbContext.SaveChangesAsync();
+                    await DisplayAlert("Success", "Symptom added successfully!", "OK");
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    await DisplayAlert("Error", $"Failed to update condition: {ex.Message}", "OK");
+                    return false;
+                }
+            }
+            else
+            {
+                await DisplayAlert("Error", "Please select a condition and enter a valid symptom.", "OK");
+                return false;
+            }
         }
 
-        private void AddTreatment()
+       private async Task<bool> AddTreatment()
         {
             if (SelectedCondition != null && !string.IsNullOrWhiteSpace(NewTreatment))
             {
+                if (SelectedCondition.Treatments == null)
+                {
+                    SelectedCondition.Treatments = new List<string>();
+                }
+
                 SelectedCondition.Treatments.Add(NewTreatment);
                 Treatments.Add(NewTreatment);
-                NewTreatment = string.Empty;
-                OnPropertyChanged(nameof(NewTreatment));
+                try
+                {
+                    _dbContext.Conditions.Update(SelectedCondition);
+                    await _dbContext.SaveChangesAsync();
+                    await DisplayAlert("Success", "Treatment added successfully!", "OK");
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    await DisplayAlert("Error", $"Failed to update condition: {ex.Message}", "OK");
+                    return false;
+                }
+            }
+            else
+            {
+                await DisplayAlert("Error", "Please select a condition and enter a valid treatment.", "OK");
+                return false;
             }
         }
+
+        private async Task<bool> AddTrigger()
+        {
+            if (SelectedCondition != null && !string.IsNullOrWhiteSpace(NewTreatment))
+            {
+                if (SelectedCondition.Triggers == null)
+                {
+                    SelectedCondition.Triggers = new List<string>();
+                }
+
+                SelectedCondition.Triggers.Add(NewTreatment);
+                Treatments.Add(NewTreatment);
+                try
+                {
+                    _dbContext.Conditions.Update(SelectedCondition);
+                    await _dbContext.SaveChangesAsync();
+                    await DisplayAlert("Success", "Trigger added successfully!", "OK");
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    await DisplayAlert("Error", $"Failed to update condition: {ex.Message}", "OK");
+                    return false;
+                }
+            }
+            else
+            {
+                await DisplayAlert("Error", "Please select a condition and enter a valid trigger.", "OK");
+                return false;
+            }
+        }
+
+        private async Task<bool> UpdateNote()
+        {
+            if (SelectedCondition != null && !string.IsNullOrWhiteSpace(NewNote))
+            {
+                SelectedCondition.Notes = NewNote;
+                try
+                {
+                    _dbContext.Conditions.Update(SelectedCondition);
+                    await _dbContext.SaveChangesAsync();
+                    await DisplayAlert("Success", "Note saved successfully!", "OK");
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    await DisplayAlert("Error", $"Failed to update condition: {ex.Message}", "OK");
+                    return false;
+                }
+            }
+            else
+            {
+                await DisplayAlert("Error", "Please select a condition and enter a valid note.", "OK");
+                return false;
+            }
+        }
+
+        // end of addign stuff to condition
 
         private async Task LoadHealthEvents(string conditionId)
         {
@@ -310,6 +479,11 @@ namespace medi1.Pages.ConditionsPage
                     await DisplayAlert("Error", $"Failed to load recent health events: {ex.Message}", "OK");
                 }
             }
+        }
+       
+        private async Task OpenArchivedConditionsPage()
+        {
+            await Shell.Current.GoToAsync(nameof(ArchivedConditionsPage));
         }
     }
 }
