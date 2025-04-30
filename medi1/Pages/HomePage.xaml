@@ -111,12 +111,7 @@
         </CollectionView.ItemTemplate>
       </CollectionView>
 
-      <!-- Today's Date, Tasks & Events -->
-      <Frame BorderColor="Gray" Padding="20" CornerRadius="10" HasShadow="True" BackgroundColor="Transparent" Margin="0,30,0,0">
-        <StackLayout Orientation="Vertical" Spacing="10">
-          <Label Text="{Binding FullDateToday}" FontSize="24" HorizontalOptions="Center"/>
-
-          <!-- Navigation Buttons -->
+      <!-- Navigation Buttons -->
       <FlexLayout Direction="Row" JustifyContent="Center" AlignItems="Center" Padding="30">
         <Button Text="My Conditions"
                 BackgroundColor="Red"
@@ -125,41 +120,34 @@
                 WidthRequest="120"
                 HeightRequest="40"
                 Clicked="GoToConditions"
-                Margin="5,-10,0,0"/>
-        <Button Text="Add Entry"
+                Margin="5,10,0,0"/>
+        <Button Text="Log Entry"
                 BackgroundColor="LightGray"
                 TextColor="Red"
                 FontSize="14"
                 WidthRequest="120"
                 HeightRequest="40"
                 Clicked="GoToAddEntry"
-                Margin="5,-10,0,0"/>
-        <Button Text="Report"
+                Margin="5,10,0,0"/>
+        <Button Text="Reports"
                 BackgroundColor="Blue"
                 TextColor="White"
                 FontSize="14"
                 WidthRequest="120"
                 HeightRequest="40"
                 Clicked="GoToReports"
-                Margin="5,-10,0,0"/>
+                Margin="5,10,0,0"/>
       </FlexLayout>
 
-          <!-- Pane for Adding a New Entry -->
-          <Frame Margin="0,15,0,0">
-            <StackLayout>
-              <Button Text="+ Log an Entry" Clicked="AddNewEntry"/>
-            </StackLayout>
-          </Frame>
-
-          <!-- Pane for Viewing Today's Entries -->
-          <Frame>
-            <Label Text="Today's Entries" FontSize="20" HorizontalOptions="Center"/>
-          </Frame>
+      <!-- Today's Date, Tasks & Events -->
+      <Frame BorderColor="Gray" Padding="20" CornerRadius="10" HasShadow="True" BackgroundColor="Transparent" Margin="0,30,0,0">
+        <StackLayout Orientation="Vertical" Spacing="10">
+          <Label Text="{Binding FullDateToday}" FontSize="24" HorizontalOptions="Center"/>
 
           <!-- Pane for Adding New Tasks -->
-          <Frame>
+          <Frame Margin="0,-40,0,0">
             <StackLayout>
-              <Label Text="Today's Tasks" FontSize="20" HorizontalOptions="Center" Padding="20"/>
+              <Label Text="Today's Tasks" FontSize="20" HorizontalOptions="Center" Padding="20" Margin="0,-5,0,0"/>
               <Button Text="+ New Task" Clicked="OnAddTaskClicked"/>
 
               <!-- Where task items get injected -->
@@ -211,10 +199,15 @@
             </StackLayout>
           </Frame>
 
+          <!-- Pane for Viewing Today's Entries -->
+          <Frame>
+            <Label Text="Health Events" FontSize="20" HorizontalOptions="Center"/>
+          </Frame>
+
           <!-- Events Section -->
           <Frame>
             <StackLayout>
-              <Label Text="Today's Events" FontSize="20" HorizontalOptions="Center"/>
+              <Label Text="Activities" FontSize="20" HorizontalOptions="Center"/>
               <!-- (Hook up your CalendarPage events here) -->
             </StackLayout>
           </Frame>
