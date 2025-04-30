@@ -201,13 +201,13 @@
 
           <!-- Pane for Viewing Today's Entries -->
           <Frame>
-            <Label Text="Health Events" FontSize="20" HorizontalOptions="Center"/>
+            <Label Text="↓  Health Events" FontSize="20" HorizontalOptions="Center"/>
           </Frame>
 
           <!-- Events Section -->
           <Frame>
             <StackLayout>
-              <Label Text="Activities" FontSize="20" HorizontalOptions="Center"/>
+              <Label Text="↓  Activities" FontSize="20" HorizontalOptions="Center"/>
               <!-- (Hook up your CalendarPage events here) -->
             </StackLayout>
           </Frame>
