@@ -43,8 +43,6 @@ namespace medi1.Services
 
         public List<Data.Models.HealthEvent> HealthEvents { get; set; }
 
-        public List<string> Symptoms { get; set; }
-
 
         public bool IsLoggedIn => !string.IsNullOrEmpty(Id);
 
@@ -91,7 +89,6 @@ namespace medi1.Services
             ActivityLogs = ActivityLoglist;
             Conditions = Conditionlist;
             HealthEvents = HealthEventlist;
-            Symptoms = givenUser.Symptoms;
 
             Debug.WriteLine(Id);
             Debug.WriteLine(Conditions[1].Name);

@@ -132,6 +132,9 @@ namespace medi1.Pages
         {
             _displayDate = _displayDate.AddMonths(1);
             LoadMonth(_displayDate);
+            Debug.WriteLine(UserSession.Instance.Conditions[0].Symptoms[0]);
+            Debug.WriteLine(UserSession.Instance.Conditions[0].Medications[0]);
+            Debug.WriteLine(UserSession.Instance.Conditions[0].Treatments[0]);
         }
 
         // --- Task UI logic ---

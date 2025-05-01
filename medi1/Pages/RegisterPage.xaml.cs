@@ -97,7 +97,6 @@ namespace medi1.Pages
                         ActivityLogs = new List<string>(),
                         Conditions = new List<string>(),
                         HealthEvents = new List<string>(),
-                        Symptoms = new List<string>()
                     };
                     try
                     {

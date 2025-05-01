@@ -23,7 +23,5 @@ namespace medi1.Data.Models
 
         public List<string> HealthEvents { get; set; } = new List<string>();
 
-        public List<string> Symptoms { get; set; } = new List<string>();
-
     }
 }
