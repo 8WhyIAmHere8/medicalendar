@@ -191,11 +191,6 @@
             </StackLayout>
           </Frame>
 
-          <!-- Pane for Viewing Today's Entries -->
-          <Frame>
-            <Label Text="↓  Health Events" FontSize="20" HorizontalOptions="Center"/>
-          </Frame>
-
           <!-- Pane for Adding a New Entry -->
           <Frame>
             <StackLayout>
