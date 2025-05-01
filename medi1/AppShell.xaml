@@ -26,4 +26,8 @@
     <ShellContent ContentTemplate="{DataTemplate pages:SettingsPage}" Route="settings" />
   </FlyoutItem>
 
+  <FlyoutItem Title="Archived Conditions">
+    <ShellContent ContentTemplate="{DataTemplate pages:ConditionsPage.ArchivedConditionsPage}" Route="archived" />
+  </FlyoutItem>
+
 </Shell>

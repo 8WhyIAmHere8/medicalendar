@@ -19,7 +19,7 @@ namespace medi1
                     fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
                 });
 
-            builder.Services.AddSingleton<UserSession>(); // Registers UserSession class
+            builder.Services.AddSingleton<UserSession>();
 
             return builder.Build();
         }

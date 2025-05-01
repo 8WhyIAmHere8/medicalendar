@@ -14,8 +14,8 @@ namespace medi1.SplashPageComponents
                 // Highlight today with primary palette color
                 return Color.FromArgb("#007AFF"); 
             }
-            // Non-today dates use light gray
-            return Color.FromArgb("#D1D5DB"); 
+            // Non-today dates use light grey
+            return Color.FromArgb("#eff1f4"); 
         }
 
         public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)

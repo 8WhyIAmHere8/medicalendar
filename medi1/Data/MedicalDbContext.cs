@@ -1,3 +1,4 @@
+using Microsoft.Azure.Cosmos.Linq;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Threading.Tasks;
@@ -8,10 +9,11 @@ namespace medi1.Data
     {
         private readonly string _containerName;
         public DbSet<Data.Models.Condition> Conditions { get; set; }
-        public DbSet<Data.Models.HealthEvent> HealthEvents { get; set; }
+        public DbSet<Data.Models.HealthEvent> HealthEvent { get; set; }
         public DbSet<Data.Models.Activity> Activities { get; set; }
         public DbSet<Data.Models.ActivityLog> ActivityEventLog { get; set; }
         public DbSet<Data.Models.User> Users { get; set; }
+        public DbSet<Data.Models.CalendarTask> TaskLog { get; set; }   
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -38,20 +40,25 @@ namespace medi1.Data
                 .HasPartitionKey(e => e.Id)
                 .HasNoDiscriminator();
 
-            modelBuilder.Entity<Models.Activity>()
-        .ToContainer("Activities")
-        .HasPartitionKey(a => a.ActivityId)
-        .HasNoDiscriminator();
-            
-            modelBuilder.Entity<Models.ActivityLog>()
-        .ToContainer("ActivityEventLog")
-        .HasPartitionKey(al => al.ActivityLogId)
-        .HasNoDiscriminator();
+                modelBuilder.Entity<Models.Activity>()
+            .ToContainer("Activities")
+            .HasPartitionKey(a => a.ActivityId)
+            .HasNoDiscriminator();
+                
+                modelBuilder.Entity<Models.ActivityLog>()
+            .ToContainer("ActivityEventLog")
+            .HasPartitionKey(al => al.ActivityLogId)
+            .HasNoDiscriminator();
 
             modelBuilder.Entity<Models.User>()
-                        .ToContainer("Users")  // Maps to the "Users" container
-                        .HasPartitionKey(u => u.Id) // ✅ Keep partitioning by `Id`
-                        .HasNoDiscriminator();
+            .ToContainer("Users")  // Maps to the "Users" container
+            .HasPartitionKey(u => u.Id) // ✅ Keep partitioning by `Id`
+            .HasNoDiscriminator();
+
+            modelBuilder.Entity<Models.CalendarTask>()
+            .ToContainer("TaskLog")
+            .HasPartitionKey(t => t.TaskId)
+            .HasNoDiscriminator();
         
         }
 
