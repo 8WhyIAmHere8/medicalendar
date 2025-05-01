@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.Mvvm.Messaging.Messages;
+using System.Windows.Input;
 
 namespace medi1.Pages.ConditionsPage;
 
@@ -20,10 +21,14 @@ namespace medi1.Pages.ConditionsPage;
         public ObservableCollection<HealthEvent> HealthEvents { get; set; } = new ObservableCollection<HealthEvent>();
         public ObservableCollection<HealthEvent> RecentHealthEvents { get; set; } = new ObservableCollection<HealthEvent>();
 
+        public ICommand UnarchiveCommand { get; }
+
         public ArchivedConditionsPage()
         {
             InitializeComponent();
             BindingContext = this;
+
+            UnarchiveCommand = new Command<medi1.Data.Models.Condition>(async (condition) => await UnarchiveCondition(condition));
 
             // Load archived conditions from the database
             LoadArchivedConditions();
@@ -55,6 +60,24 @@ namespace medi1.Pages.ConditionsPage;
             {
                 Console.WriteLine($"Failed to load conditions: {ex.Message}");
                 await DisplayAlert("Error", $"Failed to load conditions: {ex.Message}", "OK");
+            }
+        }
+
+        private async Task UnarchiveCondition(medi1.Data.Models.Condition condition)
+        {
+            try
+            {
+                condition.Archived = false;
+                _dbContext.Conditions.Update(condition);
+                await _dbContext.SaveChangesAsync();
+
+                ArchivedConditions.Remove(condition);
+                await DisplayAlert("Success", $"{condition.Name} has been unarchived.", "OK");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to unarchive condition: {ex.Message}");
+                await DisplayAlert("Error", $"Failed to unarchive condition: {ex.Message}", "OK");
             }
         }
     }

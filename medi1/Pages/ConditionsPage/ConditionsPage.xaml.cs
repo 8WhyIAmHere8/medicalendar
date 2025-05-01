@@ -7,9 +7,6 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.Mvvm.Messaging.Messages;
-using Microcharts;
-using SkiaSharp;
-using System.Linq;
 
 namespace medi1.Pages.ConditionsPage
 {
@@ -60,10 +57,6 @@ namespace medi1.Pages.ConditionsPage
         public string NewTrigger { get; set; }
         public string NewNote { get; set; }
 
-        private Microcharts.Maui.ChartView HealthEventsChartView;
-        
-        
-
         private string? _newMedication;
         public string NewMedication
         {
@@ -96,7 +89,7 @@ namespace medi1.Pages.ConditionsPage
             UpdateNoteCommand = new Command(async () => await UpdateNote());
             AddMedicationCommand = new Command(async () => await AddMedication());
             AddSymptomCommand = new Command(async () => await AddSymptom());
-            AddTreatmentCommand = new Command(async() => await AddTreatment());
+            AddTreatmentCommand = new Command(async () => await AddTreatment());
             TestCommand = new Command(async () => await ButtonTest());
             AddConditionCommand = new Command(() => OnAddConditionTapped());
             AddTriggerCommand = new Command(async () => await AddTrigger());
@@ -107,7 +100,6 @@ namespace medi1.Pages.ConditionsPage
             var dbContext = new MedicalDbContext();
             TestDatabaseConnection(dbContext);
             LoadConditions();
-            UpdateHealthEventsChart();
 
             WeakReferenceMessenger.Default.Register<AddConditionMessage>(this, (recipient, message) =>
             {
@@ -116,6 +108,7 @@ namespace medi1.Pages.ConditionsPage
                 SelectedCondition = newCondition;
             });
         }
+
         private async void OnAddConditionTapped()
         {
             await Shell.Current.Navigation.PushModalAsync(new AddConditionPopup());
@@ -210,27 +203,12 @@ namespace medi1.Pages.ConditionsPage
                 }
             }
         }
-        private void UpdateHealthEventsChart()
-        {
-            // Example: assuming you have SelectedCondition from your BindingContext
-            if (SelectedCondition != null)
-            {
-                var entries = HealthEvents?.Select(he => new Microcharts.ChartEntry((float)(he.EndDate - he.StartDate).TotalHours)
-                {
-                    Label = he.Title,
-                    ValueLabel = ((int)(he.EndDate - he.StartDate).TotalHours).ToString() + "h",
-                    Color = SKColor.Parse("#4CAF50") // Green color
-                }).ToList();
 
-                if (entries != null && entries.Any())
-                {
-                    HealthEventsChartView.Chart = new BarChart
-                    {
-                        Entries = entries,
-                        LabelTextSize = 24
-                    };
-                }
-            }
+        private async Task RefreshConditions()
+        {
+            await LoadConditions();
+            OnPropertyChanged(nameof(Conditions));
+            OnPropertyChanged(nameof(SelectedCondition));
         }
 
         private void UpdateCollections()
@@ -260,7 +238,8 @@ namespace medi1.Pages.ConditionsPage
                 }
             }
         }
-         private async Task OnArchiveCondition()
+
+        private async Task OnArchiveCondition()
         {
             if (SelectedCondition != null)
             {
@@ -269,6 +248,7 @@ namespace medi1.Pages.ConditionsPage
                 {
                     _dbContext.Conditions.Update(SelectedCondition);
                     await _dbContext.SaveChangesAsync();
+                    await RefreshConditions(); // Refresh UI
                     await DisplayAlert("Success", "Condition archived successfully!", "OK");
                     Conditions.Remove(SelectedCondition);
                     SelectedCondition = null;
@@ -281,7 +261,6 @@ namespace medi1.Pages.ConditionsPage
             }
         }
 
-// Adding condition attributes 
         private async Task AddMedication()
         {
             await DisplayAlert("Info", $"Condition is {(SelectedCondition != null ? SelectedCondition.Name : "not selected")}", "OK");
@@ -300,6 +279,7 @@ namespace medi1.Pages.ConditionsPage
                 {
                     _dbContext.Conditions.Update(SelectedCondition);
                     await _dbContext.SaveChangesAsync();
+                    await RefreshConditions(); // Refresh UI
                     await DisplayAlert("Success", "Medication added successfully!", "OK");
                 }
                 catch (Exception ex)
@@ -329,6 +309,7 @@ namespace medi1.Pages.ConditionsPage
                 {
                     _dbContext.Conditions.Update(SelectedCondition);
                     await _dbContext.SaveChangesAsync();
+                    await RefreshConditions(); // Refresh UI
                     await DisplayAlert("Success", "Symptom added successfully!", "OK");
                     return true;
                 }
@@ -345,7 +326,7 @@ namespace medi1.Pages.ConditionsPage
             }
         }
 
-       private async Task<bool> AddTreatment()
+        private async Task<bool> AddTreatment()
         {
             if (SelectedCondition != null && !string.IsNullOrWhiteSpace(NewTreatment))
             {
@@ -360,6 +341,7 @@ namespace medi1.Pages.ConditionsPage
                 {
                     _dbContext.Conditions.Update(SelectedCondition);
                     await _dbContext.SaveChangesAsync();
+                    await RefreshConditions(); // Refresh UI
                     await DisplayAlert("Success", "Treatment added successfully!", "OK");
                     return true;
                 }
@@ -391,6 +373,7 @@ namespace medi1.Pages.ConditionsPage
                 {
                     _dbContext.Conditions.Update(SelectedCondition);
                     await _dbContext.SaveChangesAsync();
+                    await RefreshConditions(); // Refresh UI
                     await DisplayAlert("Success", "Trigger added successfully!", "OK");
                     return true;
                 }
@@ -416,6 +399,7 @@ namespace medi1.Pages.ConditionsPage
                 {
                     _dbContext.Conditions.Update(SelectedCondition);
                     await _dbContext.SaveChangesAsync();
+                    await RefreshConditions(); // Refresh UI
                     await DisplayAlert("Success", "Note saved successfully!", "OK");
                     return true;
                 }
@@ -431,8 +415,6 @@ namespace medi1.Pages.ConditionsPage
                 return false;
             }
         }
-
-        // end of addign stuff to condition
 
         private async Task LoadHealthEvents(string conditionId)
         {
@@ -470,7 +452,7 @@ namespace medi1.Pages.ConditionsPage
                     RecentHealthEvents.Clear();
                     foreach (var healthEvent in recentEvents)
                     {
-                        RecentHealthEvents.Add(healthEvent); // Length is calculated automatically
+                        RecentHealthEvents.Add(healthEvent);
                     }
                 }
                 catch (Exception ex)
@@ -480,7 +462,7 @@ namespace medi1.Pages.ConditionsPage
                 }
             }
         }
-       
+
         private async Task OpenArchivedConditionsPage()
         {
             await Shell.Current.GoToAsync(nameof(ArchivedConditionsPage));

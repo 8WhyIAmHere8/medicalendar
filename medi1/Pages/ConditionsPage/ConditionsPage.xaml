@@ -2,10 +2,11 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="medi1.Pages.ConditionsPage.ConditionsPage"
-             xmlns:microcharts="clr-namespace:Microcharts.Maui;assembly=Microcharts.Maui"
+
              x:Name="MainPageRef"
              Title="Conditions Tracker">
 
+<!--              xmlns:skia="clr-namespace:SkiaSharp.Views.Maui.Controls;assembly=SkiaSharp.Views.Maui.Controls" -->
     <ContentPage.Resources>
         <ResourceDictionary>
             <Style x:Key="TabButtonStyle" TargetType="Frame">
@@ -17,7 +18,7 @@
             </Style>
         </ResourceDictionary>
     </ContentPage.Resources>
-
+<!--              xmlns:microcharts="clr-namespace:Microcharts.Maui;assembly=Microcharts.Maui" -->
     <ScrollView>
         <VerticalStackLayout Padding="10" Spacing="10">
 
@@ -33,7 +34,8 @@
                                 <DataTemplate>
                                     <Frame Padding="10,5"
                                            CornerRadius="20"
-                                           BackgroundColor="{Binding ., Converter={StaticResource TabHighlightConverter}, ConverterParameter={Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.SelectedCondition}}">
+                                           BackgroundColor="{Binding ., Converter={StaticResource TabHighlightConverter}, ConverterParameter={Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.SelectedCondition}}"
+                                           >
                                         <Label Text="{Binding Name}" FontSize="16" />
                                     </Frame>
                                 </DataTemplate>
@@ -128,7 +130,14 @@
                             <Button Text="＋" Command="{Binding AddTriggerCommand}" HorizontalOptions="Start" WidthRequest="40" />
                         </VerticalStackLayout>
                     </Frame>
-
+                   <!-- <Frame BackgroundColor="#E3F2FD" CornerRadius="20" Padding="10">
+    <VerticalStackLayout>
+        <Label Text="Health Events Timeline" FontSize="20" FontAttributes="Bold" TextColor="#1A237E" />
+        <skia:SKCanvasView x:Name="HealthTimelineCanvas"
+                           HeightRequest="250"
+                           PaintSurface="OnCanvasViewPaintSurface"/>
+    </VerticalStackLayout>
+</Frame> -->
                     <!-- Notes -->
                     <Frame BackgroundColor="#E3F2FD" CornerRadius="20" Padding="10">
                         <VerticalStackLayout>
@@ -142,14 +151,6 @@
                 <!-- Right Panel - Recent Events -->
                 <Frame Grid.Column="1" BackgroundColor="#E3F7FE" CornerRadius="20" Padding="10" Margin="10,0">
                     <VerticalStackLayout>
-                        <VerticalStackLayout>
-    <Label Text="Recent Health Events" FontSize="20" FontAttributes="Bold" />
-    <microcharts:ChartView 
-        Chart="{Binding HealthEventsChart}" 
-        HeightRequest="200" 
-        WidthRequest="350"
-        VerticalOptions="Center" />
-</VerticalStackLayout>
                         <Label Text="Recent events" FontSize="20" FontAttributes="Bold" TextColor="Black" />
                         <CollectionView ItemsSource="{Binding RecentHealthEvents}">
                             <CollectionView.ItemTemplate>
