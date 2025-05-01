@@ -9,7 +9,7 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using medi1.Services;
-using System.Diagnostics; //Import used login data
+using System.Diagnostics; // Import used login data
 
 namespace medi1.Pages
 {
@@ -53,7 +53,7 @@ namespace medi1.Pages
             BindingContext = this;
 
             // Initialize calendar
-            _displayDate  = DateTime.Now.Date;
+            _displayDate = DateTime.Now.Date;
             FullDateToday = _displayDate.ToString("MMMM dd, yyyy");
             LoadMonth(_displayDate);
 
@@ -71,10 +71,10 @@ namespace medi1.Pages
                 (sender, entity) => Conditions.Add(MapToVm(entity))
             );
         }
+
         private async void AddNewEntry(object sender, EventArgs e)
-        {
-            await Navigation.PushModalAsync(new AddEntryPage());
-        }
+            => await Navigation.PushModalAsync(new AddEntryPage());
+
         protected override async void OnAppearing()
         {
             base.OnAppearing();
@@ -85,18 +85,36 @@ namespace medi1.Pages
         {
             var list = await _dbContext.Conditions.ToListAsync();
             Conditions.Clear();
-            foreach (var e in list)
-                Conditions.Add(MapToVm(e));
+
+            for (int i = 0; i < list.Count; i++)
+            {
+                var entity = list[i];
+                var color = GenerateColor(i);
+                Conditions.Add(MapToVm(entity, color));
+            }
         }
 
-        private ConditionViewModel MapToVm(Data.Models.Condition e) =>
-            new ConditionViewModel
+        // Generate a unique color for each condition using the golden ratio
+        private Color GenerateColor(int index)
+        {
+            const float goldenRatioConjugate = 0.618033988749895f;
+            float hue = (index * goldenRatioConjugate) % 1f;
+            return Color.FromHsla(hue, 0.5f, 0.7f);
+        }
+
+        // Map entity to ViewModel with generated color
+        private ConditionViewModel MapToVm(Data.Models.Condition e, Color color)
+            => new ConditionViewModel
             {
-                Name        = e.Name,
+                Name = e.Name,
                 Description = e.Description,
-                Color       = Colors.LightBlue,
-                IsSelected  = false
+                Color = color,
+                IsSelected = false
             };
+
+        // Fallback mapping using dynamic color based on current count
+        private ConditionViewModel MapToVm(Data.Models.Condition e)
+            => MapToVm(e, GenerateColor(Conditions.Count));
 
         // --- Calendar logic ---
         private void LoadMonth(DateTime date)
@@ -112,13 +130,13 @@ namespace medi1.Pages
                 items.Add(new DayItem
                 {
                     DayNumber = i,
-                    IsToday   = date.Year == DateTime.Now.Year
-                            && date.Month == DateTime.Now.Month
-                            && i == DateTime.Now.Day
+                    IsToday = date.Year == DateTime.Now.Year
+                              && date.Month == DateTime.Now.Month
+                              && i == DateTime.Now.Day
                 });
             }
 
-            DaysInMonth  = items;
+            DaysInMonth = items;
             CurrentMonth = date.ToString("MMMM yyyy");
         }
 
@@ -147,13 +165,13 @@ namespace medi1.Pages
             var taskLayout = new StackLayout
             {
                 Orientation = StackOrientation.Horizontal,
-                Spacing     = 10
+                Spacing = 10
             };
 
             var checkBox = new CheckBox();
-            var label    = new Label
+            var label = new Label
             {
-                Text            = taskText,
+                Text = taskText,
                 VerticalOptions = LayoutOptions.Center
             };
             checkBox.CheckedChanged += (s, a) =>
@@ -163,24 +181,24 @@ namespace medi1.Pages
 
             var editBtn = new Button
             {
-                Text            = "✏️",
-                FontSize        = 12,
+                Text = "✏️",
+                FontSize = 12,
                 BackgroundColor = Colors.Transparent,
-                WidthRequest    = 40
+                WidthRequest = 40
             };
             editBtn.Clicked += (s, a) =>
             {
-                _editingTaskLabel          = label;
-                EditTaskInput.Text         = label.Text;
-                EditTaskPopup.IsVisible    = true;
+                _editingTaskLabel = label;
+                EditTaskInput.Text = label.Text;
+                EditTaskPopup.IsVisible = true;
             };
 
             var deleteBtn = new Button
             {
-                Text            = "🗑️",
-                FontSize        = 12,
+                Text = "🗑️",
+                FontSize = 12,
                 BackgroundColor = Colors.Transparent,
-                WidthRequest    = 40
+                WidthRequest = 40
             };
             deleteBtn.Clicked += (s, a) =>
                 TaskListContainer.Children.Remove(taskLayout);
@@ -191,19 +209,16 @@ namespace medi1.Pages
             taskLayout.Children.Add(deleteBtn);
 
             TaskListContainer.Children.Add(taskLayout);
-
             AddTaskPopup.IsVisible = false;
-            TaskInput.Text        = string.Empty;
+            TaskInput.Text = string.Empty;
         }
 
-        
         private void OnCancelTaskClicked(object sender, EventArgs e)
         {
             AddTaskPopup.IsVisible = false;
-            TaskInput.Text        = string.Empty;
+            TaskInput.Text = string.Empty;
         }
 
-        //Edit Confirm
         private void TaskEditConfirmClicked(object sender, EventArgs e)
         {
             if (_editingTaskLabel != null)
@@ -212,7 +227,6 @@ namespace medi1.Pages
             EditTaskPopup.IsVisible = false;
         }
 
-        //Edit Cancel
         private void TaskEditCancelClicked(object sender, EventArgs e)
         {
             EditTaskPopup.IsVisible = false;
@@ -243,24 +257,22 @@ namespace medi1.Pages
 
         #region INotifyPropertyChanged
         public new event PropertyChangedEventHandler PropertyChanged;
-        protected void OnPropertyChanged([CallerMemberName] string propName = null) =>
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName));
+        protected void OnPropertyChanged([CallerMemberName] string propName = null)
+            => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName));
         #endregion
     }
 
-    // View‐model for binding into HomePage
     public class ConditionViewModel
     {
-        public string Name        { get; set; }
+        public string Name { get; set; }
         public string Description { get; set; }
-        public bool   IsSelected  { get; set; }
-        public Color  Color       { get; set; }
+        public bool IsSelected { get; set; }
+        public Color Color { get; set; }
     }
 
-    // Day item for the calendar grid
     public class DayItem
     {
-        public int  DayNumber { get; set; }
-        public bool IsToday   { get; set; }
+        public int DayNumber { get; set; }
+        public bool IsToday { get; set; }
     }
 }
