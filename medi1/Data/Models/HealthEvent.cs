@@ -5,26 +5,14 @@ namespace medi1.Data.Models
 {
     public class HealthEvent
     {
-        public required string Id { get; set; }
-        public string? ConditionId { get; set; }
-
-        public required string Title { get; set; } // For display purposes
         public string Id { get; set; }
+        public string Title { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
-
-        public int Length => (EndDate - StartDate).Days;
         public string Duration { get; set; }
-
-        public string RelatedCondition { get; set; }
-
+        public string HealthRelationship { get; set; }
+        public string ConditionId { get; set; }
         public int Impact { get; set; }  // 0-10 scale
-
-        public int Severity { get; set; }  // 0-10 scale
-        public List<string> Symptoms { get; set; } = new();
-        public List<string> MedicationsTaken { get; set; } = new();
-        public List<string> Triggers { get; set; } = new();
-        public string? Notes { get; set; }
         public string Notes { get; set; }
         public DateTime Timestamp { get; set; } = DateTime.UtcNow;
 

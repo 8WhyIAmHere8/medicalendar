@@ -87,11 +87,9 @@
             </Picker>
 
             <Picker x:Name="AssociatedConditionSelecter"
-              IsVisible="False" Title="Related Condition">
-              <Picker.ItemsSource>
-                <!-- Database Content -->
-              </Picker.ItemsSource>
-            </Picker>
+              IsVisible="False" Title="Related Condition" 
+              ItemsSource="{Binding Conditions}"
+                ItemDisplayBinding="{Binding Name}" SelectedIndexChanged="OnEntrySelected" />
           </StackLayout>
 
           

@@ -15,7 +15,7 @@ namespace medi1.Pages.ConditionsPage
         private readonly MedicalDbContext _dbContext = new MedicalDbContext();
 
         public ObservableCollection<Data.Models.Condition> Conditions { get; set; } = new ObservableCollection<Data.Models.Condition>();
-        public ObservableCollection<HealthEvent> HealthEvents { get; set; } = new ObservableCollection<HealthEvent>();
+        public ObservableCollection<HealthEvent> HealthEvent { get; set; } = new ObservableCollection<HealthEvent>();
         public ObservableCollection<HealthEvent> RecentHealthEvents { get; set; } = new ObservableCollection<HealthEvent>();
 
         private Data.Models.Condition? _selectedCondition;
@@ -269,14 +269,14 @@ namespace medi1.Pages.ConditionsPage
         {
             try
             {
-                var healthEvents = await _dbContext.HealthEvents
+                var healthEvents = await _dbContext.HealthEvent
                     .Where(he => he.ConditionId == conditionId)
                     .ToListAsync();
 
-                HealthEvents.Clear();
+                HealthEvent.Clear();
                 foreach (var healthEvent in healthEvents)
                 {
-                    HealthEvents.Add(healthEvent);
+                    HealthEvent.Add(healthEvent);
                 }
             }
             catch (Exception ex)
@@ -292,7 +292,7 @@ namespace medi1.Pages.ConditionsPage
             {
                 try
                 {
-                    var recentEvents = await _dbContext.HealthEvents
+                    var recentEvents = await _dbContext.HealthEvent
                         .Where(he => he.ConditionId == SelectedCondition.Id)
                         .OrderByDescending(he => he.StartDate)
                         .Take(5)

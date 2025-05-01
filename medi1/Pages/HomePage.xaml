@@ -113,14 +113,6 @@
                 HeightRequest="40"
                 Clicked="GoToConditions"
                 Margin="5"/>
-        <Button Text="Add Entry"
-                BackgroundColor="LightGray"
-                TextColor="Red"
-                FontSize="14"
-                WidthRequest="120"
-                HeightRequest="40"
-                Clicked="GoToAddEntry"
-                Margin="5"/>
         <Button Text="Report"
                 BackgroundColor="Blue"
                 TextColor="White"
@@ -135,18 +127,6 @@
       <Frame BorderColor="Gray" Padding="20" CornerRadius="10" HasShadow="True" BackgroundColor="Transparent" Margin="0,30,0,0">
         <StackLayout Orientation="Vertical" Spacing="10">
           <Label Text="{Binding FullDateToday}" FontSize="24" HorizontalOptions="Center"/>
-
-          <!-- Pane for Adding a New Entry -->
-          <Frame>
-            <StackLayout>
-              <Button Text="+ Log an Entry" Clicked="AddNewEntry"/>
-            </StackLayout>
-          </Frame>
-
-          <!-- Pane for Viewing Today's Entries -->
-          <Frame>
-            <Label Text="Today's Entries" FontSize="20" HorizontalOptions="Center"/>
-          </Frame>
 
           <!-- Pane for Adding New Tasks -->
           <Frame>
@@ -203,13 +183,13 @@
             </StackLayout>
           </Frame>
 
-          <!-- Events Section -->
+          <!-- Pane for Adding a New Entry -->
           <Frame>
             <StackLayout>
-              <Label Text="Today's Events" FontSize="20" HorizontalOptions="Center"/>
-              <!-- (Hook up your CalendarPage events here) -->
+              <Button Text="+ Log an Entry" Clicked="AddNewEntry"/>
             </StackLayout>
           </Frame>
+
         </StackLayout>
       </Frame>
     </StackLayout>
