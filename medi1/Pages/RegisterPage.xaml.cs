@@ -93,8 +93,10 @@ namespace medi1.Pages
                         Name = inputname,
                         Email = inputemail,
                         DateOfBirth = inputDOB.ToString("yyyy-MM-dd"),
-                        Conditions = new List<string>(),
                         Activities = new List<string>(),
+                        ActivityLogs = new List<string>(),
+                        Conditions = new List<string>(),
+                        HealthEvents = new List<string>(),
                         Symptoms = new List<string>()
                     };
                     try
