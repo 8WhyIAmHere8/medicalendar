@@ -163,65 +163,112 @@ namespace medi1.Pages
             //--------------- Entry Type ----------------------//
             string entryType = EntrySelecter.SelectedItem.ToString();
 
+            //------------------ Entry Notes -----------------//
+            string entryNotes = NotesEntry.Text.ToString();
+
+            //------------------ Health Event Relation -----------//
+            string healthEvent = HealthEventPicker.SelectedItem?.ToString();
+
             if (entryType == "Log Health Event"){
                 
                 //------------------- Logging Name -----------------//
                 string eventName = NameEntry.Text.ToString();
+
+                //-------------Declare start and end dates and duration -------//
+
+                DateTime eventStartDate;
+                DateTime eventEndDate;
+                string eventDuration;
+
                 // ------------- Logging Duration ------------- //
                 string dateRange = DateSelecter.SelectedItem?.ToString();
-                 //------------------ Health Event Relation -----------//
-                string healthEvent = HealthEventPicker.SelectedItem?.ToString();
                 //------------ Event Impact -----------------//
-                string eventImpact = ImpactSelecter.SelectedItem?.ToString();
+                string eventImpactScore = ImpactSelecter.SelectedItem?.ToString();
+                int eventImpact = int.Parse(eventImpactScore);
+
+                //---------------- Associated Condition -------------//
+                var associatedConditionSelected = AssociatedConditionSelecter.SelectedItem as medi1.Data.Models.Condition;
+                string associatedCondition = associatedConditionSelected?.Name;
+
 
                 if (dateRange == "Single Date" && FullDayCheck.IsChecked == true)
                 {
-                    string eventDate = entryDatePicker.Date.ToString("d");
-                    string eventDuration = "24";
+                    eventStartDate = entryDatePicker.Date;
+                    eventEndDate = entryDatePicker.Date;
+                    eventDuration = "24 hours";
 
                 } 
                 else if (dateRange == "Single Date" && FullDayCheck.IsChecked == false) 
                 {
-                    string eventDate = entryDatePicker.Date.ToString("d");
+                    eventStartDate = entryDatePicker.Date; 
+                    eventEndDate = entryDatePicker.Date;
 
                     int hours = HourSpinner.Value;   // assuming your NumericSpinner has a Value property
                     int minutes = MinuteSpinner.Value;
                     double totalTime = hours + (minutes/60);
                     int totalTimeHours = (int)Math.Floor(totalTime);
-                    string eventDuration = totalTimeHours.ToString();
+                    eventDuration = totalTimeHours.ToString() + "hours";
                     //save duration to ConditionLog in database
 
                 }
                 else
                 {
-                    DateTime eventStartDate = StartDatePicker.Date;
-                    DateTime eventEndDate = EndDatePicker.Date;
+                    eventStartDate = StartDatePicker.Date;
+                    eventEndDate = EndDatePicker.Date;
                     TimeSpan durationDays = eventEndDate - eventStartDate;
                     int totalDuration = durationDays.Days;
-                    string eventDurationDays = totalDuration.ToString();
+                    eventDuration = totalDuration.ToString() + "days";
                     //save to ConditionLog in database
+                }
+
+                //--------------INFORMATION UPLOAD ---------------------//
+                var newHealthEvent = new HealthEvent
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Title = eventName,
+                    StartDate = eventStartDate,
+                    EndDate = eventEndDate,
+                    Duration = eventDuration,
+                    HealthRelationship = healthEvent,
+                    ConditionId = associatedCondition,
+                    Impact = eventImpact,
+                    Notes = entryNotes
+                };
+
+                 try
+                {
+                    using var dbContext = new MedicalDbContext();
+                    await dbContext.HealthEvent.AddAsync(newHealthEvent);
+                    await dbContext.SaveChangesAsync();
+
+                    if (healthEvent == "Related to Condition")
+                    {
+                        var selectedCondition = await dbContext.Conditions
+                        .FirstOrDefaultAsync(c => c.Name == associatedCondition);
+
+                        if (associatedCondition != null)
+                            {
+                                selectedCondition.Symptoms.Add(eventName);
+                                await dbContext.SaveChangesAsync();
+                            } else {
+                                Console.WriteLine($"{associatedCondition} condition not found");
+                            }
+                    }
+
+                    //else if (healthEvent == "Related to Menstrual Cycle"){Add to Menstrual Cycle database contrainer}
+                    
+                }
+                catch (DbUpdateException dbEx)
+                {
+                    Console.WriteLine($"Database Update Error: {dbEx.Message}");
+                    if (dbEx.InnerException != null)
+                    {
+                        Console.WriteLine($"Inner Exception: {dbEx.InnerException.Message}");
+                    }
+                    await DisplayAlert("Error", "Failed to save your health event.", "OK");
                 }
                 // ---------------- LOGGING RELATIONSHIP TO EXISTING HEALTH ---------------//
 
-                if (healthEvent == "Independent Health Evemt")
-                {
-                    //Add to database container ConditionLogs
-                }
-                else if (healthEvent == "Related to Condition")
-                {
-                    AssociatedConditionSelecter.IsVisible = true;
-                    //Once condition selected and entry confirmed, entry is added to that Condition in the database
-                }
-                else if (healthEvent == "Related to Menstrual Cycle")
-                {
-                    //Add to Menstrual Cycle database contrainer
-                }
-                else if (healthEvent == "Part of a New Condition")
-                {
-                    //Open new condition page
-                }
-
-                string entryNotes = NotesEntry.Text.ToString();
 
             } else if (entryType == "Log Activity")
             {
@@ -244,7 +291,6 @@ namespace medi1.Pages
                 string aggedConditionName = aggedConditionSelected?.Name;
                 //Log name of activity in "triggers" of the names health condition
 
-                string entryNotes = NotesEntry.Text.ToString();
 
                 //INFORMATION UPLOAD
                 var newLog = new ActivityLog
@@ -288,8 +334,19 @@ namespace medi1.Pages
                 }
 
             }
-            // Handle task addition logic here
-                await Navigation.PopModalAsync(); // Close the popup page
+            if (healthEvent == "Part of a New Condition")
+            {
+                await Navigation.PopModalAsync();
+
+                await System.Threading.Tasks.Task.Delay(250);
+
+                await Shell.Current.Navigation.PushModalAsync(new ConditionsPage.AddConditionPopup());
+            }
+            else
+            {
+                await Navigation.PopModalAsync(); 
+            }
+
         } 
 
 
