@@ -74,7 +74,7 @@ namespace medi1.Services
                 
                 var healthEventIds = givenUser.HealthEvents;
 
-                HealthEventlist = await _dbContext.HealthEvents
+                HealthEventlist = await _dbContext.HealthEvent
                 .Where(healthevent => healthEventIds.Contains(healthevent.Id))
                 .ToListAsync();
             }
