@@ -145,8 +145,6 @@
                 Margin="5"/>
       </FlexLayout>
 
-     
-
         </StackLayout>
   </ScrollView>
 </ContentPage>

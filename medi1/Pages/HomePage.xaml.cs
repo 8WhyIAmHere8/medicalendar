@@ -86,8 +86,13 @@ namespace medi1.Pages
         private ConditionViewModel MapToVm(Data.Models.Condition e, Color color)
             => new ConditionViewModel
             {
+                Id = e.Id,
                 Name = e.Name,
                 Description = e.Description,
+                Symptoms = string.Join(", ", e.Symptoms),
+                Medications = string.Join(", ", e.Medications),
+                Treatments = string.Join(", ", e.Treatments),
+                Notes = e.Notes,
                 Color = color,
                 IsSelected = false
             };
@@ -149,7 +154,7 @@ namespace medi1.Pages
             {
                 await DisplayAlert(
                     "Condition Details",
-                    $"Name: {cvm.Name}\nDescription: {cvm.Description}",
+                    $"Id: {cvm.Id}\nName: {cvm.Name}\nDescription: {cvm.Description}\nSymptoms: {cvm.Symptoms}\nMedications: {cvm.Medications}\nTreatments: {cvm.Treatments}\nNotes: {cvm.Notes}",
                     "OK"
                 );
             }
@@ -158,8 +163,13 @@ namespace medi1.Pages
 
     public class ConditionViewModel
     {
+        public string Id { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
+        public string Symptoms { get; set; }
+        public string Medications { get; set; }
+        public string Treatments { get; set; }
+        public string Notes { get; set; }
         public bool IsSelected { get; set; }
         public Color Color { get; set; }
     }
