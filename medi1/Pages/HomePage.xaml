@@ -207,13 +207,13 @@
 
           <!-- Pane for Viewing Today's Entries -->
           <Frame>
-            <Label Text="↓  Health Events" FontSize="20" HorizontalOptions="Center"/>
+            <Label Text="x" FontSize="20" HorizontalOptions="Center"/>
           </Frame>
 
           <!-- Pane for Adding a New Entry -->
           <Frame>
             <StackLayout>
-              <Button Text="+ Log an Entry" Clicked="AddNewEntry"/>
+              <Button Text="x" Clicked="AddNewEntry"/>
             </StackLayout>
           </Frame>
 
