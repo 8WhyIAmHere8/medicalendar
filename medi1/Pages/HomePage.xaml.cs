@@ -139,6 +139,9 @@ namespace medi1.Pages
         private async void GoToReports(object sender, EventArgs e)
             => await Navigation.PushAsync(new ReportsPage());
 
+        private async void GoToAddEntry(object sender, EventArgs e)
+            => await Navigation.PushAsync(new AddEntryPage());
+
         // --- Condition tap handler ---
         private async void OnConditionTapped(object sender, EventArgs e)
         {
