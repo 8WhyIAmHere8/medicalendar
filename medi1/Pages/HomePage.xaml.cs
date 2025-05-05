@@ -29,6 +29,13 @@ namespace medi1.Pages
         // ── Conditions & Events ──
         public ObservableCollection<ConditionViewModel> Conditions { get; set; } = new();
         public ObservableCollection<HealthEventViewModel> HealthEvents { get; set; } = new();
+        private ObservableCollection<ActivityLogViewModel> _activityLogs = new();
+public ObservableCollection<ActivityLogViewModel> ActivityLogs
+{
+    get => _activityLogs;
+    set { _activityLogs = value; OnPropertyChanged(); }
+}
+
 
         public HomePage()
         {
@@ -48,6 +55,7 @@ namespace medi1.Pages
             {
                 await LoadConditionsFromDbAsync();
                 await LoadHealthEventsFromDbAsync();
+                await LoadActivityLogsFromDbAsync(); 
             }
             catch (Exception ex)
             {
@@ -124,6 +132,41 @@ namespace medi1.Pages
                 }
             }
         }
+
+        private async Task LoadActivityLogsFromDbAsync()
+{
+    // fetch only non-null Date entries
+    var raw = await _dbContext.ActivityEventLog
+        .Where(a => a.Date != null)
+        .Select(a => new {
+            a.ActivityLogId,
+            a.Name,
+            a.Intensity,
+            a.Date,
+            a.Duration,
+            a.AggravatedCondition,
+            a.Notes
+        })
+        .AsNoTracking()
+        .ToListAsync();
+
+    ActivityLogs.Clear();
+
+    foreach (var a in raw)
+    {
+        // safe because we filtered out null dates
+        ActivityLogs.Add(new ActivityLogViewModel {
+            Id                   = a.ActivityLogId,
+            Name                 = a.Name,
+            Intensity            = a.Intensity,
+            Date                 = a.Date!.Value,
+            Duration             = a.Duration,
+            AggravatedCondition  = a.AggravatedCondition,
+            Notes                = a.Notes
+        });
+    }
+}
+
 
         // ── Calendar logic ──
         void LoadMonth(DateTime date)
@@ -210,6 +253,18 @@ namespace medi1.Pages
         public int      Impact    { get; set; }
         public string   Notes     { get; set; }
     }
+
+    public class ActivityLogViewModel
+{
+    public string Id { get; set; }
+    public string Name { get; set; }
+    public string Intensity { get; set; }
+    public DateTime Date { get; set; }
+    public string Duration { get; set; }
+    public string AggravatedCondition { get; set; }
+    public string Notes { get; set; }
+}
+
 
     public class DayItem {
         public int  DayNumber { get; set; }
