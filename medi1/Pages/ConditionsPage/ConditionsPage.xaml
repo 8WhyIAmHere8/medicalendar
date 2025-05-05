@@ -2,6 +2,7 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="medi1.Pages.ConditionsPage.ConditionsPage"
+             xmlns:skia="clr-namespace:SkiaSharp.Views.Maui.Controls;assembly=SkiaSharp.Views.Maui.Controls"
 
              x:Name="MainPageRef"
              Title="Conditions Tracker">
@@ -60,7 +61,7 @@
                         CornerRadius="20"
                         Margin="10,0"
                         VerticalOptions="Center"
-                        Command="{Binding OpenArchivedCommand}" />
+                        Command="{Binding OpenArchivedConditionsCommand}" />
             </HorizontalStackLayout>
 
             <!-- Main Content Split View -->
@@ -130,14 +131,8 @@
                             <Button Text="＋" Command="{Binding AddTriggerCommand}" HorizontalOptions="Start" WidthRequest="40" />
                         </VerticalStackLayout>
                     </Frame>
-                   <!-- <Frame BackgroundColor="#E3F2FD" CornerRadius="20" Padding="10">
-    <VerticalStackLayout>
-        <Label Text="Health Events Timeline" FontSize="20" FontAttributes="Bold" TextColor="#1A237E" />
-        <skia:SKCanvasView x:Name="HealthTimelineCanvas"
-                           HeightRequest="250"
-                           PaintSurface="OnCanvasViewPaintSurface"/>
-    </VerticalStackLayout>
-</Frame> -->
+                  
+
                     <!-- Notes -->
                     <Frame BackgroundColor="#E3F2FD" CornerRadius="20" Padding="10">
                         <VerticalStackLayout>
@@ -170,8 +165,17 @@
                                 <Button Text="+ Log an Entry" Clicked="AddNewEntry" />
                             </StackLayout>
                         </Frame>
+                         <Frame Padding="0" Margin="0" HeightRequest="300" BackgroundColor="LightGray">
+    <skia:SKCanvasView 
+        x:Name="SimpleChart"
+        PaintSurface="OnCanvasViewPaintSurface"
+        VerticalOptions="FillAndExpand"
+        HorizontalOptions="FillAndExpand" />
+</Frame>
+
                     </VerticalStackLayout>
                 </Frame>
+              
             </Grid>
 
             <!-- Archive Button -->
