@@ -81,7 +81,7 @@ namespace medi1.Pages
             MapDataIntoCalendar();
         }
 
-        // ── Load Conditions (no date filter, add one if you extend your model) ──
+        // ── Load Conditions (no date filter) ──
         private async Task LoadConditionsFromDbAsync()
         {
             var list = await _dbContext.Conditions.ToListAsync();
@@ -194,9 +194,6 @@ namespace medi1.Pages
                     });
                 }
             }
-
-            // Conditions (if you later add a date property to your model)
-            // foreach (var cond in Conditions) { ... }
 
             // Notify UI
             OnPropertyChanged(nameof(DaysInMonth));

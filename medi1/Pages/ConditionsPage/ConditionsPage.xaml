@@ -6,7 +6,7 @@
              x:Name="MainPageRef"
              Title="Conditions Tracker">
 
-<!--              xmlns:skia="clr-namespace:SkiaSharp.Views.Maui.Controls;assembly=SkiaSharp.Views.Maui.Controls" -->
+<!-- xmlns:skia="clr-namespace:SkiaSharp.Views.Maui.Controls;assembly=SkiaSharp.Views.Maui.Controls" -->
     <ContentPage.Resources>
         <ResourceDictionary>
             <Style x:Key="TabButtonStyle" TargetType="Frame">
@@ -18,7 +18,7 @@
             </Style>
         </ResourceDictionary>
     </ContentPage.Resources>
-<!--              xmlns:microcharts="clr-namespace:Microcharts.Maui;assembly=Microcharts.Maui" -->
+<!-- xmlns:microcharts="clr-namespace:Microcharts.Maui;assembly=Microcharts.Maui" -->
     <ScrollView>
         <VerticalStackLayout Padding="10" Spacing="10">
 
@@ -130,14 +130,7 @@
                             <Button Text="＋" Command="{Binding AddTriggerCommand}" HorizontalOptions="Start" WidthRequest="40" />
                         </VerticalStackLayout>
                     </Frame>
-                   <!-- <Frame BackgroundColor="#E3F2FD" CornerRadius="20" Padding="10">
-    <VerticalStackLayout>
-        <Label Text="Health Events Timeline" FontSize="20" FontAttributes="Bold" TextColor="#1A237E" />
-        <skia:SKCanvasView x:Name="HealthTimelineCanvas"
-                           HeightRequest="250"
-                           PaintSurface="OnCanvasViewPaintSurface"/>
-    </VerticalStackLayout>
-</Frame> -->
+
                     <!-- Notes -->
                     <Frame BackgroundColor="#E3F2FD" CornerRadius="20" Padding="10">
                         <VerticalStackLayout>

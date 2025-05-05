@@ -20,7 +20,7 @@ namespace medi1.Data
             optionsBuilder.UseCosmos(
                 "https://medicalendar-data.documents.azure.com:443/", // Cosmos DB endpoint
                 "ukEwRy20KzAics3MYQfmnzwXC0IxPQMGd8MfvPCQthLpkW691AMAqS1cSPz5aS6z77WAz3Sgy9I8ACDbywHjig==", // Cosmos DB key
-                "MedicalDatabase"); // Database name
+                "MedicalDatabase"); 
 
             optionsBuilder.LogTo(Console.WriteLine); // Log database queries
             base.OnConfiguring(optionsBuilder);
@@ -28,13 +28,11 @@ namespace medi1.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            // Map Conditions to its container
             modelBuilder.Entity<Models.Condition>()
                 .ToContainer("Conditions")
                 .HasPartitionKey(c => c.Id)
                 .HasNoDiscriminator();
 
-            // ✅ Map HealthEvents to its own container
             modelBuilder.Entity<Models.HealthEvent>()
                 .ToContainer("HealthEvent")
                 .HasPartitionKey(e => e.Id)
@@ -51,8 +49,8 @@ namespace medi1.Data
             .HasNoDiscriminator();
 
             modelBuilder.Entity<Models.User>()
-            .ToContainer("Users")  // Maps to the "Users" container
-            .HasPartitionKey(u => u.Id) // ✅ Keep partitioning by `Id`
+            .ToContainer("Users")  
+            .HasPartitionKey(u => u.Id) 
             .HasNoDiscriminator();
 
             modelBuilder.Entity<Models.CalendarTask>()

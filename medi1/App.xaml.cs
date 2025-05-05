@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Handlers;
-using medi1.Pages; // ← Make sure your LoginPage lives in this namespace
+using medi1.Pages; 
 
 namespace medi1
 {
