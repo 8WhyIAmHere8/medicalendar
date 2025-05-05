@@ -6,11 +6,12 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using medi1.Data;
+using medi1.Data.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Xaml;
 using Microsoft.Maui.Graphics;
-// alias your data model so it doesn’t conflict with MAUI’s Condition
+// Alias so we don’t clash with MAUI’s Condition
 using DCondition = medi1.Data.Models.Condition;
 
 namespace medi1.Pages
@@ -18,55 +19,68 @@ namespace medi1.Pages
     [XamlCompilation(XamlCompilationOptions.Compile)]
     public partial class HomePage : ContentPage, INotifyPropertyChanged
     {
-        readonly MedicalDbContext _dbContext = new();
+        private readonly MedicalDbContext _dbContext = new();
 
-        // ── Calendar fields ──
-        public ObservableCollection<DayItem> DaysInMonth { get; set; } = new();
+        // ── Calendar state ──
         private DateTime _displayDate;
-        public string CurrentMonth { get; set; }
-        public string FullDateToday { get; set; }
+        public ObservableCollection<DayItem> DaysInMonth { get; set; } = new();
+        public string CurrentMonth   { get; set; }
+        public string FullDateToday  { get; set; }
 
-        // ── Conditions & Events ──
-        public ObservableCollection<ConditionViewModel> Conditions { get; set; } = new();
+        // ── Data collections ──
+        public ObservableCollection<ConditionViewModel> Conditions    { get; set; } = new();
         public ObservableCollection<HealthEventViewModel> HealthEvents { get; set; } = new();
-        private ObservableCollection<ActivityLogViewModel> _activityLogs = new();
-public ObservableCollection<ActivityLogViewModel> ActivityLogs
-{
-    get => _activityLogs;
-    set { _activityLogs = value; OnPropertyChanged(); }
-}
-
+        public ObservableCollection<ActivityLogViewModel> ActivityLogs { get; set; } = new();
 
         public HomePage()
         {
             InitializeComponent();
             BindingContext = this;
 
-            _displayDate     = DateTime.Today;
-            FullDateToday    = _displayDate.ToString("MMMM dd, yyyy");
+            _displayDate   = DateTime.Today;
+            FullDateToday  = _displayDate.ToString("MMMM dd, yyyy");
             LoadMonth(_displayDate);
         }
 
         protected override async void OnAppearing()
         {
             base.OnAppearing();
-
             try
             {
-                await LoadConditionsFromDbAsync();
-                await LoadHealthEventsFromDbAsync();
-                await LoadActivityLogsFromDbAsync(); 
+                await ReloadAllAsync();
             }
             catch (Exception ex)
             {
-                // show full exception so we can iterate if anything remains
                 await DisplayAlert("Startup Error", ex.ToString(), "OK");
                 Debug.WriteLine(ex);
             }
         }
 
-        // ── Load Conditions ──
-        async Task LoadConditionsFromDbAsync()
+        // ── Prev/Next buttons ──
+        private async void OnPrevMonthClicked(object sender, EventArgs e)
+        {
+            _displayDate = _displayDate.AddMonths(-1);
+            LoadMonth(_displayDate);
+            await ReloadAllAsync();
+        }
+
+        private async void OnNextMonthClicked(object sender, EventArgs e)
+        {
+            _displayDate = _displayDate.AddMonths(1);
+            LoadMonth(_displayDate);
+            await ReloadAllAsync();
+        }
+
+        // ── Reload sequentially to avoid DbContext concurrency errors ──
+        private async Task ReloadAllAsync()
+        {
+            await LoadConditionsFromDbAsync();
+            await LoadHealthEventsFromDbAsync();
+            await LoadActivityLogsFromDbAsync();
+        }
+
+        // ── Conditions (no date filter, since no date field) ──
+        private async Task LoadConditionsFromDbAsync()
         {
             var list = await _dbContext.Conditions.ToListAsync();
             Conditions.Clear();
@@ -75,7 +89,8 @@ public ObservableCollection<ActivityLogViewModel> ActivityLogs
             {
                 var e     = list[i];
                 var color = GenerateColor(i);
-                Conditions.Add(new ConditionViewModel {
+                Conditions.Add(new ConditionViewModel
+                {
                     Id          = e.Id,
                     Name        = e.Name,
                     Description = e.Description,
@@ -88,103 +103,84 @@ public ObservableCollection<ActivityLogViewModel> ActivityLogs
             }
         }
 
-        // ── Load HealthEvents safely ──
-        async Task LoadHealthEventsFromDbAsync()
+        // ── Health Events filtered by StartDate month/year ──
+        private async Task LoadHealthEventsFromDbAsync()
         {
-            HealthEvents.Clear();
-
-            // fetch all into memory as DTOs to avoid EF re-materialization errors
             var raw = await _dbContext.HealthEvent
-                                      .Select(e => new {
-                                          e.Id,
-                                          e.Title,
-                                          e.StartDate,
-                                          e.EndDate,
-                                          e.Duration,
-                                          e.Impact,
-                                          e.Notes
-                                      })
-                                      .AsNoTracking()
-                                      .ToListAsync();
+                .Where(h => h.StartDate.HasValue
+                         && h.StartDate.Value.Month == _displayDate.Month
+                         && h.StartDate.Value.Year  == _displayDate.Year)
+                .Select(h => new {
+                    h.Id, h.Title, h.StartDate, h.EndDate, h.Duration, h.Impact, h.Notes
+                })
+                .AsNoTracking()
+                .ToListAsync();
 
-            // now filter/map on the client, skipping any nulls or bad data
-            foreach (var e in raw.AsEnumerable())
+            HealthEvents.Clear();
+            foreach (var e in raw)
             {
-                try
+                HealthEvents.Add(new HealthEventViewModel
                 {
-                    if (e.StartDate == null || e.EndDate == null || e.Impact == null)
-                        continue;
-
-                    HealthEvents.Add(new HealthEventViewModel {
-                        Id        = e.Id,
-                        Title     = e.Title,
-                        StartDate = e.StartDate.Value,
-                        EndDate   = e.EndDate.Value,
-                        Duration  = e.Duration,
-                        Impact    = e.Impact.Value,
-                        Notes     = e.Notes
-                    });
-                }
-                catch (Exception itemEx)
-                {
-                    // skip bad record, but log
-                    Debug.WriteLine($"Skipping bad HealthEvent {e.Id}: {itemEx}");
-                }
+                    Id        = e.Id,
+                    Title     = e.Title,
+                    StartDate = e.StartDate!.Value,
+                    EndDate   = e.EndDate!.Value,
+                    Duration  = e.Duration,
+                    Impact    = e.Impact ?? 0,
+                    Notes     = e.Notes
+                });
             }
         }
 
+        // ── Activity Logs filtered by Date month/year ──
         private async Task LoadActivityLogsFromDbAsync()
-{
-    // fetch only non-null Date entries
-    var raw = await _dbContext.ActivityEventLog
-        .Where(a => a.Date != null)
-        .Select(a => new {
-            a.ActivityLogId,
-            a.Name,
-            a.Intensity,
-            a.Date,
-            a.Duration,
-            a.AggravatedCondition,
-            a.Notes
-        })
-        .AsNoTracking()
-        .ToListAsync();
+        {
+            var raw = await _dbContext.ActivityEventLog
+                .Where(a => a.Date.HasValue
+                         && a.Date.Value.Month == _displayDate.Month
+                         && a.Date.Value.Year  == _displayDate.Year)
+                .Select(a => new {
+                    a.ActivityLogId, a.Name, a.Intensity, a.Date,
+                    a.Duration, a.AggravatedCondition, a.Notes
+                })
+                .AsNoTracking()
+                .ToListAsync();
 
-    ActivityLogs.Clear();
+            ActivityLogs.Clear();
+            foreach (var a in raw)
+            {
+                ActivityLogs.Add(new ActivityLogViewModel
+                {
+                    Id                  = a.ActivityLogId,
+                    Name                = a.Name,
+                    Intensity           = a.Intensity,
+                    Date                = a.Date!.Value,
+                    Duration            = a.Duration,
+                    AggravatedCondition = a.AggravatedCondition,
+                    Notes               = a.Notes
+                });
+            }
+        }
 
-    foreach (var a in raw)
-    {
-        // safe because we filtered out null dates
-        ActivityLogs.Add(new ActivityLogViewModel {
-            Id                   = a.ActivityLogId,
-            Name                 = a.Name,
-            Intensity            = a.Intensity,
-            Date                 = a.Date!.Value,
-            Duration             = a.Duration,
-            AggravatedCondition  = a.AggravatedCondition,
-            Notes                = a.Notes
-        });
-    }
-}
-
-
-        // ── Calendar logic ──
-        void LoadMonth(DateTime date)
+        // ── Calendar rendering ──
+        private void LoadMonth(DateTime date)
         {
             var items = new ObservableCollection<DayItem>();
             int offset = (int)new DateTime(date.Year, date.Month, 1).DayOfWeek;
-
             for (int i = 0; i < offset; i++)
                 items.Add(new DayItem { DayNumber = 0, IsToday = false });
 
-            int dim = DateTime.DaysInMonth(date.Year, date.Month);
-            for (int d = 1; d <= dim; d++)
-                items.Add(new DayItem {
+            int daysInMonth = DateTime.DaysInMonth(date.Year, date.Month);
+            for (int d = 1; d <= daysInMonth; d++)
+            {
+                items.Add(new DayItem
+                {
                     DayNumber = d,
                     IsToday   = date.Year  == DateTime.Today.Year &&
                                 date.Month == DateTime.Today.Month &&
                                 d           == DateTime.Today.Day
                 });
+            }
 
             DaysInMonth  = items;
             CurrentMonth = date.ToString("MMMM yyyy");
@@ -192,48 +188,41 @@ public ObservableCollection<ActivityLogViewModel> ActivityLogs
             OnPropertyChanged(nameof(CurrentMonth));
         }
 
-        void OnPrevMonthClicked(object s, EventArgs e) {
-            _displayDate = _displayDate.AddMonths(-1);
-            LoadMonth(_displayDate);
-        }
-        void OnNextMonthClicked(object s, EventArgs e) {
-            _displayDate = _displayDate.AddMonths( 1);
-            LoadMonth(_displayDate);
+        // ── Helpers & navigation ──
+        private Color GenerateColor(int index)
+        {
+            const float goldenRatio = 0.618033988749895f;
+            return Color.FromHsla((index * goldenRatio) % 1f, 0.5f, 0.7f);
         }
 
-        // ── Navigation ──
-        void GoToConditions(object s, EventArgs e) => 
-            _ = Navigation.PushAsync(new ConditionsPage.ConditionsPage());
-        void GoToAddEntry   (object s, EventArgs e) => 
-            _ = Navigation.PushAsync(new AddEntryPage());
-        void GoToReports    (object s, EventArgs e) => 
-            _ = Navigation.PushAsync(new ReportsPage());
+        private async void GoToConditions(object s, EventArgs e)
+            => await Navigation.PushAsync(new ConditionsPage.ConditionsPage());
+        private async void GoToAddEntry(object s, EventArgs e)
+            => await Navigation.PushAsync(new AddEntryPage());
+        private async void GoToReports(object s, EventArgs e)
+            => await Navigation.PushAsync(new ReportsPage());
 
-        // ── Condition tap ──
-        async void OnConditionTapped(object s, EventArgs e)
+        private async void OnConditionTapped(object s, EventArgs e)
         {
             if (s is StackLayout sl && sl.BindingContext is ConditionViewModel cvm)
             {
                 await DisplayAlert("Condition Details",
-                    $"Id: {cvm.Id}\nName: {cvm.Name}\nDesc: {cvm.Description}\n" +
-                    $"Symptoms: {cvm.Symptoms}\nMeds: {cvm.Medications}\nTreatments: {cvm.Treatments}\nNotes: {cvm.Notes}",
+                    $"Id: {cvm.Id}\nName: {cvm.Name}\nDescription: {cvm.Description}\n" +
+                    $"Symptoms: {cvm.Symptoms}\nMedications: {cvm.Medications}\n" +
+                    $"Treatments: {cvm.Treatments}\nNotes: {cvm.Notes}",
                     "OK");
             }
         }
 
-        // ── Helpers ──
-        Color GenerateColor(int idx) {
-            const float φ = 0.618033988749895f;
-            return Color.FromHsla((idx * φ) % 1f, 0.5f, 0.7f);
-        }
-
+        // ── INotifyPropertyChanged ──
         public event PropertyChangedEventHandler PropertyChanged;
-        void OnPropertyChanged([CallerMemberName]string n = "") =>
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(n));
+        void OnPropertyChanged([CallerMemberName] string name = "")
+            => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
     }
 
-    // ── View models ──
-    public class ConditionViewModel {
+    // ── ViewModel classes ──
+    public class ConditionViewModel
+    {
         public string Id          { get; set; }
         public string Name        { get; set; }
         public string Description { get; set; }
@@ -244,7 +233,8 @@ public ObservableCollection<ActivityLogViewModel> ActivityLogs
         public Color  Color       { get; set; }
     }
 
-    public class HealthEventViewModel {
+    public class HealthEventViewModel
+    {
         public string   Id        { get; set; }
         public string   Title     { get; set; }
         public DateTime StartDate { get; set; }
@@ -255,18 +245,18 @@ public ObservableCollection<ActivityLogViewModel> ActivityLogs
     }
 
     public class ActivityLogViewModel
-{
-    public string Id { get; set; }
-    public string Name { get; set; }
-    public string Intensity { get; set; }
-    public DateTime Date { get; set; }
-    public string Duration { get; set; }
-    public string AggravatedCondition { get; set; }
-    public string Notes { get; set; }
-}
+    {
+        public string   Id                  { get; set; }
+        public string   Name                { get; set; }
+        public string   Intensity           { get; set; }
+        public DateTime Date                { get; set; }
+        public string   Duration            { get; set; }
+        public string   AggravatedCondition { get; set; }
+        public string   Notes               { get; set; }
+    }
 
-
-    public class DayItem {
+    public class DayItem
+    {
         public int  DayNumber { get; set; }
         public bool IsToday   { get; set; }
     }
