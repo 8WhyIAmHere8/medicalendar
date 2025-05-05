@@ -111,7 +111,11 @@
                        Color="{Binding Color}"
                        CornerRadius="5"
                        VerticalOptions="Center"/>
-              <Label Text="{Binding Name}" VerticalOptions="Center" Margin="10,0,0,0"/>
+              <!-- Arrow indicator -->
+        <Label Text="➤" 
+               VerticalOptions="Center"
+               FontSize="14"/>
+              <Label Text="{Binding Name}" VerticalOptions="Center" Margin="6,0,0,0"/>
             </StackLayout>
           </DataTemplate>
         </CollectionView.ItemTemplate>
@@ -146,7 +150,7 @@
       </CollectionView>
 
       <!-- Activity Log Section -->
-<Label Text="↓  Activity Log:" FontSize="20" Margin="0,20,0,5"/>
+<Label Text="↓  List of Activities:" FontSize="20" Margin="0,20,0,5"/>
 <CollectionView ItemsSource="{Binding ActivityLogs}">
   <CollectionView.ItemsLayout>
     <LinearItemsLayout Orientation="Vertical" ItemSpacing="8"/>
