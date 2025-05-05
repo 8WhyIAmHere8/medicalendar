@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage
+    x:Class="medi1.Pages.HomePage"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:components="clr-namespace:medi1.SplashPageComponents"
-    x:Class="medi1.Pages.HomePage"
     Title="Dashboard">
 
   <!-- Converter to highlight the current day -->
@@ -43,55 +43,55 @@
         <Label Text="Saturday"  Grid.Column="6" HorizontalOptions="Center" FontAttributes="Bold" FontSize="18"/>
       </Grid>
 
+      <!-- Calendar Grid -->
       <Grid
-    HorizontalOptions="FillAndExpand"
-    VerticalOptions="Center"
-    Padding="20,30"
-    Margin="0,-20,0,0">
-  <CollectionView
-      ItemsSource="{Binding DaysInMonth}"
-      HorizontalOptions="FillAndExpand"
-      VerticalOptions="Center">
-    <CollectionView.ItemsLayout>
-      <GridItemsLayout
-          Orientation="Vertical"
-          Span="7"
-          VerticalItemSpacing="4"
-          HorizontalItemSpacing="4"/>
-    </CollectionView.ItemsLayout>
-    <CollectionView.ItemTemplate>
-      <DataTemplate>
-        <Frame
-            Padding="3"
-            Margin="1"
-            CornerRadius="6"
-            HeightRequest="100"
-            WidthRequest="200"
-            HorizontalOptions="Center"
-            VerticalOptions="Center"
-            BackgroundColor="{Binding IsToday, Converter={StaticResource HighlightToday}}">
-          
-          <Label
-              Text="{Binding DayNumber}"
-              HorizontalOptions="Start"
-              VerticalOptions="Start"
-              Margin="3"
-              FontSize="18"
-              FontAttributes="Bold">
-            <Label.Triggers>
-              <!-- hide placeholder cells -->
-              <DataTrigger TargetType="Label"
-                           Binding="{Binding DayNumber}"
-                           Value="0">
-                <Setter Property="Text" Value="" />
-              </DataTrigger>
-            </Label.Triggers>
-          </Label>
-        </Frame>
-      </DataTemplate>
-    </CollectionView.ItemTemplate>
-  </CollectionView>
-</Grid>
+          HorizontalOptions="FillAndExpand"
+          VerticalOptions="Center"
+          Padding="20,30"
+          Margin="0,-20,0,0">
+        <CollectionView
+            ItemsSource="{Binding DaysInMonth}"
+            HorizontalOptions="FillAndExpand"
+            VerticalOptions="Center">
+          <CollectionView.ItemsLayout>
+            <GridItemsLayout
+                Orientation="Vertical"
+                Span="7"
+                VerticalItemSpacing="4"
+                HorizontalItemSpacing="4"/>
+          </CollectionView.ItemsLayout>
+          <CollectionView.ItemTemplate>
+            <DataTemplate>
+              <Frame
+                  Padding="3"
+                  Margin="1"
+                  CornerRadius="6"
+                  HeightRequest="100"
+                  WidthRequest="200"
+                  HorizontalOptions="Center"
+                  VerticalOptions="Center"
+                  BackgroundColor="{Binding IsToday, Converter={StaticResource HighlightToday}}">
+                <Label
+                    Text="{Binding DayNumber}"
+                    HorizontalOptions="Start"
+                    VerticalOptions="Start"
+                    Margin="3"
+                    FontSize="18"
+                    FontAttributes="Bold">
+                  <Label.Triggers>
+                    <!-- hide placeholder cells -->
+                    <DataTrigger TargetType="Label"
+                                 Binding="{Binding DayNumber}"
+                                 Value="0">
+                      <Setter Property="Text" Value="" />
+                    </DataTrigger>
+                  </Label.Triggers>
+                </Label>
+              </Frame>
+            </DataTemplate>
+          </CollectionView.ItemTemplate>
+        </CollectionView>
+      </Grid>
 
       <!-- Condition Filter Section -->
       <Label Text="↓  List of Conditions:" FontSize="20" Margin="0,10,0,5"/>
@@ -113,6 +113,34 @@
                        VerticalOptions="Center"/>
               <Label Text="{Binding Name}" VerticalOptions="Center" Margin="10,0,0,0"/>
             </StackLayout>
+          </DataTemplate>
+        </CollectionView.ItemTemplate>
+      </CollectionView>
+
+      <!-- Health Events Section -->
+      <Label Text="↓  List of Health Events:" FontSize="20" Margin="0,20,0,5"/>
+      <CollectionView ItemsSource="{Binding HealthEvents}">
+        <CollectionView.ItemsLayout>
+          <LinearItemsLayout Orientation="Vertical" ItemSpacing="8"/>
+        </CollectionView.ItemsLayout>
+        <CollectionView.ItemTemplate>
+          <DataTemplate>
+            <Frame Padding="10" Margin="0,0,0,10" CornerRadius="8" HasShadow="True">
+              <StackLayout>
+                <Label Text="{Binding Title}"
+                       FontSize="18"
+                       FontAttributes="Bold"/>
+                <Label Text="{Binding StartDate, StringFormat='{}{0:MMM dd, yyyy}'}"
+                       FontSize="14"/>
+                <Label Text="{Binding EndDate, StringFormat='to {0:MMM dd, yyyy}'}"
+                       FontSize="14"/>
+                <Label Text="{Binding Impact, StringFormat='Impact: {0}'}"
+                       FontSize="14"/>
+                <Label Text="{Binding Notes}"
+                       FontSize="14"
+                       LineBreakMode="TailTruncation"/>
+              </StackLayout>
+            </Frame>
           </DataTemplate>
         </CollectionView.ItemTemplate>
       </CollectionView>
@@ -145,6 +173,6 @@
                 Margin="5"/>
       </FlexLayout>
 
-        </StackLayout>
+    </StackLayout>
   </ScrollView>
 </ContentPage>
