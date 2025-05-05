@@ -4,12 +4,13 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:components="clr-namespace:medi1.SplashPageComponents"
+    xmlns:local="clr-namespace:medi1.Pages"
     Title="Dashboard">
 
-  <!-- Converter to highlight the current day -->
   <ContentPage.Resources>
     <ResourceDictionary>
       <components:HighlightToday x:Key="HighlightToday"/>
+      <local:NullToBool       x:Key="NullToBool"/>
     </ResourceDictionary>
   </ContentPage.Resources>
 
@@ -45,48 +46,75 @@
 
       <!-- Calendar Grid -->
       <Grid
-          HorizontalOptions="FillAndExpand"
-          VerticalOptions="Center"
-          Padding="20,30"
-          Margin="0,-20,0,0">
+        HorizontalOptions="FillAndExpand"
+        VerticalOptions="Center"
+        Padding="20,30"
+        Margin="0,-20,0,0">
         <CollectionView
-            ItemsSource="{Binding DaysInMonth}"
-            HorizontalOptions="FillAndExpand"
-            VerticalOptions="Center">
+          ItemsSource="{Binding DaysInMonth}"
+          HorizontalOptions="FillAndExpand"
+          VerticalOptions="Center">
           <CollectionView.ItemsLayout>
             <GridItemsLayout
-                Orientation="Vertical"
-                Span="7"
-                VerticalItemSpacing="4"
-                HorizontalItemSpacing="4"/>
+              Orientation="Vertical"
+              Span="7"
+              VerticalItemSpacing="4"
+              HorizontalItemSpacing="4"/>
           </CollectionView.ItemsLayout>
           <CollectionView.ItemTemplate>
             <DataTemplate>
               <Frame
-                  Padding="3"
-                  Margin="1"
-                  CornerRadius="6"
-                  HeightRequest="100"
-                  WidthRequest="200"
-                  HorizontalOptions="Center"
-                  VerticalOptions="Center"
-                  BackgroundColor="{Binding IsToday, Converter={StaticResource HighlightToday}}">
-                <Label
+                Padding="3"
+                Margin="1"
+                CornerRadius="6"
+                HeightRequest="130"
+                WidthRequest="200"
+                BackgroundColor="{Binding IsToday, Converter={StaticResource HighlightToday}}">
+                <StackLayout>
+
+                  <!-- Day number -->
+                  <Label
                     Text="{Binding DayNumber}"
+                    FontSize="18"
+                    FontAttributes="Bold"
                     HorizontalOptions="Start"
                     VerticalOptions="Start"
-                    Margin="3"
-                    FontSize="18"
-                    FontAttributes="Bold">
-                  <Label.Triggers>
-                    <!-- hide placeholder cells -->
-                    <DataTrigger TargetType="Label"
-                                 Binding="{Binding DayNumber}"
-                                 Value="0">
-                      <Setter Property="Text" Value="" />
-                    </DataTrigger>
-                  </Label.Triggers>
-                </Label>
+                    Margin="3">
+                    <Label.Triggers>
+                      <DataTrigger TargetType="Label"
+                                   Binding="{Binding DayNumber}"
+                                   Value="0">
+                        <Setter Property="Text" Value="" />
+                      </DataTrigger>
+                    </Label.Triggers>
+                  </Label>
+
+                  <!-- Entries under this day -->
+                  <StackLayout
+                    Margin="3,5,3,3"
+                    Spacing="2"
+                    BindableLayout.ItemsSource="{Binding Entries}">
+                    <BindableLayout.ItemTemplate>
+                      <DataTemplate>
+                        <StackLayout Orientation="Horizontal" Spacing="4">
+                          <BoxView
+                            WidthRequest="6"
+                            HeightRequest="6"
+                            CornerRadius="3"
+                            VerticalOptions="Center"
+                            IsVisible="{Binding DotColor, Converter={StaticResource NullToBool}}"
+                            BackgroundColor="{Binding DotColor}" />
+                          <Label
+                            Text="{Binding Text}"
+                            FontSize="12"
+                            LineBreakMode="TailTruncation"
+                            VerticalOptions="Center"/>
+                        </StackLayout>
+                      </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                  </StackLayout>
+
+                </StackLayout>
               </Frame>
             </DataTemplate>
           </CollectionView.ItemTemplate>
@@ -95,27 +123,28 @@
 
       <!-- Condition Filter Section -->
       <Label Text="↓  List of Conditions:" FontSize="20" Margin="0,10,0,5"/>
-      <CollectionView x:Name="conditionsCollectionView"
-                      ItemsSource="{Binding Conditions}">
+      <CollectionView ItemsSource="{Binding Conditions}">
         <CollectionView.ItemsLayout>
           <LinearItemsLayout Orientation="Horizontal"/>
         </CollectionView.ItemsLayout>
         <CollectionView.ItemTemplate>
           <DataTemplate>
             <StackLayout Orientation="Horizontal" Padding="5">
+              <!-- Correct placement of the gesture recognizer -->
               <StackLayout.GestureRecognizers>
                 <TapGestureRecognizer Tapped="OnConditionTapped"/>
               </StackLayout.GestureRecognizers>
-              <BoxView WidthRequest="10"
-                       HeightRequest="10"
-                       Color="{Binding Color}"
-                       CornerRadius="5"
-                       VerticalOptions="Center"/>
-              <!-- Arrow indicator -->
-        <Label Text="➤" 
-               VerticalOptions="Center"
-               FontSize="14"/>
-              <Label Text="{Binding Name}" VerticalOptions="Center" Margin="6,0,0,0"/>
+              <Label Text="➤" VerticalOptions="Center" FontSize="14" Margin="0,0,5,0"/>
+              <BoxView
+                WidthRequest="10"
+                HeightRequest="10"
+                Color="{Binding Color}"
+                CornerRadius="5"
+                VerticalOptions="Center"/>
+              <Label
+                Text="{Binding Name}"
+                VerticalOptions="Center"
+                Margin="10,0,0,0"/>
             </StackLayout>
           </DataTemplate>
         </CollectionView.ItemTemplate>
@@ -131,18 +160,11 @@
           <DataTemplate>
             <Frame Padding="10" Margin="0,0,0,10" CornerRadius="8" HasShadow="True">
               <StackLayout>
-                <Label Text="{Binding Title}"
-                       FontSize="18"
-                       FontAttributes="Bold"/>
-                <Label Text="{Binding StartDate, StringFormat='{}{0:MMM dd, yyyy}'}"
-                       FontSize="14"/>
-                <Label Text="{Binding EndDate, StringFormat='to {0:MMM dd, yyyy}'}"
-                       FontSize="14"/>
-                <Label Text="{Binding Impact, StringFormat='Impact: {0}'}"
-                       FontSize="14"/>
-                <Label Text="{Binding Notes}"
-                       FontSize="14"
-                       LineBreakMode="TailTruncation"/>
+                <Label Text="{Binding Title}" FontSize="18" FontAttributes="Bold"/>
+                <Label Text="{Binding StartDate, StringFormat='{}{0:MMM dd, yyyy}'}" FontSize="14"/>
+                <Label Text="{Binding EndDate, StringFormat='to {0:MMM dd, yyyy}'}" FontSize="14"/>
+                <Label Text="{Binding Impact, StringFormat='Impact: {0}'}" FontSize="14"/>
+                <Label Text="{Binding Notes}" FontSize="14" LineBreakMode="TailTruncation"/>
               </StackLayout>
             </Frame>
           </DataTemplate>
@@ -150,54 +172,32 @@
       </CollectionView>
 
       <!-- Activity Log Section -->
-<Label Text="↓  List of Activities:" FontSize="20" Margin="0,20,0,5"/>
-<CollectionView ItemsSource="{Binding ActivityLogs}">
-  <CollectionView.ItemsLayout>
-    <LinearItemsLayout Orientation="Vertical" ItemSpacing="8"/>
-  </CollectionView.ItemsLayout>
-  <CollectionView.ItemTemplate>
-    <DataTemplate>
-      <Frame Padding="10" Margin="0,0,0,10" CornerRadius="8" HasShadow="True">
-        <StackLayout>
-          <Label Text="{Binding Name}" FontSize="18" FontAttributes="Bold"/>
-          <Label Text="{Binding Date, StringFormat='{}{0:MMM dd, yyyy}'}" FontSize="14"/>
-          <Label Text="{Binding Intensity, StringFormat='Intensity: {0}'}" FontSize="14"/>
-          <Label Text="{Binding Duration, StringFormat='Duration: {0}'}" FontSize="14"/>
-          <Label Text="{Binding AggravatedCondition, StringFormat='Aggravated: {0}'}" FontSize="14"/>
-          <Label Text="{Binding Notes}" FontSize="14" LineBreakMode="TailTruncation"/>
-        </StackLayout>
-      </Frame>
-    </DataTemplate>
-  </CollectionView.ItemTemplate>
-</CollectionView>
-
+      <Label Text="↓  Activity Log:" FontSize="20" Margin="0,20,0,5"/>
+      <CollectionView ItemsSource="{Binding ActivityLogs}">
+        <CollectionView.ItemsLayout>
+          <LinearItemsLayout Orientation="Vertical" ItemSpacing="8"/>
+        </CollectionView.ItemsLayout>
+        <CollectionView.ItemTemplate>
+          <DataTemplate>
+            <Frame Padding="10" Margin="0,0,0,10" CornerRadius="8" HasShadow="True">
+              <StackLayout>
+                <Label Text="{Binding Name}" FontSize="18" FontAttributes="Bold"/>
+                <Label Text="{Binding Date, StringFormat='{}{0:MMM dd, yyyy}'}" FontSize="14"/>
+                <Label Text="{Binding Intensity, StringFormat='Intensity: {0}'}" FontSize="14"/>
+                <Label Text="{Binding Duration, StringFormat='Duration: {0}'}" FontSize="14"/>
+                <Label Text="{Binding AggravatedCondition, StringFormat='Aggravated: {0}'}" FontSize="14"/>
+                <Label Text="{Binding Notes}" FontSize="14" LineBreakMode="TailTruncation"/>
+              </StackLayout>
+            </Frame>
+          </DataTemplate>
+        </CollectionView.ItemTemplate>
+      </CollectionView>
 
       <!-- Navigation Buttons -->
       <FlexLayout Direction="Row" JustifyContent="Center" AlignItems="Center" Padding="30" Margin="0,20,0,0">
-        <Button Text="My Conditions"
-                BackgroundColor="Red"
-                TextColor="White"
-                FontSize="14"
-                WidthRequest="120"
-                HeightRequest="40"
-                Clicked="GoToConditions"
-                Margin="5"/>
-        <Button Text="Add Entry"
-                BackgroundColor="LightGray"
-                TextColor="Red"
-                FontSize="14"
-                WidthRequest="120"
-                HeightRequest="40"
-                Clicked="GoToAddEntry"
-                Margin="5"/>
-        <Button Text="Reports"
-                BackgroundColor="Blue"
-                TextColor="White"
-                FontSize="14"
-                WidthRequest="120"
-                HeightRequest="40"
-                Clicked="GoToReports"
-                Margin="5"/>
+        <Button Text="My Conditions" BackgroundColor="Red" TextColor="White" WidthRequest="120" HeightRequest="40" Clicked="GoToConditions" Margin="5"/>
+        <Button Text="Add Entry"     BackgroundColor="LightGray" TextColor="Red" WidthRequest="120" HeightRequest="40" Clicked="GoToAddEntry"    Margin="5"/>
+        <Button Text="Reports"       BackgroundColor="Blue" TextColor="White" WidthRequest="120" HeightRequest="40" Clicked="GoToReports"     Margin="5"/>
       </FlexLayout>
 
     </StackLayout>

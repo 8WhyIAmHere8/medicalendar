@@ -2,6 +2,7 @@ using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
@@ -11,7 +12,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Xaml;
 using Microsoft.Maui.Graphics;
-// Alias so we don’t clash with MAUI’s Condition
+// alias to avoid conflict with MAUI.Controls.Condition
 using DCondition = medi1.Data.Models.Condition;
 
 namespace medi1.Pages
@@ -23,22 +24,22 @@ namespace medi1.Pages
 
         // ── Calendar state ──
         private DateTime _displayDate;
-        public ObservableCollection<DayItem> DaysInMonth { get; set; } = new();
-        public string CurrentMonth   { get; set; }
-        public string FullDateToday  { get; set; }
+        public ObservableCollection<DayItem> DaysInMonth { get; private set; } = new();
+        public string CurrentMonth  { get; private set; }
+        public string FullDateToday { get; private set; }
 
         // ── Data collections ──
-        public ObservableCollection<ConditionViewModel> Conditions    { get; set; } = new();
-        public ObservableCollection<HealthEventViewModel> HealthEvents { get; set; } = new();
-        public ObservableCollection<ActivityLogViewModel> ActivityLogs { get; set; } = new();
+        public ObservableCollection<ConditionViewModel> Conditions    { get; } = new();
+        public ObservableCollection<HealthEventViewModel> HealthEvents { get; } = new();
+        public ObservableCollection<ActivityLogViewModel> ActivityLogs { get; } = new();
 
         public HomePage()
         {
             InitializeComponent();
             BindingContext = this;
 
-            _displayDate   = DateTime.Today;
-            FullDateToday  = _displayDate.ToString("MMMM dd, yyyy");
+            _displayDate  = DateTime.Today;
+            FullDateToday = _displayDate.ToString("MMMM dd, yyyy");
             LoadMonth(_displayDate);
         }
 
@@ -56,7 +57,7 @@ namespace medi1.Pages
             }
         }
 
-        // ── Prev/Next buttons ──
+        // ── Prev/Next month ──
         private async void OnPrevMonthClicked(object sender, EventArgs e)
         {
             _displayDate = _displayDate.AddMonths(-1);
@@ -71,26 +72,25 @@ namespace medi1.Pages
             await ReloadAllAsync();
         }
 
-        // ── Reload sequentially to avoid DbContext concurrency errors ──
+        // ── Reload all data, then map into calendar ──
         private async Task ReloadAllAsync()
         {
             await LoadConditionsFromDbAsync();
             await LoadHealthEventsFromDbAsync();
             await LoadActivityLogsFromDbAsync();
+            MapDataIntoCalendar();
         }
 
-        // ── Conditions (no date filter, since no date field) ──
+        // ── Load Conditions (no date filter, add one if you extend your model) ──
         private async Task LoadConditionsFromDbAsync()
         {
             var list = await _dbContext.Conditions.ToListAsync();
             Conditions.Clear();
-
             for (int i = 0; i < list.Count; i++)
             {
                 var e     = list[i];
                 var color = GenerateColor(i);
-                Conditions.Add(new ConditionViewModel
-                {
+                Conditions.Add(new ConditionViewModel {
                     Id          = e.Id,
                     Name        = e.Name,
                     Description = e.Description,
@@ -103,7 +103,7 @@ namespace medi1.Pages
             }
         }
 
-        // ── Health Events filtered by StartDate month/year ──
+        // ── Load Health Events filtered by month/year ──
         private async Task LoadHealthEventsFromDbAsync()
         {
             var raw = await _dbContext.HealthEvent
@@ -119,8 +119,7 @@ namespace medi1.Pages
             HealthEvents.Clear();
             foreach (var e in raw)
             {
-                HealthEvents.Add(new HealthEventViewModel
-                {
+                HealthEvents.Add(new HealthEventViewModel {
                     Id        = e.Id,
                     Title     = e.Title,
                     StartDate = e.StartDate!.Value,
@@ -132,7 +131,7 @@ namespace medi1.Pages
             }
         }
 
-        // ── Activity Logs filtered by Date month/year ──
+        // ── Load Activity Logs filtered by month/year ──
         private async Task LoadActivityLogsFromDbAsync()
         {
             var raw = await _dbContext.ActivityEventLog
@@ -149,8 +148,7 @@ namespace medi1.Pages
             ActivityLogs.Clear();
             foreach (var a in raw)
             {
-                ActivityLogs.Add(new ActivityLogViewModel
-                {
+                ActivityLogs.Add(new ActivityLogViewModel {
                     Id                  = a.ActivityLogId,
                     Name                = a.Name,
                     Intensity           = a.Intensity,
@@ -162,7 +160,49 @@ namespace medi1.Pages
             }
         }
 
-        // ── Calendar rendering ──
+        // ── Map loaded data into each DayItem’s Entries ──
+        private void MapDataIntoCalendar()
+        {
+            foreach (var day in DaysInMonth)
+                day.Entries.Clear();
+
+            int year  = _displayDate.Year;
+            int month = _displayDate.Month;
+
+            // Health Events
+            foreach (var ev in HealthEvents)
+            {
+                if (ev.StartDate.Year == year && ev.StartDate.Month == month)
+                {
+                    var d = DaysInMonth.FirstOrDefault(x => x.DayNumber == ev.StartDate.Day);
+                    d?.Entries.Add(new CalendarEntry {
+                        Text     = ev.Title,
+                        DotColor = null
+                    });
+                }
+            }
+
+            // Activity Logs
+            foreach (var act in ActivityLogs)
+            {
+                if (act.Date.Year == year && act.Date.Month == month)
+                {
+                    var d = DaysInMonth.FirstOrDefault(x => x.DayNumber == act.Date.Day);
+                    d?.Entries.Add(new CalendarEntry {
+                        Text     = act.Name,
+                        DotColor = null
+                    });
+                }
+            }
+
+            // Conditions (if you later add a date property to your model)
+            // foreach (var cond in Conditions) { ... }
+
+            // Notify UI
+            OnPropertyChanged(nameof(DaysInMonth));
+        }
+
+        // ── Calendar month cells ──
         private void LoadMonth(DateTime date)
         {
             var items = new ObservableCollection<DayItem>();
@@ -170,11 +210,10 @@ namespace medi1.Pages
             for (int i = 0; i < offset; i++)
                 items.Add(new DayItem { DayNumber = 0, IsToday = false });
 
-            int daysInMonth = DateTime.DaysInMonth(date.Year, date.Month);
-            for (int d = 1; d <= daysInMonth; d++)
+            int days = DateTime.DaysInMonth(date.Year, date.Month);
+            for (int d = 1; d <= days; d++)
             {
-                items.Add(new DayItem
-                {
+                items.Add(new DayItem {
                     DayNumber = d,
                     IsToday   = date.Year  == DateTime.Today.Year &&
                                 date.Month == DateTime.Today.Month &&
@@ -189,10 +228,9 @@ namespace medi1.Pages
         }
 
         // ── Helpers & navigation ──
-        private Color GenerateColor(int index)
-        {
-            const float goldenRatio = 0.618033988749895f;
-            return Color.FromHsla((index * goldenRatio) % 1f, 0.5f, 0.7f);
+        private Color GenerateColor(int idx) {
+            const float φ = 0.618033988749895f;
+            return Color.FromHsla((idx * φ) % 1f, 0.5f, 0.7f);
         }
 
         private async void GoToConditions(object s, EventArgs e)
@@ -216,11 +254,20 @@ namespace medi1.Pages
 
         // ── INotifyPropertyChanged ──
         public event PropertyChangedEventHandler PropertyChanged;
-        void OnPropertyChanged([CallerMemberName] string name = "")
-            => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+        void OnPropertyChanged([CallerMemberName]string n = "")
+            => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(n));
     }
 
-    // ── ViewModel classes ──
+    // ── Converters ──
+    public class NullToBool : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+            => value != null;
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+            => throw new NotImplementedException();
+    }
+
+    // ── ViewModel and calendar types ──
     public class ConditionViewModel
     {
         public string Id          { get; set; }
@@ -255,9 +302,16 @@ namespace medi1.Pages
         public string   Notes               { get; set; }
     }
 
+    public class CalendarEntry
+    {
+        public string Text { get; set; }
+        public Color? DotColor { get; set; }
+    }
+
     public class DayItem
     {
-        public int  DayNumber { get; set; }
-        public bool IsToday   { get; set; }
+        public int DayNumber { get; set; }
+        public bool IsToday  { get; set; }
+        public ObservableCollection<CalendarEntry> Entries { get; } = new();
     }
 }
