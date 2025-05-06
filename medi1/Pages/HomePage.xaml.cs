@@ -81,15 +81,10 @@ namespace medi1.Pages
             MapDataIntoCalendar();
         }
 
-        // ── Load Conditions filtered by month/year ──
+        // ── Load Conditions (no date filter) ──
         private async Task LoadConditionsFromDbAsync()
         {
-            var list = await _dbContext.Conditions
-                .Where(c => c.Date.HasValue
-                            && c.Date.Value.Month == _displayDate.Month
-                            && c.Date.Value.Year  == _displayDate.Year)
-                .ToListAsync();
-
+            var list = await _dbContext.Conditions.ToListAsync();
             Conditions.Clear();
             for (int i = 0; i < list.Count; i++)
             {
@@ -98,7 +93,6 @@ namespace medi1.Pages
                 Conditions.Add(new ConditionViewModel {
                     Id          = e.Id,
                     Name        = e.Name,
-                    Date        = e.Date,
                     Description = e.Description,
                     Symptoms    = string.Join(", ", e.Symptoms),
                     Medications = string.Join(", ", e.Medications),
@@ -201,21 +195,6 @@ namespace medi1.Pages
                 }
             }
 
-            // Conditions
-            foreach (var cond in Conditions)
-            {
-                if (cond.Date.HasValue
-                    && cond.Date.Value.Year  == year
-                    && cond.Date.Value.Month == month)
-                {
-                    var d = DaysInMonth.FirstOrDefault(x => x.DayNumber == cond.Date.Value.Day);
-                    d?.Entries.Add(new CalendarEntry {
-                        Text     = cond.Name,
-                        DotColor = cond.Color
-                    });
-                }
-            }
-
             // Notify UI
             OnPropertyChanged(nameof(DaysInMonth));
         }
@@ -225,7 +204,6 @@ namespace medi1.Pages
         {
             var items = new ObservableCollection<DayItem>();
             int offset = (int)new DateTime(date.Year, date.Month, 1).DayOfWeek;
-
             for (int i = 0; i < offset; i++)
                 items.Add(new DayItem { DayNumber = 0, IsToday = false });
 
@@ -289,15 +267,14 @@ namespace medi1.Pages
     // ── ViewModel and calendar types ──
     public class ConditionViewModel
     {
-        public string    Id          { get; set; }
-        public string    Name        { get; set; }
-        public DateTime? Date        { get; set; }
-        public string    Description { get; set; }
-        public string    Symptoms    { get; set; }
-        public string    Medications { get; set; }
-        public string    Treatments  { get; set; }
-        public string    Notes       { get; set; }
-        public Color     Color       { get; set; }
+        public string Id          { get; set; }
+        public string Name        { get; set; }
+        public string Description { get; set; }
+        public string Symptoms    { get; set; }
+        public string Medications { get; set; }
+        public string Treatments  { get; set; }
+        public string Notes       { get; set; }
+        public Color  Color       { get; set; }
     }
 
     public class HealthEventViewModel
@@ -324,8 +301,8 @@ namespace medi1.Pages
 
     public class CalendarEntry
     {
-        public string  Text     { get; set; }
-        public Color?  DotColor { get; set; }
+        public string Text { get; set; }
+        public Color? DotColor { get; set; }
     }
 
     public class DayItem
