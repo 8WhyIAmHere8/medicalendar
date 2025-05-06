@@ -200,7 +200,7 @@ namespace medi1.Pages
                 }
             }
 
-            // Activity Logs (unchanged)
+            // Activity Logs
             foreach (var act in ActivityLogs)
             {
                 if (act.Date.Year == year && act.Date.Month == month)
