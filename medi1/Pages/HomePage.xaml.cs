@@ -117,16 +117,20 @@ namespace medi1.Pages
                 .ToListAsync();
 
             HealthEvents.Clear();
-            foreach (var e in raw)
+            for (int i = 0; i < raw.Count; i++)
             {
+                var e     = raw[i];
+                var color = GenerateColor(i);
+
                 HealthEvents.Add(new HealthEventViewModel {
-                    Id        = e.Id,
-                    Title     = e.Title,
-                    StartDate = e.StartDate!.Value,
-                    EndDate   = e.EndDate!.Value,
-                    Duration  = e.Duration,
-                    Impact    = e.Impact ?? 0,
-                    Notes     = e.Notes
+                    Id         = e.Id,
+                    Title      = e.Title,
+                    StartDate  = e.StartDate!.Value,
+                    EndDate    = e.EndDate!.Value,
+                    Duration   = e.Duration,
+                    Impact     = e.Impact ?? 0,
+                    Notes      = e.Notes,
+                    EventColor = color
                 });
             }
         }
@@ -168,34 +172,47 @@ namespace medi1.Pages
 
             int year  = _displayDate.Year;
             int month = _displayDate.Month;
+            int daysInMonth = DateTime.DaysInMonth(year, month);
 
-            // Health Events
+            // Health Events: span range or single day
             foreach (var ev in HealthEvents)
             {
-                if (ev.StartDate.Year == year && ev.StartDate.Month == month)
+                if (ev.StartDate.Date == ev.EndDate.Date)
                 {
-                    var d = DaysInMonth.FirstOrDefault(x => x.DayNumber == ev.StartDate.Day);
-                    d?.Entries.Add(new CalendarEntry {
+                    var cell = DaysInMonth.FirstOrDefault(x => x.DayNumber == ev.StartDate.Day);
+                    cell?.Entries.Add(new CalendarEntry {
                         Text     = ev.Title,
-                        DotColor = null
+                        DotColor = ev.EventColor
                     });
+                }
+                else
+                {
+                    int from = Math.Max(ev.StartDate.Day, 1);
+                    int to   = Math.Min(ev.EndDate.Day, daysInMonth);
+                    for (int d = from; d <= to; d++)
+                    {
+                        var cell = DaysInMonth.FirstOrDefault(x => x.DayNumber == d);
+                        cell?.Entries.Add(new CalendarEntry {
+                            Text     = ev.Title,
+                            DotColor = ev.EventColor
+                        });
+                    }
                 }
             }
 
-            // Activity Logs
+            // Activity Logs (unchanged)
             foreach (var act in ActivityLogs)
             {
                 if (act.Date.Year == year && act.Date.Month == month)
                 {
-                    var d = DaysInMonth.FirstOrDefault(x => x.DayNumber == act.Date.Day);
-                    d?.Entries.Add(new CalendarEntry {
+                    var cell = DaysInMonth.FirstOrDefault(x => x.DayNumber == act.Date.Day);
+                    cell?.Entries.Add(new CalendarEntry {
                         Text     = act.Name,
                         DotColor = null
                     });
                 }
             }
 
-            // Notify UI
             OnPropertyChanged(nameof(DaysInMonth));
         }
 
@@ -212,9 +229,9 @@ namespace medi1.Pages
             {
                 items.Add(new DayItem {
                     DayNumber = d,
-                    IsToday   = date.Year  == DateTime.Today.Year &&
+                    IsToday   = date.Year == DateTime.Today.Year &&
                                 date.Month == DateTime.Today.Month &&
-                                d           == DateTime.Today.Day
+                                d == DateTime.Today.Day
                 });
             }
 
@@ -225,9 +242,11 @@ namespace medi1.Pages
         }
 
         // ── Helpers & navigation ──
-        private Color GenerateColor(int idx) {
+        private Color GenerateColor(int idx)
+        {
             const float φ = 0.618033988749895f;
-            return Color.FromHsla((idx * φ) % 1f, 0.5f, 0.7f);
+            // Light pastel colors: moderate saturation, high lightness
+            return Color.FromHsla((idx * φ) % 1f, 0.4f, 0.85f);
         }
 
         private async void GoToConditions(object s, EventArgs e)
@@ -279,13 +298,14 @@ namespace medi1.Pages
 
     public class HealthEventViewModel
     {
-        public string   Id        { get; set; }
-        public string   Title     { get; set; }
-        public DateTime StartDate { get; set; }
-        public DateTime EndDate   { get; set; }
-        public string   Duration  { get; set; }
-        public int      Impact    { get; set; }
-        public string   Notes     { get; set; }
+        public string   Id         { get; set; }
+        public string   Title      { get; set; }
+        public DateTime StartDate  { get; set; }
+        public DateTime EndDate    { get; set; }
+        public string   Duration   { get; set; }
+        public int      Impact     { get; set; }
+        public string   Notes      { get; set; }
+        public Color    EventColor { get; set; }
     }
 
     public class ActivityLogViewModel
