@@ -165,14 +165,27 @@
                                 <Button Text="+ Log an Entry" Clicked="AddNewEntry" />
                             </StackLayout>
                         </Frame>
-                         <Frame Padding="0" Margin="0" HeightRequest="300" BackgroundColor="LightGray">
-    <skia:SKCanvasView 
-        x:Name="SimpleChart"
-        PaintSurface="OnCanvasViewPaintSurface"
-        VerticalOptions="FillAndExpand"
-        HorizontalOptions="FillAndExpand" />
-</Frame>
+                         <VerticalStackLayout Spacing="10">
 
+    <!-- Existing chart view -->
+    <skia:SKCanvasView x:Name="ChartCanvas"
+                       HeightRequest="300"
+                       PaintSurface="OnCanvasViewPaintSurface" />
+
+    <!-- Zoom controls -->
+    <HorizontalStackLayout HorizontalOptions="Center">
+        <Button Text="➖ Zoom Out"
+                Clicked="OnZoomOutClicked"
+                BackgroundColor="#ddd" />
+        <Button Text="➕ Zoom In"
+                Clicked="OnZoomInClicked"
+                BackgroundColor="#ddd" />
+                 <DatePicker Date="{Binding StartDate}" />
+    <Label Text="to" VerticalOptions="Center" />
+    <DatePicker Date="{Binding EndDate}" />
+    </HorizontalStackLayout>
+
+</VerticalStackLayout>
                     </VerticalStackLayout>
                 </Frame>
               
