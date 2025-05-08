@@ -12,14 +12,14 @@ namespace medi1.Data.Models
         public string Name { get; set; } = string.Empty;
 
         public string Intensity {get; set; } = string.Empty;
-        public DateTime Date { get; set; }
+        public DateTime? Date { get; set; }
 
         public string Duration { get; set; } = string.Empty;
 
         public string AggravatedCondition {get; set; } = string.Empty;
 
         public string Notes { get; set; } = string.Empty;
-        public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+        public DateTime? Timestamp { get; set; } = DateTime.UtcNow;
 
     }
 }

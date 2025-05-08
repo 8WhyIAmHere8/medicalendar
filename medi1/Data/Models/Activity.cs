@@ -5,7 +5,7 @@ namespace medi1.Data.Models
 {
     public class Activity
     {
-        public string ActivityId { get; set; } = string.Empty; // Ensure manual assignment (e.g., "1")
+        public string ActivityId { get; set; } = string.Empty;
         public string Name { get; set; } = string.Empty;
         
     }

@@ -1,123 +1,222 @@
+using System;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.Globalization;
+using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using medi1.Data;
 using medi1.Data.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
 using Microsoft.Maui.Graphics;
-using System;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
-using medi1.Services;
-using System.Diagnostics; // Import used login data
+// alias to avoid conflict with MAUI.Controls.Condition
+using DCondition = medi1.Data.Models.Condition;
 
 namespace medi1.Pages
 {
+    [XamlCompilation(XamlCompilationOptions.Compile)]
     public partial class HomePage : ContentPage, INotifyPropertyChanged
     {
-        // EF Core context for reading stored conditions
-        private readonly MedicalDbContext _dbContext = new MedicalDbContext();
+        private readonly MedicalDbContext _dbContext = new();
 
-        // Calendar data with notification on change
-        private ObservableCollection<DayItem> _daysInMonth = new();
-        public ObservableCollection<DayItem> DaysInMonth
-        {
-            get => _daysInMonth;
-            set { _daysInMonth = value; OnPropertyChanged(); }
-        }
-
+        // ── Calendar state ──
         private DateTime _displayDate;
-        private string _currentMonth;
-        public string CurrentMonth
-        {
-            get => _currentMonth;
-            set { _currentMonth = value; OnPropertyChanged(); }
-        }
+        public ObservableCollection<DayItem> DaysInMonth { get; private set; } = new();
+        public string CurrentMonth  { get; private set; }
+        public string FullDateToday { get; private set; }
 
-        public string FullDateToday {get; set; }
-
-        // Conditions list with notification on change
-        private ObservableCollection<ConditionViewModel> _conditions = new();
-        public ObservableCollection<ConditionViewModel> Conditions
-        {
-            get => _conditions;
-            set { _conditions = value; OnPropertyChanged(); }
-        }
-
-        // For editing tasks
-        private Label _editingTaskLabel;
+        // ── Data collections ──
+        public ObservableCollection<ConditionViewModel> Conditions    { get; } = new();
+        public ObservableCollection<HealthEventViewModel> HealthEvents { get; } = new();
+        public ObservableCollection<ActivityLogViewModel> ActivityLogs { get; } = new();
 
         public HomePage()
         {
             InitializeComponent();
             BindingContext = this;
 
-            // Initialize calendar
-            _displayDate = DateTime.Now.Date;
+            _displayDate  = DateTime.Today;
             FullDateToday = _displayDate.ToString("MMMM dd, yyyy");
             LoadMonth(_displayDate);
-
-            // Subscribe to new conditions from AddEntryPage
-            MessagingCenter.Subscribe<AddEntryPage, ConditionViewModel>(
-                this,
-                "ConditionAdded",
-                (sender, vm) => Conditions.Add(vm)
-            );
-
-            // Subscribe to new conditions from ConditionsPage (if used)
-            MessagingCenter.Subscribe<ConditionsPage.ConditionsPage, Data.Models.Condition>(
-                this,
-                "ConditionAdded",
-                (sender, entity) => Conditions.Add(MapToVm(entity))
-            );
         }
-
-        private async void AddNewEntry(object sender, EventArgs e)
-            => await Navigation.PushModalAsync(new AddEntryPage());
 
         protected override async void OnAppearing()
         {
             base.OnAppearing();
-            await LoadConditionsFromDbAsync();
-            await LoadIncompleteTasksAsync();
+            try
+            {
+                await ReloadAllAsync();
+            }
+            catch (Exception ex)
+            {
+                await DisplayAlert("Startup Error", ex.ToString(), "OK");
+                Debug.WriteLine(ex);
+            }
         }
 
+        // ── Prev/Next month ──
+        private async void OnPrevMonthClicked(object sender, EventArgs e)
+        {
+            _displayDate = _displayDate.AddMonths(-1);
+            LoadMonth(_displayDate);
+            await ReloadAllAsync();
+        }
+
+        private async void OnNextMonthClicked(object sender, EventArgs e)
+        {
+            _displayDate = _displayDate.AddMonths(1);
+            LoadMonth(_displayDate);
+            await ReloadAllAsync();
+        }
+
+        // ── Reload all data, then map into calendar ──
+        private async Task ReloadAllAsync()
+        {
+            await LoadConditionsFromDbAsync();
+            await LoadHealthEventsFromDbAsync();
+            await LoadActivityLogsFromDbAsync();
+            MapDataIntoCalendar();
+        }
+
+        // ── Load Conditions (no date filter) ──
         private async Task LoadConditionsFromDbAsync()
         {
             var list = await _dbContext.Conditions.ToListAsync();
             Conditions.Clear();
-
             for (int i = 0; i < list.Count; i++)
             {
-                var entity = list[i];
+                var e     = list[i];
                 var color = GenerateColor(i);
-                Conditions.Add(MapToVm(entity, color));
+                Conditions.Add(new ConditionViewModel {
+                    Id          = e.Id,
+                    Name        = e.Name,
+                    Description = e.Description,
+                    Symptoms    = string.Join(", ", e.Symptoms),
+                    Medications = string.Join(", ", e.Medications),
+                    Treatments  = string.Join(", ", e.Treatments),
+                    Notes       = e.Notes,
+                    Color       = color
+                });
             }
         }
 
-        // Generate a unique color for each condition using the golden ratio
-        private Color GenerateColor(int index)
+        // ── Load Health Events filtered by month/year ──
+        private async Task LoadHealthEventsFromDbAsync()
         {
-            const float goldenRatioConjugate = 0.618033988749895f;
-            float hue = (index * goldenRatioConjugate) % 1f;
-            return Color.FromHsla(hue, 0.5f, 0.7f);
+            var raw = await _dbContext.HealthEvent
+                .Where(h => h.StartDate.HasValue
+                         && h.StartDate.Value.Month == _displayDate.Month
+                         && h.StartDate.Value.Year  == _displayDate.Year)
+                .Select(h => new {
+                    h.Id, h.Title, h.StartDate, h.EndDate, h.Duration, h.Impact, h.Notes
+                })
+                .AsNoTracking()
+                .ToListAsync();
+
+            HealthEvents.Clear();
+            for (int i = 0; i < raw.Count; i++)
+            {
+                var e     = raw[i];
+                var color = GenerateColor(i);
+
+                HealthEvents.Add(new HealthEventViewModel {
+                    Id         = e.Id,
+                    Title      = e.Title,
+                    StartDate  = e.StartDate!.Value,
+                    EndDate    = e.EndDate!.Value,
+                    Duration   = e.Duration,
+                    Impact     = e.Impact ?? 0,
+                    Notes      = e.Notes,
+                    EventColor = color
+                });
+            }
         }
 
-        // Map entity to ViewModel with generated color
-        private ConditionViewModel MapToVm(Data.Models.Condition e, Color color)
-            => new ConditionViewModel
+        // ── Load Activity Logs filtered by month/year ──
+        private async Task LoadActivityLogsFromDbAsync()
+        {
+            var raw = await _dbContext.ActivityEventLog
+                .Where(a => a.Date.HasValue
+                         && a.Date.Value.Month == _displayDate.Month
+                         && a.Date.Value.Year  == _displayDate.Year)
+                .Select(a => new {
+                    a.ActivityLogId, a.Name, a.Intensity, a.Date,
+                    a.Duration, a.AggravatedCondition, a.Notes
+                })
+                .AsNoTracking()
+                .ToListAsync();
+
+            ActivityLogs.Clear();
+            foreach (var a in raw)
             {
-                Name = e.Name,
-                Description = e.Description,
-                Color = color,
-                IsSelected = false
-            };
+                ActivityLogs.Add(new ActivityLogViewModel {
+                    Id                  = a.ActivityLogId,
+                    Name                = a.Name,
+                    Intensity           = a.Intensity,
+                    Date                = a.Date!.Value,
+                    Duration            = a.Duration,
+                    AggravatedCondition = a.AggravatedCondition,
+                    Notes               = a.Notes
+                });
+            }
+        }
 
-        // Fallback mapping using dynamic color based on current count
-        private ConditionViewModel MapToVm(Data.Models.Condition e)
-            => MapToVm(e, GenerateColor(Conditions.Count));
+        // ── Map loaded data into each DayItem’s Entries ──
+        private void MapDataIntoCalendar()
+        {
+            foreach (var day in DaysInMonth)
+                day.Entries.Clear();
 
-        // --- Calendar logic ---
+            int year  = _displayDate.Year;
+            int month = _displayDate.Month;
+            int daysInMonth = DateTime.DaysInMonth(year, month);
+
+            // Health Events: span range or single day
+            foreach (var ev in HealthEvents)
+            {
+                if (ev.StartDate.Date == ev.EndDate.Date)
+                {
+                    var cell = DaysInMonth.FirstOrDefault(x => x.DayNumber == ev.StartDate.Day);
+                    cell?.Entries.Add(new CalendarEntry {
+                        Text     = ev.Title,
+                        DotColor = ev.EventColor
+                    });
+                }
+                else
+                {
+                    int from = Math.Max(ev.StartDate.Day, 1);
+                    int to   = Math.Min(ev.EndDate.Day, daysInMonth);
+                    for (int d = from; d <= to; d++)
+                    {
+                        var cell = DaysInMonth.FirstOrDefault(x => x.DayNumber == d);
+                        cell?.Entries.Add(new CalendarEntry {
+                            Text     = ev.Title,
+                            DotColor = ev.EventColor
+                        });
+                    }
+                }
+            }
+
+            // Activity Logs
+            foreach (var act in ActivityLogs)
+            {
+                if (act.Date.Year == year && act.Date.Month == month)
+                {
+                    var cell = DaysInMonth.FirstOrDefault(x => x.DayNumber == act.Date.Day);
+                    cell?.Entries.Add(new CalendarEntry {
+                        Text     = act.Name,
+                        DotColor = null
+                    });
+                }
+            }
+
+            OnPropertyChanged(nameof(DaysInMonth));
+        }
+
+        // ── Calendar month cells ──
         private void LoadMonth(DateTime date)
         {
             var items = new ObservableCollection<DayItem>();
@@ -125,297 +224,111 @@ namespace medi1.Pages
             for (int i = 0; i < offset; i++)
                 items.Add(new DayItem { DayNumber = 0, IsToday = false });
 
-            int daysInMonth = DateTime.DaysInMonth(date.Year, date.Month);
-            for (int i = 1; i <= daysInMonth; i++)
+            int days = DateTime.DaysInMonth(date.Year, date.Month);
+            for (int d = 1; d <= days; d++)
             {
-                items.Add(new DayItem
-                {
-                    DayNumber = i,
-                    IsToday = date.Year == DateTime.Now.Year
-                              && date.Month == DateTime.Now.Month
-                              && i == DateTime.Now.Day
+                items.Add(new DayItem {
+                    DayNumber = d,
+                    IsToday   = date.Year == DateTime.Today.Year &&
+                                date.Month == DateTime.Today.Month &&
+                                d == DateTime.Today.Day
                 });
             }
 
-            DaysInMonth = items;
+            DaysInMonth  = items;
             CurrentMonth = date.ToString("MMMM yyyy");
+            OnPropertyChanged(nameof(DaysInMonth));
+            OnPropertyChanged(nameof(CurrentMonth));
         }
 
-        private void OnPrevMonthClicked(object sender, EventArgs e)
+        // ── Helpers & navigation ──
+        private Color GenerateColor(int idx)
         {
-            _displayDate = _displayDate.AddMonths(-1);
-            LoadMonth(_displayDate);
+            const float φ = 0.618033988749895f;
+            // Light pastel colors: moderate saturation, high lightness
+            return Color.FromHsla((idx * φ) % 1f, 0.4f, 0.85f);
         }
 
-        private void OnNextMonthClicked(object sender, EventArgs e)
-        {
-            _displayDate = _displayDate.AddMonths(1);
-            LoadMonth(_displayDate);
-        }
-
-        // --- Task UI logic ---
-        
-        private StackLayout CreateTaskLayout(CalendarTask task)
-    {
-        var localTaskId = task.TaskId;
-
-        var taskLayout = new StackLayout
-        {
-            Orientation = StackOrientation.Horizontal,
-            Spacing     = 10
-        };
-
-        var checkBox = new CheckBox
-        {
-            IsChecked = task.CompletionStatus
-        };
-
-        var label = new Label
-        {
-            Text            = task.Description,
-            VerticalOptions = LayoutOptions.Center,
-            BindingContext  = task.TaskId,
-            TextDecorations = task.CompletionStatus
-                ? TextDecorations.Strikethrough
-                : TextDecorations.None
-        };
-
-        checkBox.CheckedChanged += async (s, a) =>
-        {
-            label.TextDecorations = checkBox.IsChecked
-                ? TextDecorations.Strikethrough
-                : TextDecorations.None;
-
-            try
-            {
-                using var dbContext = new MedicalDbContext();
-                var taskToUpdate = await dbContext.TaskLog
-                    .FirstOrDefaultAsync(t => t.TaskId == localTaskId);
-
-                if (taskToUpdate != null)
-                {
-                    taskToUpdate.CompletionStatus = checkBox.IsChecked;
-                    await dbContext.SaveChangesAsync();
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Update error: {ex.Message}");
-            }
-        };
-
-        var editBtn = new Button
-        {
-            Text            = "✏️",
-            FontSize        = 12,
-            BackgroundColor = Colors.Transparent,
-            WidthRequest    = 40
-        };
-
-        editBtn.Clicked += (s, a) =>
-        {
-            _editingTaskLabel = label;
-            EditTaskInput.Text = label.Text;
-            EditTaskPopup.IsVisible = true;
-        };
-
-        var deleteBtn = new Button
-        {
-            Text            = "🗑️",
-            FontSize        = 12,
-            BackgroundColor = Colors.Transparent,
-            WidthRequest    = 40
-        };
-
-        deleteBtn.Clicked += async (s, a) =>
-        {
-            TaskListContainer.Children.Remove(taskLayout);
-
-            try
-            {
-                using var dbContext = new MedicalDbContext();
-                var taskToDelete = await dbContext.TaskLog
-                    .FirstOrDefaultAsync(t => t.TaskId == localTaskId);
-
-                if (taskToDelete != null)
-                {
-                    dbContext.TaskLog.Remove(taskToDelete);
-                    await dbContext.SaveChangesAsync();
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Delete error: {ex.Message}");
-            }
-        };
-
-        taskLayout.Children.Add(checkBox);
-        taskLayout.Children.Add(label);
-        taskLayout.Children.Add(editBtn);
-        taskLayout.Children.Add(deleteBtn);
-
-        return taskLayout;
-    }
-
-        
-        //Load Tasks when Home Page is loaded
-        private async Task LoadIncompleteTasksAsync()
-        {
-            TaskListContainer.Children.Clear();
-
-            try
-            {
-                using var dbContext = new MedicalDbContext();
-                var tasks = await dbContext.TaskLog
-                    .Where(t => !t.CompletionStatus)
-                    .ToListAsync();
-
-                foreach (var task in tasks)
-                {
-                    var taskLayout = CreateTaskLayout(task);
-                    TaskListContainer.Children.Add(taskLayout);
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Failed to load tasks: {ex.Message}");
-            }
-        }
-
-        
-        
-        private void OnAddTaskClicked(object sender, EventArgs e)
-            => AddTaskPopup.IsVisible = true;
-
-        private async void OnConfirmTaskClicked(object sender, EventArgs e)
-        {
-            var taskText = TaskInput.Text?.Trim();
-            var taskId = Guid.NewGuid().ToString();
-            if (string.IsNullOrEmpty(taskText))
-                return;
-            else {
-                var newTask = new CalendarTask
-                {
-                    id = Guid.NewGuid().ToString(),
-                    TaskId = taskId,
-                    Description = taskText,
-                    CompletionStatus = false
-                };
-                try
-                {
-                    using var dbContext = new MedicalDbContext();
-                    await dbContext.TaskLog.AddAsync(newTask);
-                    await dbContext.SaveChangesAsync();
-                }
-                catch (DbUpdateException dbEx)
-                {
-                    Console.WriteLine($"Database Update Error: {dbEx.Message}");
-                    if (dbEx.InnerException != null)
-                    {
-                        Console.WriteLine($"Inner Exception: {dbEx.InnerException.Message}");
-                    }
-                    await DisplayAlert("Error", "Failed to save your task.", "OK");
-                }
-
-                TaskListContainer.Children.Add(CreateTaskLayout(newTask));
-
-                AddTaskPopup.IsVisible = false;
-                TaskInput.Text = string.Empty;
-
-            }
-        }
-
-        private void OnCancelTaskClicked(object sender, EventArgs e)
-        {
-            AddTaskPopup.IsVisible = false;
-            TaskInput.Text = string.Empty;
-        }
-
-        //Edit Confirm
-        private async void TaskEditConfirmClicked(object sender, EventArgs e)
-        {
-            if (_editingTaskLabel != null)
-            {
-                _editingTaskLabel.Text = EditTaskInput.Text;
-                var taskId = _editingTaskLabel.BindingContext?.ToString();
-
-                if (!string.IsNullOrEmpty(taskId))
-                {
-                    try
-                    {
-                        using var dbContext = new MedicalDbContext();
-                        var taskToUpdate = await dbContext.TaskLog
-                            .FirstOrDefaultAsync(t => t.TaskId == taskId);
-
-                        if (taskToUpdate != null)
-                        {
-                            taskToUpdate.Description = EditTaskInput.Text;
-                            await dbContext.SaveChangesAsync();
-                        }
-                    }
-                    catch (DbUpdateException dbEx)
-                    {
-                        Console.WriteLine($"Database Update Error: {dbEx.Message}");
-                        if (dbEx.InnerException != null)
-                        {
-                            Console.WriteLine($"Inner Exception: {dbEx.InnerException.Message}");
-                        }
-                        await DisplayAlert("Error", "Failed to update the task.", "OK");
-                    }
-                }
-            }
-
-            EditTaskPopup.IsVisible = false;
-        }
-
-
-
-        private void TaskEditCancelClicked(object sender, EventArgs e)
-        {
-            EditTaskPopup.IsVisible = false;
-        }
-
-
-        // --- Navigation ---
-        private async void GoToConditions(object sender, EventArgs e)
+        private async void GoToConditions(object s, EventArgs e)
             => await Navigation.PushAsync(new ConditionsPage.ConditionsPage());
-
-        private async void GoToReports(object sender, EventArgs e)
+        private async void GoToAddEntry(object s, EventArgs e)
+            => await Navigation.PushAsync(new AddEntryPage());
+        private async void GoToReports(object s, EventArgs e)
             => await Navigation.PushAsync(new ReportsPage());
 
-        // --- Condition tap handler ---
-        private async void OnConditionTapped(object sender, EventArgs e)
+        private async void OnConditionTapped(object s, EventArgs e)
         {
-            if (sender is StackLayout sl && sl.BindingContext is ConditionViewModel cvm)
+            if (s is StackLayout sl && sl.BindingContext is ConditionViewModel cvm)
             {
-                await DisplayAlert(
-                    "Condition Details",
-                    $"Name: {cvm.Name}\nDescription: {cvm.Description}",
-                    "OK"
-                );
+                await DisplayAlert("Condition Details",
+                    $"Id: {cvm.Id}\nName: {cvm.Name}\nDescription: {cvm.Description}\n" +
+                    $"Symptoms: {cvm.Symptoms}\nMedications: {cvm.Medications}\n" +
+                    $"Treatments: {cvm.Treatments}\nNotes: {cvm.Notes}",
+                    "OK");
             }
         }
 
-        #region INotifyPropertyChanged
-        public new event PropertyChangedEventHandler PropertyChanged;
-        protected void OnPropertyChanged([CallerMemberName] string propName = null)
-            => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName));
-        #endregion
+        // ── INotifyPropertyChanged ──
+        public event PropertyChangedEventHandler PropertyChanged;
+        void OnPropertyChanged([CallerMemberName]string n = "")
+            => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(n));
     }
 
+    // ── Converters ──
+    public class NullToBool : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+            => value != null;
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+            => throw new NotImplementedException();
+    }
+
+    // ── ViewModel and calendar types ──
     public class ConditionViewModel
     {
-        public string Name { get; set; }
+        public string Id          { get; set; }
+        public string Name        { get; set; }
         public string Description { get; set; }
-        public bool IsSelected { get; set; }
-        public Color Color { get; set; }
+        public string Symptoms    { get; set; }
+        public string Medications { get; set; }
+        public string Treatments  { get; set; }
+        public string Notes       { get; set; }
+        public Color  Color       { get; set; }
+    }
+
+    public class HealthEventViewModel
+    {
+        public string   Id         { get; set; }
+        public string   Title      { get; set; }
+        public DateTime StartDate  { get; set; }
+        public DateTime EndDate    { get; set; }
+        public string   Duration   { get; set; }
+        public int      Impact     { get; set; }
+        public string   Notes      { get; set; }
+        public Color    EventColor { get; set; }
+    }
+
+    public class ActivityLogViewModel
+    {
+        public string   Id                  { get; set; }
+        public string   Name                { get; set; }
+        public string   Intensity           { get; set; }
+        public DateTime Date                { get; set; }
+        public string   Duration            { get; set; }
+        public string   AggravatedCondition { get; set; }
+        public string   Notes               { get; set; }
+    }
+
+    public class CalendarEntry
+    {
+        public string Text { get; set; }
+        public Color? DotColor { get; set; }
     }
 
     public class DayItem
     {
         public int DayNumber { get; set; }
-        public bool IsToday { get; set; }
+        public bool IsToday  { get; set; }
+        public ObservableCollection<CalendarEntry> Entries { get; } = new();
     }
-
 }
-
