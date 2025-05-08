@@ -12,6 +12,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Xaml;
 using Microsoft.Maui.Graphics;
+using medi1.Services;
 // alias to avoid conflict with MAUI.Controls.Condition
 using DCondition = medi1.Data.Models.Condition;
 
@@ -99,11 +100,10 @@ namespace medi1.Pages
             {
                 return;
             }
-
             for (int i = 0; i < InitializedConditions.Count; i++)
-            for (int i = 0; i < list.Count; i++)
+            // for (int i = 0; i < list.Count; i++)
             {
-                var e     = list[i];
+                var e     = InitializedConditions[i];
                 var color = GenerateColor(i);
                 Conditions.Add(new ConditionViewModel {
                     Id          = e.Id,

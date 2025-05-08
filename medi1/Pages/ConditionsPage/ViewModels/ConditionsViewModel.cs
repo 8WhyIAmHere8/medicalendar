@@ -12,6 +12,7 @@ using Microsoft.EntityFrameworkCore;
 using SkiaSharp;
 using SkiaSharp.Views.Maui;
 using SkiaSharp.Views.Maui.Controls;
+using medi1.Services;
 
 namespace medi1.ViewModels
 {
@@ -109,7 +110,11 @@ namespace medi1.ViewModels
         {
             try
             {
-                var list = await _dbContext.Conditions.Where(c => !c.Archived).ToListAsync();
+                var currentUser = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == UserSession.Instance.Id);
+                var currentUserConditions = currentUser.Conditions;
+                var list = await _dbContext.Conditions 
+                .Where(c => !c.Archived && currentUserConditions.Contains(c.Id)) // Filter out archived conditions
+                    .ToListAsync();
                 Conditions.Clear();
                 foreach (var c in list) Conditions.Add(c);
                 SelectedCondition = Conditions.FirstOrDefault();
@@ -122,7 +127,12 @@ namespace medi1.ViewModels
         }
 
         private async Task LoadHealthEvent(string conditionId)
-        {
+        {     var currentUser = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == UserSession.Instance.Id);
+                var currentUserHealthEvents = currentUser.HealthEvents;
+                var healthEvents = await _dbContext.HealthEvent
+                    .Where(he => he.ConditionId == conditionId && currentUserHealthEvents.Contains(he.Id))
+                    .ToListAsync();
+
             var list = await _dbContext.HealthEvent.Where(e => e.ConditionId == conditionId).ToListAsync();
             HealthEvent.Clear();
             foreach (var e in list) HealthEvent.Add(e);
@@ -132,13 +142,14 @@ namespace medi1.ViewModels
         private async Task LoadRecentHealthEvent()
         {
             if (SelectedCondition == null) return;
-            
+            var currentUser = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == UserSession.Instance.Id);
+            var currentUserHealthEvents = currentUser.HealthEvents;
             var list = await _dbContext.HealthEvent
-                .Where(e => e.ConditionId == SelectedCondition.Id)
+                .Where(he => he.ConditionId == SelectedCondition.Id && currentUserHealthEvents.Contains(he.Id))
                 .OrderByDescending(e => e.StartDate)
                 .Take(5)
                 .ToListAsync();
-
+           
             // Clear and update the existing collection
             RecentHealthEvent.Clear();
             foreach (var item in list)
