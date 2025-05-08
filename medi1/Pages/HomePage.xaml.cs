@@ -25,6 +25,7 @@ namespace medi1.Pages
         // ── Calendar state ──
         private DateTime _displayDate;
         public ObservableCollection<DayItem> DaysInMonth { get; private set; } = new();
+        
         public string CurrentMonth  { get; private set; }
         public string FullDateToday { get; private set; }
 
@@ -32,6 +33,8 @@ namespace medi1.Pages
         public ObservableCollection<ConditionViewModel> Conditions    { get; } = new();
         public ObservableCollection<HealthEventViewModel> HealthEvents { get; } = new();
         public ObservableCollection<ActivityLogViewModel> ActivityLogs { get; } = new();
+                // For editing tasks
+        private Label _editingTaskLabel;
 
         public HomePage()
         {
@@ -41,8 +44,11 @@ namespace medi1.Pages
             _displayDate  = DateTime.Today;
             FullDateToday = _displayDate.ToString("MMMM dd, yyyy");
             LoadMonth(_displayDate);
-        }
 
+        }
+        private async void AddNewEntry(object sender, EventArgs e)
+            => await Navigation.PushModalAsync(new AddEntryPage());
+ 
         protected override async void OnAppearing()
         {
             base.OnAppearing();
@@ -272,7 +278,225 @@ namespace medi1.Pages
         public event PropertyChangedEventHandler PropertyChanged;
         void OnPropertyChanged([CallerMemberName]string n = "")
             => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(n));
+    
+        private StackLayout CreateTaskLayout(CalendarTask task)
+    {
+        var localTaskId = task.TaskId;
+ 
+        var taskLayout = new StackLayout
+        {
+            Orientation = StackOrientation.Horizontal,
+            Spacing     = 10
+        };
+ 
+        var checkBox = new CheckBox
+        {
+            IsChecked = task.CompletionStatus
+        };
+ 
+        var label = new Label
+        {
+            Text            = task.Description,
+            VerticalOptions = LayoutOptions.Center,
+            BindingContext  = task.TaskId,
+            TextDecorations = task.CompletionStatus
+                ? TextDecorations.Strikethrough
+                : TextDecorations.None
+        };
+ 
+        checkBox.CheckedChanged += async (s, a) =>
+        {
+            label.TextDecorations = checkBox.IsChecked
+                ? TextDecorations.Strikethrough
+                : TextDecorations.None;
+ 
+            try
+            {
+                using var dbContext = new MedicalDbContext();
+                var taskToUpdate = await dbContext.TaskLog
+                    .FirstOrDefaultAsync(t => t.TaskId == localTaskId);
+ 
+                if (taskToUpdate != null)
+                {
+                    taskToUpdate.CompletionStatus = checkBox.IsChecked;
+                    await dbContext.SaveChangesAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Update error: {ex.Message}");
+            }
+        };
+ 
+        var editBtn = new Button
+        {
+            Text            = "✏️",
+            FontSize        = 12,
+            BackgroundColor = Colors.Transparent,
+            WidthRequest    = 40
+        };
+ 
+        editBtn.Clicked += (s, a) =>
+        {
+            _editingTaskLabel = label;
+            EditTaskInput.Text = label.Text;
+            EditTaskPopup.IsVisible = true;
+        };
+ 
+        var deleteBtn = new Button
+        {
+            Text            = "🗑️",
+            FontSize        = 12,
+            BackgroundColor = Colors.Transparent,
+            WidthRequest    = 40
+        };
+ 
+        deleteBtn.Clicked += async (s, a) =>
+        {
+            TaskListContainer.Children.Remove(taskLayout);
+ 
+            try
+            {
+                using var dbContext = new MedicalDbContext();
+                var taskToDelete = await dbContext.TaskLog
+                    .FirstOrDefaultAsync(t => t.TaskId == localTaskId);
+ 
+                if (taskToDelete != null)
+                {
+                    dbContext.TaskLog.Remove(taskToDelete);
+                    await dbContext.SaveChangesAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Delete error: {ex.Message}");
+            }
+        };
+ 
+        taskLayout.Children.Add(checkBox);
+        taskLayout.Children.Add(label);
+        taskLayout.Children.Add(editBtn);
+        taskLayout.Children.Add(deleteBtn);
+ 
+        return taskLayout;
     }
+
+      //Load Tasks when Home Page is loaded
+        private async Task LoadIncompleteTasksAsync()
+        {
+            TaskListContainer.Children.Clear();
+ 
+            try
+            {
+                using var dbContext = new MedicalDbContext();
+                var tasks = await dbContext.TaskLog
+                    .Where(t => !t.CompletionStatus)
+                    .ToListAsync();
+ 
+                foreach (var task in tasks)
+                {
+                    var taskLayout = CreateTaskLayout(task);
+                    TaskListContainer.Children.Add(taskLayout);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to load tasks: {ex.Message}");
+            }
+        }
+          private void OnAddTaskClicked(object sender, EventArgs e)
+            => AddTaskPopup.IsVisible = true;
+ 
+        private async void OnConfirmTaskClicked(object sender, EventArgs e)
+        {
+            var taskText = TaskInput.Text?.Trim();
+            var taskId = Guid.NewGuid().ToString();
+            if (string.IsNullOrEmpty(taskText))
+                return;
+            else {
+                var newTask = new CalendarTask
+                {
+                    id = Guid.NewGuid().ToString(),
+                    TaskId = taskId,
+                    Description = taskText,
+                    CompletionStatus = false
+                };
+                try
+                {
+                    using var dbContext = new MedicalDbContext();
+                    await dbContext.TaskLog.AddAsync(newTask);
+                    await dbContext.SaveChangesAsync();
+                }
+                catch (DbUpdateException dbEx)
+                {
+                    Console.WriteLine($"Database Update Error: {dbEx.Message}");
+                    if (dbEx.InnerException != null)
+                    {
+                        Console.WriteLine($"Inner Exception: {dbEx.InnerException.Message}");
+                    }
+                    await DisplayAlert("Error", "Failed to save your task.", "OK");
+                }
+ 
+                TaskListContainer.Children.Add(CreateTaskLayout(newTask));
+ 
+                AddTaskPopup.IsVisible = false;
+                TaskInput.Text = string.Empty;
+ 
+            }
+        }
+ 
+        private void OnCancelTaskClicked(object sender, EventArgs e)
+        {
+            AddTaskPopup.IsVisible = false;
+            TaskInput.Text = string.Empty;
+        }
+ 
+        //Edit Confirm
+        private async void TaskEditConfirmClicked(object sender, EventArgs e)
+        {
+            if (_editingTaskLabel != null)
+            {
+                _editingTaskLabel.Text = EditTaskInput.Text;
+                var taskId = _editingTaskLabel.BindingContext?.ToString();
+ 
+                if (!string.IsNullOrEmpty(taskId))
+                {
+                    try
+                    {
+                        using var dbContext = new MedicalDbContext();
+                        var taskToUpdate = await dbContext.TaskLog
+                            .FirstOrDefaultAsync(t => t.TaskId == taskId);
+ 
+                        if (taskToUpdate != null)
+                        {
+                            taskToUpdate.Description = EditTaskInput.Text;
+                            await dbContext.SaveChangesAsync();
+                        }
+                    }
+                    catch (DbUpdateException dbEx)
+                    {
+                        Console.WriteLine($"Database Update Error: {dbEx.Message}");
+                        if (dbEx.InnerException != null)
+                        {
+                            Console.WriteLine($"Inner Exception: {dbEx.InnerException.Message}");
+                        }
+                        await DisplayAlert("Error", "Failed to update the task.", "OK");
+                    }
+                }
+            }
+ 
+            EditTaskPopup.IsVisible = false;
+        }
+ 
+ 
+ 
+        private void TaskEditCancelClicked(object sender, EventArgs e)
+        {
+            EditTaskPopup.IsVisible = false;
+        }    
+    }
+
+
 
     // ── Converters ──
     public class NullToBool : IValueConverter
@@ -331,4 +555,7 @@ namespace medi1.Pages
         public bool IsToday  { get; set; }
         public ObservableCollection<CalendarEntry> Entries { get; } = new();
     }
+
+
 }
+
