@@ -35,24 +35,56 @@ namespace medi1.Services
 
         public string DateOfBirth { get; set; }
 
-        public List<string> Conditions { get; set; }
-        
-        public List<string> Activities { get; set; }
-        public List<string> Symptoms { get; set; }
+         public List<Data.Models.Activity> Activities { get; set; }
+
+         public List<Data.Models.ActivityLog> ActivityLogs { get; set; }
+
+        public List<Data.Models.Condition> Conditions { get; set; }
+
+        public List<Data.Models.HealthEvent> HealthEvents { get; set; }
+
 
         public bool IsLoggedIn => !string.IsNullOrEmpty(Id);
 
-        public void LoginUser(User givenUser) //Sets all variables to info of given user
+        public async Task LoginUser(User givenUser) //Sets all variables to info of given user
         {
+            List<Data.Models.Activity> Activitylist = new List<Data.Models.Activity>();
+            List<Data.Models.ActivityLog> ActivityLoglist = new List<Data.Models.ActivityLog>();
+            List<Data.Models.Condition> Conditionlist = new List<Data.Models.Condition>();
+            List<Data.Models.HealthEvent> HealthEventlist = new List<Data.Models.HealthEvent>();
+            var activityIds = givenUser.Activities;
+            var activitylogIds = givenUser.ActivityLogs;
+            var conditionIds = givenUser.Conditions;
+            var healthEventIds = givenUser.HealthEvents;
+            using (var _dbContext = new MedicalDbContext()) //fills Current session with user data from different containers in the database
+            {
+                Activitylist = await _dbContext.Activities
+                .Where(activity => activityIds.Contains(activity.ActivityId))
+                .ToListAsync();
+
+                ActivityLoglist = await _dbContext.ActivityEventLog
+                .Where(activitylog => activitylogIds.Contains(activitylog.id))
+                .ToListAsync();
+
+                Conditionlist = await _dbContext.Conditions
+                .Where(condition => conditionIds.Contains(condition.Id))
+                .ToListAsync();
+
+                HealthEventlist = await _dbContext.HealthEvent
+                .Where(healthevent => healthEventIds.Contains(healthevent.Id))
+                .ToListAsync();
+            }
+            
             Id = givenUser.Id;
             UserName = givenUser.UserName;
             Password = givenUser.Password;
             Name = givenUser.Name;
             Email = givenUser.Email;
             DateOfBirth = givenUser.DateOfBirth;
-            Conditions = givenUser.Conditions;
-            Activities = givenUser.Activities;
-            Symptoms = givenUser.Symptoms;
+            Activities = Activitylist;
+            ActivityLogs = ActivityLoglist;
+            Conditions = Conditionlist;
+            HealthEvents = HealthEventlist;
         }
         public void LogoutUser() // Clears user data
         {
@@ -62,9 +94,69 @@ namespace medi1.Services
             Name = null;
             Email = null;
             DateOfBirth = null;
-            Conditions = null;
-            Activities = null; //change this later
-            Symptoms = null;            
+            Activities = new List<Data.Models.Activity>();
+            ActivityLogs = new List<Data.Models.ActivityLog>();
+            Conditions = new List<Data.Models.Condition>();
+            HealthEvents = new List<Data.Models.HealthEvent>();    
+        }
+
+        public async Task<ObservableCollection<Data.Models.Condition>> LoadConditions() 
+        {
+
+            List<Data.Models.Condition> Conditionlist = new List<Data.Models.Condition>();
+            using (var _dbContext = new MedicalDbContext())
+            {
+               var loadedUser = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == _instance.Id);
+
+               var conditionIds = loadedUser.Conditions;
+               
+                Conditionlist = await _dbContext.Conditions
+               .Where(c => conditionIds.Contains(c.Id))
+               .ToListAsync();
+
+               Conditions = Conditionlist;
+
+               ObservableCollection<Data.Models.Condition> returnlist = new ObservableCollection<Data.Models.Condition>(Conditionlist);
+
+               return returnlist;
+
+            }
+        }
+
+        public async void SaveNewHealthEvent (HealthEvent newHealthEvent)
+        {
+            HealthEvents.Add(newHealthEvent);
+
+            using (var _dbContext = new MedicalDbContext()) 
+            {
+                var loadedUser = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == _instance.Id);
+                loadedUser.HealthEvents.Add(newHealthEvent.Id);
+                await _dbContext.SaveChangesAsync();
+            }
+        }
+
+        public async void SaveNewActivityLog (ActivityLog newActivityLog)
+        {
+          ActivityLogs.Add(newActivityLog);
+
+            using (var _dbContext = new MedicalDbContext()) 
+            {
+                var loadedUser = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == _instance.Id);
+                loadedUser.HealthEvents.Add(newActivityLog.id);
+                await _dbContext.SaveChangesAsync();
+            }  
+        }
+
+        public async void SaveNewCondition (Data.Models.Condition newCondition)
+        {
+          Conditions.Add(newCondition);
+
+            using (var _dbContext = new MedicalDbContext()) 
+            {
+                var loadedUser = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == _instance.Id);
+                loadedUser.Conditions.Add(newCondition.Id);
+                await _dbContext.SaveChangesAsync();
+            }  
         }
     }
 }

@@ -3,6 +3,7 @@ using System.Windows.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using medi1.Data;
 using medi1.Data.Models;
+using medi1.Services;
 using Microsoft.EntityFrameworkCore;
 
 public class AddConditionPopupViewModel : INotifyPropertyChanged
@@ -55,6 +56,7 @@ public class AddConditionPopupViewModel : INotifyPropertyChanged
 
                 WeakReferenceMessenger.Default.Send(new AddConditionMessage(newCondition.Name));
                 await Shell.Current.Navigation.PopModalAsync();
+                UserSession.Instance.SaveNewCondition(newCondition);
             }
             catch (Exception ex)
             {

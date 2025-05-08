@@ -8,6 +8,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using System.Net;
+using medi1.Services;
 
 namespace medi1.Pages
 {
@@ -19,13 +20,13 @@ namespace medi1.Pages
             BindingContext = this;
 
             LoadActivities();
-            LoadConditions();
+            //LoadConditions();
         }
 
 
         //Set up collection of activities from database
-        public ObservableCollection<Data.Models.Activity> Activities { get; set; } = new();
-        public ObservableCollection<Data.Models.Condition> Conditions { get; set; } = new();
+        public ObservableCollection<Data.Models.Activity> Activities { get; set; } = new ();
+        public ObservableCollection<Data.Models.Condition> Conditions { get; set; } = new ObservableCollection<Data.Models.Condition>(UserSession.Instance.Conditions);
 
         
         //Load activities to bind to the picker
@@ -51,27 +52,27 @@ namespace medi1.Pages
             }
         }
 
-        private async Task LoadConditions()
-        {
-            try
-            {
-                using var dbContext = new MedicalDbContext();
-                var conditionsFromDb = await Task.Run(() => dbContext.Conditions.ToListAsync());
+        // private async Task LoadConditions()
+        // {
+        //     try
+        //     {
+        //         using var dbContext = new MedicalDbContext();
+        //         var conditionsFromDb = await Task.Run(() => dbContext.Conditions.ToListAsync());
 
-                MainThread.BeginInvokeOnMainThread(() =>
-                {
-                    Conditions.Clear();
-                    foreach (var condition in conditionsFromDb)
-                    {
-                        Conditions.Add(condition);
-                    }
-                });
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error loading conditions: {ex.Message}");
-            }
-        }
+        //         MainThread.BeginInvokeOnMainThread(() =>
+        //         {
+        //             Conditions.Clear();
+        //             foreach (var condition in conditionsFromDb)
+        //             {
+        //                 Conditions.Add(condition);
+        //             }
+        //         });
+        //     }
+        //     catch (Exception ex)
+        //     {
+        //         Console.WriteLine($"Error loading conditions: {ex.Message}");
+        //     }
+        // }
 
         private async void OnEntrySelected(object sender, EventArgs e)
         {
@@ -139,7 +140,7 @@ namespace medi1.Pages
         {
             //If Checkbox is checked, make condition picker visible
             whichConditionContainer.IsVisible = e.Value;
-            await LoadConditions();
+            Conditions = await UserSession.Instance.LoadConditions();
         }
 
         private void HealthEventPicker_SelectedIndexChanged(object sender, EventArgs e)
@@ -254,6 +255,7 @@ namespace medi1.Pages
                                 Console.WriteLine($"{associatedCondition} condition not found");
                             }
                     }
+                    UserSession.Instance.SaveNewHealthEvent(newHealthEvent);
 
                     //else if (healthEvent == "Related to Menstrual Cycle"){Add to Menstrual Cycle database contrainer}
                     
@@ -322,6 +324,7 @@ namespace medi1.Pages
                                 Console.WriteLine($"{aggedConditionName} condition not found");
                             }
                     }
+                    UserSession.Instance.SaveNewActivityLog(newLog);
                 }
                 catch (DbUpdateException dbEx)
                 {

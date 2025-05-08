@@ -20,7 +20,10 @@ namespace medi1.Pages
     [XamlCompilation(XamlCompilationOptions.Compile)]
     public partial class HomePage : ContentPage, INotifyPropertyChanged
     {
-        private readonly MedicalDbContext _dbContext = new();
+        // EF Core context for reading stored conditions
+        private readonly MedicalDbContext _dbContext = new MedicalDbContext();
+
+        public List<Data.Models.Condition> InitializedConditions { get; set; } = new();
 
         // ── Calendar state ──
         private DateTime _displayDate;
@@ -90,8 +93,14 @@ namespace medi1.Pages
         // ── Load Conditions (no date filter) ──
         private async Task LoadConditionsFromDbAsync()
         {
-            var list = await _dbContext.Conditions.ToListAsync();
+            InitializedConditions = UserSession.Instance.Conditions;
             Conditions.Clear();
+            if (InitializedConditions == null)
+            {
+                return;
+            }
+
+            for (int i = 0; i < InitializedConditions.Count; i++)
             for (int i = 0; i < list.Count; i++)
             {
                 var e     = list[i];

@@ -10,6 +10,7 @@ using CommunityToolkit.Mvvm.Messaging.Messages;
 using SkiaSharp;
 using SkiaSharp.Views.Maui;
 using SkiaSharp.Views.Maui.Controls;
+using medi1.Services;
 
 namespace medi1.Pages.ConditionsPage
 
