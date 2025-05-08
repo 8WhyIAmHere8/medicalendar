@@ -186,7 +186,7 @@
 
       <!-- Navigation Buttons -->
       <FlexLayout Direction="Row" JustifyContent="Center" AlignItems="Center" Padding="30">
-        <Button Text="My CConditions"
+        <Button Text="My Conditions"
                 BackgroundColor="Red"
                 TextColor="White"
                 FontSize="14"
