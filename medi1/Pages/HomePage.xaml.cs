@@ -268,6 +268,8 @@ namespace medi1.Pages
             => await Navigation.PushAsync(new ConditionsPage.ConditionsPage());
         private async void GoToAddEntry(object s, EventArgs e)
             => await Navigation.PushAsync(new AddEntryPage());
+        private async void GoToSettings(object s, EventArgs e)
+            => await Navigation.PushAsync(new SettingsPage());
         private async void GoToReports(object s, EventArgs e)
             => await Navigation.PushAsync(new ReportsPage());
 

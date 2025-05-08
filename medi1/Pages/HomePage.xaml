@@ -194,13 +194,21 @@
                 HeightRequest="40"
                 Clicked="GoToConditions"
                 Margin="5,10,0,0"/>
-        <Button Text="Report"
+        <Button Text="Reports &amp; Comparisons"
+                BackgroundColor="LightGray"
+                TextColor="Red"
+                FontSize="14"
+                WidthRequest="190"
+                HeightRequest="40"
+                Clicked="GoToReports"
+                Margin="5,10,0,0"/>
+        <Button Text="Settings &amp; Profile"
                 BackgroundColor="Blue"
                 TextColor="White"
                 FontSize="14"
-                WidthRequest="120"
+                WidthRequest="150"
                 HeightRequest="40"
-                Clicked="GoToReports"
+                Clicked="GoToSettings"
                 Margin="5,10,0,0"/>
       </FlexLayout>
 
