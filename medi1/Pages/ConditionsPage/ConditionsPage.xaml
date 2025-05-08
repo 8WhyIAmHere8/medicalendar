@@ -2,6 +2,7 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="medi1.Pages.ConditionsPage.ConditionsPage"
+             xmlns:skia="clr-namespace:SkiaSharp.Views.Maui.Controls;assembly=SkiaSharp.Views.Maui.Controls"
 
              x:Name="MainPageRef"
              Title="Conditions Tracker">
@@ -60,7 +61,7 @@
                         CornerRadius="20"
                         Margin="10,0"
                         VerticalOptions="Center"
-                        Command="{Binding OpenArchivedCommand}" />
+                        Command="{Binding OpenArchivedConditionsCommand}" />
             </HorizontalStackLayout>
 
             <!-- Main Content Split View -->
@@ -163,8 +164,30 @@
                                 <Button Text="+ Log an Entry" Clicked="AddNewEntry" />
                             </StackLayout>
                         </Frame>
+                         <VerticalStackLayout Spacing="10">
+
+    <!-- Existing chart view -->
+    <skia:SKCanvasView x:Name="ChartCanvas"
+                       HeightRequest="300"
+                       PaintSurface="OnCanvasViewPaintSurface" />
+
+    <!-- Zoom controls -->
+    <HorizontalStackLayout HorizontalOptions="Center">
+        <Button Text="➖ Zoom Out"
+                Clicked="OnZoomOutClicked"
+                BackgroundColor="#ddd" />
+        <Button Text="➕ Zoom In"
+                Clicked="OnZoomInClicked"
+                BackgroundColor="#ddd" />
+                 <DatePicker Date="{Binding StartDate}" />
+    <Label Text="to" VerticalOptions="Center" />
+    <DatePicker Date="{Binding EndDate}" />
+    </HorizontalStackLayout>
+
+</VerticalStackLayout>
                     </VerticalStackLayout>
                 </Frame>
+              
             </Grid>
 
             <!-- Archive Button -->

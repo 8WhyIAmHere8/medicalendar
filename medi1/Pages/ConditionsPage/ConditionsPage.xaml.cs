@@ -7,465 +7,71 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.Mvvm.Messaging.Messages;
+using SkiaSharp;
+using SkiaSharp.Views.Maui;
+using SkiaSharp.Views.Maui.Controls;
 
 namespace medi1.Pages.ConditionsPage
+
 {
-    public partial class ConditionsPage : ContentPage, INotifyPropertyChanged
+    public partial class ConditionsPage : ContentPage
     {
-        private readonly MedicalDbContext _dbContext = new MedicalDbContext();
+        private readonly ViewModels.ConditionsViewModel _viewModel;
 
-        public ObservableCollection<Data.Models.Condition> Conditions { get; set; } = new ObservableCollection<Data.Models.Condition>();
-        public ObservableCollection<HealthEvent> HealthEvent { get; set; } = new ObservableCollection<HealthEvent>();
-        public ObservableCollection<HealthEvent> RecentHealthEvents { get; set; } = new ObservableCollection<HealthEvent>();
+         public ConditionsPage()
+    {
+        InitializeComponent();
+        _viewModel = new ViewModels.ConditionsViewModel();
+        BindingContext = _viewModel;
 
-        private Data.Models.Condition? _selectedCondition;
-        public Data.Models.Condition SelectedCondition
+        // Pass ChartCanvas reference
+        _viewModel.AttachCanvas(ChartCanvas);
+
+        _viewModel.PropertyChanged += (s, e) =>
         {
-            get => _selectedCondition;
-            set
+            if (e.PropertyName == nameof(_viewModel.RecentHealthEvents) || e.PropertyName == nameof(_viewModel.SelectedCondition))
             {
-                if (_selectedCondition != value)
-                {
-                    _selectedCondition = value;
-                    OnPropertyChanged(nameof(SelectedCondition));
-                    UpdateCollections();
-
-                    if (_selectedCondition != null)
-                    {
-                        _ = LoadDataAsync(_selectedCondition.Id);
-                    }
-                }
+                Debug.WriteLine($"[Chart Debug] Property changed: {e.PropertyName}");
+                ChartCanvas.InvalidateSurface();
             }
-        }
+        };
 
-        public new event PropertyChangedEventHandler? PropertyChanged;
-
-        protected override void OnPropertyChanged(string propertyName)
+        Loaded += async (s, e) =>
         {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-            base.OnPropertyChanged(propertyName);
-        }
-
-        public ObservableCollection<string> Medications { get; set; } = new ObservableCollection<string>();
-        public ObservableCollection<string> Symptoms { get; set; } = new ObservableCollection<string>();
-        public ObservableCollection<string> Treatments { get; set; } = new ObservableCollection<string>();
-        public ObservableCollection<string> HETitles { get; set; } = new ObservableCollection<string>();
-
-        public string NewSymptom { get; set; }
-
-        public string NewTreatment { get; set; }
-        public string NewTrigger { get; set; }
-        public string NewNote { get; set; }
-
-        private string? _newMedication;
-        public string NewMedication
-        {
-            get => _newMedication;
-            set
-            {
-                if (_newMedication != value)
-                {
-                    _newMedication = value;
-                    OnPropertyChanged(nameof(NewMedication));
-                }
-            }
-        }
-
-        public Command AddConditionCommand { get; }
-        public Command UpdateNoteCommand { get; }
-        public Command AddMedicationCommand { get; set; }
-        public Command AddSymptomCommand { get; }
-
-        public Command AddTriggerCommand { get; set; }
-        public Command AddTreatmentCommand { get; }
-        public Command TestCommand { get; set; }
-        public Command OpenArchivedCommand { get; }
-        public Command ArchiveConditionCommand { get; set; }
-
-        public ConditionsPage()
-        {
-            InitializeComponent();
-
-            UpdateNoteCommand = new Command(async () => await UpdateNote());
-            AddMedicationCommand = new Command(async () => await AddMedication());
-            AddSymptomCommand = new Command(async () => await AddSymptom());
-            AddTreatmentCommand = new Command(async () => await AddTreatment());
-            TestCommand = new Command(async () => await ButtonTest());
-            AddConditionCommand = new Command(() => OnAddConditionTapped());
-            AddTriggerCommand = new Command(async () => await AddTrigger());
-            OpenArchivedCommand = new Command(async () => await OpenArchivedConditionsPage());
-            ArchiveConditionCommand = new Command(async () => await OnArchiveCondition());
-            BindingContext = this;
-
-            var dbContext = new MedicalDbContext();
-            TestDatabaseConnection(dbContext);
-            LoadConditions();
-
-            WeakReferenceMessenger.Default.Register<AddConditionMessage>(this, (recipient, message) =>
-            {
-                var newCondition = new Data.Models.Condition { Name = message.Value };
-                Conditions.Add(newCondition); // Add to in-memory collection
-                SelectedCondition = newCondition;
-            });
-        }
-
-        private async void OnAddConditionTapped()
-        {
-            await Shell.Current.Navigation.PushModalAsync(new AddConditionPopup());
-        }
+            await _viewModel.LoadConditionsCommand.ExecuteAsync(null);
+            ChartCanvas.InvalidateSurface();
+        };
+    }
+        
 
         private async void AddNewEntry(object sender, EventArgs e)
         {
             await Navigation.PushModalAsync(new AddEntryPage());
+            ChartCanvas.InvalidateSurface();
         }
 
-        private async Task LoadDataAsync(string conditionId)
+        
+private void OnZoomInClicked(object sender, EventArgs e)
+{
+    if (BindingContext is ViewModels.ConditionsViewModel vm)
+    {
+        vm.ZoomIn();
+        ChartCanvas.InvalidateSurface(); // Force chart redraw
+    }
+}
+
+private void OnZoomOutClicked(object sender, EventArgs e)
+{
+    if (BindingContext is ViewModels.ConditionsViewModel vm)
+    {
+        vm.ZoomOut();
+        ChartCanvas.InvalidateSurface(); // Force chart redraw
+    }
+}
+
+        private void OnCanvasViewPaintSurface(object sender, SKPaintSurfaceEventArgs e)
         {
-            await LoadHealthEvents(conditionId);
-            await LoadRecentHealthEvents();
-        }
-
-        private async Task<bool> TestDatabaseConnection(MedicalDbContext dbContext)
-        {
-            try
-            {
-                bool isConnected = await _dbContext.TestConnectionAsync();
-                if (isConnected)
-                {
-                    Console.WriteLine("Database connected.");
-                    await DisplayAlert("Success", "Connected to Cosmos DB!", "OK");
-                    return true;
-                }
-                else
-                {
-                    await DisplayAlert("Error", "Failed to connect to Cosmos DB.", "OK");
-                    return false;
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Database connection error: {ex.Message}");
-                await DisplayAlert("Error", $"Database connection error: {ex.Message}", "OK");
-                return false;
-            }
-        }
-
-        private async Task ButtonTest()
-        {
-            Console.WriteLine("ButtonTest method called");
-            await DisplayAlert("Info", "ButtonTest clicked", "OK");
-        }
-
-        private async Task LoadConditions()
-        {
-            try
-            {
-                var conditions = await _dbContext.Conditions
-                    .Where(c => !c.Archived) // Filter out archived conditions
-                    .ToListAsync();
-
-                if (conditions == null || conditions.Count == 0)
-                {
-                    await DisplayAlert("Info", "No active conditions found in the database.", "OK");
-                    return;
-                }
-
-                Conditions.Clear();
-                foreach (var condition in conditions)
-                {
-                    Console.WriteLine($"Loaded condition: {condition.Name}, ID: {condition.Id}");
-                    Conditions.Add(condition);
-                }
-
-                SelectedCondition = Conditions.Count > 0 ? Conditions[0] : null;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Failed to load conditions: {ex.Message}");
-                await DisplayAlert("Error", $"Failed to load conditions: {ex.Message}", "OK");
-            }
-        }
-
-        private async Task SaveCondition()
-        {
-            if (SelectedCondition != null)
-            {
-                try
-                {
-                    _dbContext.Conditions.Update(SelectedCondition);
-                    await _dbContext.SaveChangesAsync();
-                    await DisplayAlert("Success", "Condition updated successfully!", "OK");
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Failed to update condition: {ex.Message}");
-                    await DisplayAlert("Error", $"Failed to update condition: {ex.Message}", "OK");
-                }
-            }
-        }
-
-        private async Task RefreshConditions()
-        {
-            await LoadConditions();
-            OnPropertyChanged(nameof(Conditions));
-            OnPropertyChanged(nameof(SelectedCondition));
-        }
-
-        private void UpdateCollections()
-        {
-            Medications.Clear();
-            Symptoms.Clear();
-            Treatments.Clear();
-
-            if (SelectedCondition != null)
-            {
-                if (SelectedCondition.Medications != null)
-                {
-                    foreach (var med in SelectedCondition.Medications)
-                        Medications.Add(med);
-                }
-
-                if (SelectedCondition.Symptoms != null)
-                {
-                    foreach (var sym in SelectedCondition.Symptoms)
-                        Symptoms.Add(sym);
-                }
-
-                if (SelectedCondition.Treatments != null)
-                {
-                    foreach (var treat in SelectedCondition.Treatments)
-                        Treatments.Add(treat);
-                }
-            }
-        }
-
-        private async Task OnArchiveCondition()
-        {
-            if (SelectedCondition != null)
-            {
-                SelectedCondition.Archived = true;
-                try
-                {
-                    _dbContext.Conditions.Update(SelectedCondition);
-                    await _dbContext.SaveChangesAsync();
-                    await RefreshConditions(); // Refresh UI
-                    await DisplayAlert("Success", "Condition archived successfully!", "OK");
-                    Conditions.Remove(SelectedCondition);
-                    SelectedCondition = null;
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Failed to archive condition: {ex.Message}");
-                    await DisplayAlert("Error", $"Failed to archive condition: {ex.Message}", "OK");
-                }
-            }
-        }
-
-        private async Task AddMedication()
-        {
-            await DisplayAlert("Info", $"Condition is {(SelectedCondition != null ? SelectedCondition.Name : "not selected")}", "OK");
-
-            if (SelectedCondition != null && !string.IsNullOrWhiteSpace(NewMedication))
-            {
-                if (SelectedCondition.Medications == null)
-                {
-                    SelectedCondition.Medications = new List<string>();
-                }
-
-                SelectedCondition.Medications.Add(NewMedication);
-                Medications.Add(NewMedication);
-
-                try
-                {
-                    _dbContext.Conditions.Update(SelectedCondition);
-                    await _dbContext.SaveChangesAsync();
-                    await RefreshConditions(); // Refresh UI
-                    await DisplayAlert("Success", "Medication added successfully!", "OK");
-                }
-                catch (Exception ex)
-                {
-                    await DisplayAlert("Error", $"Failed to update condition: {ex.Message}", "OK");
-                }
-            }
-            else
-            {
-                await DisplayAlert("Error", "Please select a condition and enter a valid medication.", "OK");
-            }
-        }
-
-        private async Task<bool> AddSymptom()
-        {
-            if (SelectedCondition != null && !string.IsNullOrWhiteSpace(NewSymptom))
-            {
-                if (SelectedCondition.Symptoms == null)
-                {
-                    SelectedCondition.Symptoms = new List<string>();
-                }
-
-                SelectedCondition.Symptoms.Add(NewSymptom);
-                Symptoms.Add(NewSymptom);
-
-                try
-                {
-                    _dbContext.Conditions.Update(SelectedCondition);
-                    await _dbContext.SaveChangesAsync();
-                    await RefreshConditions(); // Refresh UI
-                    await DisplayAlert("Success", "Symptom added successfully!", "OK");
-                    return true;
-                }
-                catch (Exception ex)
-                {
-                    await DisplayAlert("Error", $"Failed to update condition: {ex.Message}", "OK");
-                    return false;
-                }
-            }
-            else
-            {
-                await DisplayAlert("Error", "Please select a condition and enter a valid symptom.", "OK");
-                return false;
-            }
-        }
-
-        private async Task<bool> AddTreatment()
-        {
-            if (SelectedCondition != null && !string.IsNullOrWhiteSpace(NewTreatment))
-            {
-                if (SelectedCondition.Treatments == null)
-                {
-                    SelectedCondition.Treatments = new List<string>();
-                }
-
-                SelectedCondition.Treatments.Add(NewTreatment);
-                Treatments.Add(NewTreatment);
-                try
-                {
-                    _dbContext.Conditions.Update(SelectedCondition);
-                    await _dbContext.SaveChangesAsync();
-                    await RefreshConditions(); // Refresh UI
-                    await DisplayAlert("Success", "Treatment added successfully!", "OK");
-                    return true;
-                }
-                catch (Exception ex)
-                {
-                    await DisplayAlert("Error", $"Failed to update condition: {ex.Message}", "OK");
-                    return false;
-                }
-            }
-            else
-            {
-                await DisplayAlert("Error", "Please select a condition and enter a valid treatment.", "OK");
-                return false;
-            }
-        }
-
-        private async Task<bool> AddTrigger()
-        {
-            if (SelectedCondition != null && !string.IsNullOrWhiteSpace(NewTreatment))
-            {
-                if (SelectedCondition.Triggers == null)
-                {
-                    SelectedCondition.Triggers = new List<string>();
-                }
-
-                SelectedCondition.Triggers.Add(NewTreatment);
-                Treatments.Add(NewTreatment);
-                try
-                {
-                    _dbContext.Conditions.Update(SelectedCondition);
-                    await _dbContext.SaveChangesAsync();
-                    await RefreshConditions(); // Refresh UI
-                    await DisplayAlert("Success", "Trigger added successfully!", "OK");
-                    return true;
-                }
-                catch (Exception ex)
-                {
-                    await DisplayAlert("Error", $"Failed to update condition: {ex.Message}", "OK");
-                    return false;
-                }
-            }
-            else
-            {
-                await DisplayAlert("Error", "Please select a condition and enter a valid trigger.", "OK");
-                return false;
-            }
-        }
-
-        private async Task<bool> UpdateNote()
-        {
-            if (SelectedCondition != null && !string.IsNullOrWhiteSpace(NewNote))
-            {
-                SelectedCondition.Notes = NewNote;
-                try
-                {
-                    _dbContext.Conditions.Update(SelectedCondition);
-                    await _dbContext.SaveChangesAsync();
-                    await RefreshConditions(); // Refresh UI
-                    await DisplayAlert("Success", "Note saved successfully!", "OK");
-                    return true;
-                }
-                catch (Exception ex)
-                {
-                    await DisplayAlert("Error", $"Failed to update condition: {ex.Message}", "OK");
-                    return false;
-                }
-            }
-            else
-            {
-                await DisplayAlert("Error", "Please select a condition and enter a valid note.", "OK");
-                return false;
-            }
-        }
-
-        private async Task LoadHealthEvents(string conditionId)
-        {
-            try
-            {
-                var healthEvents = await _dbContext.HealthEvent
-                    .Where(he => he.ConditionId == conditionId)
-                    .ToListAsync();
-
-                HealthEvent.Clear();
-                foreach (var healthEvent in healthEvents)
-                {
-                    HealthEvent.Add(healthEvent);
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Failed to load health events: {ex.Message}");
-                await DisplayAlert("Error", $"Failed to load health events: {ex.Message}", "OK");
-            }
-        }
-
-        private async Task LoadRecentHealthEvents()
-        {
-            if (SelectedCondition != null)
-            {
-                try
-                {
-                    var recentEvents = await _dbContext.HealthEvent
-                        .Where(he => he.ConditionId == SelectedCondition.Id)
-                        .OrderByDescending(he => he.StartDate)
-                        .Take(5)
-                        .ToListAsync();
-
-                    RecentHealthEvents.Clear();
-                    foreach (var healthEvent in recentEvents)
-                    {
-                        RecentHealthEvents.Add(healthEvent);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Failed to load recent health events: {ex.Message}");
-                    await DisplayAlert("Error", $"Failed to load recent health events: {ex.Message}", "OK");
-                }
-            }
-        }
-
-        private async Task OpenArchivedConditionsPage()
-        {
-            await Shell.Current.GoToAsync(nameof(ArchivedConditionsPage));
+            _viewModel.OnCanvasViewPaintSurface(sender, e);
         }
     }
 }

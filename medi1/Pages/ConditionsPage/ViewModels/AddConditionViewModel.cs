@@ -22,7 +22,7 @@ public class AddConditionPopupViewModel : INotifyPropertyChanged
 
     public ICommand ClosePopupCommand { get; }
     public ICommand ConfirmAddCommand { get; }
-
+ 
     public AddConditionPopupViewModel()
     {
         ClosePopupCommand = new Command(async () => await Shell.Current.Navigation.PopModalAsync());
