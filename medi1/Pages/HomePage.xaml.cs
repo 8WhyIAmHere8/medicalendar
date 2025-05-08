@@ -134,7 +134,7 @@ namespace medi1.Pages
                     StartDate  = e.StartDate!.Value,
                     EndDate    = e.EndDate!.Value,
                     Duration   = e.Duration,
-                    Impact     = e.Impact ?? 0,
+                    Impact     = e.Impact,
                     Notes      = e.Notes,
                     EventColor = color
                 });

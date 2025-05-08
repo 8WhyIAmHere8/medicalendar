@@ -29,7 +29,7 @@ namespace medi1.Pages.ConditionsPage
 
         _viewModel.PropertyChanged += (s, e) =>
         {
-            if (e.PropertyName == nameof(_viewModel.RecentHealthEvents) || e.PropertyName == nameof(_viewModel.SelectedCondition))
+            if (e.PropertyName == nameof(_viewModel.RecentHealthEvent) || e.PropertyName == nameof(_viewModel.SelectedCondition))
             {
                 Debug.WriteLine($"[Chart Debug] Property changed: {e.PropertyName}");
                 ChartCanvas.InvalidateSurface();

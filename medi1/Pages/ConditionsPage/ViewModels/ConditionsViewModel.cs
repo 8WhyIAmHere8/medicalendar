@@ -20,9 +20,9 @@ namespace medi1.ViewModels
         private readonly MedicalDbContext _dbContext;
 
         public ObservableCollection<Data.Models.Condition> Conditions { get; } = new();
-        public ObservableCollection<HealthEvent> HealthEvents { get; } = new();
+        public ObservableCollection<HealthEvent> HealthEvent { get; } = new();
         [ObservableProperty]
-        private ObservableCollection<HealthEvent> recentHealthEvents = new();
+        private ObservableCollection<HealthEvent> recentHealthEvent = new();
 
         [ObservableProperty]
         private Data.Models.Condition? selectedCondition;
@@ -63,7 +63,7 @@ namespace medi1.ViewModels
 
         public IAsyncRelayCommand LoadConditionsCommand { get; }
         public ICommand AddConditionCommand { get; }
-        public IAsyncRelayCommand LoadHealthEventsCommand { get; }
+        public IAsyncRelayCommand LoadHealthEventCommand { get; }
         public IAsyncRelayCommand AddMedicationCommand { get; }
         public IAsyncRelayCommand AddSymptomCommand { get; }
         public IAsyncRelayCommand AddTreatmentCommand { get; }
@@ -84,8 +84,8 @@ namespace medi1.ViewModels
 
         private async Task LoadConditionDetailsAsync(string conditionId)
         {
-            await LoadHealthEvents(conditionId);
-            await LoadRecentHealthEvents(); // Ensure recent events are loaded
+            await LoadHealthEvent(conditionId);
+            await LoadRecentHealthEvent(); // Ensure recent events are loaded
             UpdateCollections();
             InvalidateChart(); // Ensure chart is refreshed after loading details
         }
@@ -121,31 +121,31 @@ namespace medi1.ViewModels
             }
         }
 
-        private async Task LoadHealthEvents(string conditionId)
+        private async Task LoadHealthEvent(string conditionId)
         {
-            var list = await _dbContext.HealthEvents.Where(e => e.ConditionId == conditionId).ToListAsync();
-            HealthEvents.Clear();
-            foreach (var e in list) HealthEvents.Add(e);
+            var list = await _dbContext.HealthEvent.Where(e => e.ConditionId == conditionId).ToListAsync();
+            HealthEvent.Clear();
+            foreach (var e in list) HealthEvent.Add(e);
             InvalidateChart(); // Refresh chart after loading health events
         }
 
-        private async Task LoadRecentHealthEvents()
+        private async Task LoadRecentHealthEvent()
         {
             if (SelectedCondition == null) return;
             
-            var list = await _dbContext.HealthEvents
+            var list = await _dbContext.HealthEvent
                 .Where(e => e.ConditionId == SelectedCondition.Id)
                 .OrderByDescending(e => e.StartDate)
                 .Take(5)
                 .ToListAsync();
 
             // Clear and update the existing collection
-            RecentHealthEvents.Clear();
+            RecentHealthEvent.Clear();
             foreach (var item in list)
-                RecentHealthEvents.Add(item);
+                RecentHealthEvent.Add(item);
 
             InvalidateChart(); 
-            Debug.WriteLine($"[Chart Debug] Loaded {RecentHealthEvents.Count} recent events for condition: {SelectedCondition.Name}");
+            Debug.WriteLine($"[Chart Debug] Loaded {RecentHealthEvent.Count} recent events for condition: {SelectedCondition.Name}");
             
         }
 
@@ -272,7 +272,7 @@ private void InvalidateChart()
 public float GetScale() => _scale;
      public void OnCanvasViewPaintSurface(object sender, SKPaintSurfaceEventArgs e)
 {
-    var recentEvents = RecentHealthEvents;
+    var recentEvents = RecentHealthEvent;
     var canvas = e.Surface.Canvas;
     canvas.Clear(SKColors.White);
 
@@ -317,14 +317,14 @@ float space = baseSpace * scale;
         var centerX = startX + i * (barWidth + space);
 
         // Get matching event
-        var ev = recentEvents.FirstOrDefault(e => e.StartDate.Date <= date && e.EndDate.Date >= date);
+        var ev = recentEvents.FirstOrDefault(e => e.StartDate <= date && e.EndDate>= date);
         if (ev != null)
         {
-            float severityHeight = ev.Severity * 10;
-            float barHeight = Math.Max(severityHeight, 10);
+            int ImpactHeight = ev.Impact * 10;
+            float barHeight = Math.Max(ImpactHeight, 10);
             float top = startY - barHeight;
 
-            paint.Color = ev.Severity switch
+            paint.Color = ev.Impact switch
             {
                 <= 3 => SKColors.Green,
                 <= 6 => SKColors.Yellow,

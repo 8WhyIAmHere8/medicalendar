@@ -146,7 +146,7 @@
                 <Frame Grid.Column="1" BackgroundColor="#E3F7FE" CornerRadius="20" Padding="10" Margin="10,0">
                     <VerticalStackLayout>
                         <Label Text="Recent events" FontSize="20" FontAttributes="Bold" TextColor="Black" />
-                        <CollectionView ItemsSource="{Binding RecentHealthEvents}">
+                        <CollectionView ItemsSource="{Binding RecentHealthEvent}">
                             <CollectionView.ItemTemplate>
                                 <DataTemplate>
                                     <Frame BackgroundColor="White" CornerRadius="10" Padding="10" Margin="5">

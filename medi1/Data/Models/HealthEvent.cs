@@ -12,7 +12,7 @@ namespace medi1.Data.Models
     public string Duration { get; set; } = string.Empty;
     public string HealthRelationship { get; set; } = string.Empty;
     public string ConditionId { get; set; } = string.Empty;
-    public int? Impact { get; set; }            
+    public int Impact { get; set; }            
     public string Notes { get; set; } = string.Empty;
     public DateTime? Timestamp { get; set; } = DateTime.UtcNow; 
 }
