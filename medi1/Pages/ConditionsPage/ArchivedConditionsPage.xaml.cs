@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.Mvvm.Messaging.Messages;
 using System.Windows.Input;
+using medi1.Services;
 
 namespace medi1.Pages.ConditionsPage;
 
@@ -38,8 +39,10 @@ namespace medi1.Pages.ConditionsPage;
         {
             try
             {
+                var currentUser = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == UserSession.Instance.Id);
+                var currentUserConditions = currentUser.Conditions;
                 var conditions = await _dbContext.Conditions
-                    .Where(c => c.Archived) // Filter archived conditions
+                    .Where(c => c.Archived && currentUserConditions.Contains(c.Id)) // Filter archived conditions
                     .ToListAsync();
 
                 if (conditions == null || conditions.Count == 0)

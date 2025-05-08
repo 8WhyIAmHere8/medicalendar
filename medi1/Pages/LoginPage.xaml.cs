@@ -50,7 +50,7 @@ namespace medi1.Pages
                         {
                             userfound = true;
                             if (user.Password == inputpassword) {
-                                UserSession.Instance.LoginUser(user); //Logs in user if password is correct
+                                await UserSession.Instance.LoginUser(user); //Logs in user if password is correct
                                 Application.Current.MainPage = new AppShell(); //Navigates to the mainpage
                             }
                             else {

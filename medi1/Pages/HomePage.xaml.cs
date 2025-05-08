@@ -18,6 +18,8 @@ namespace medi1.Pages
         // EF Core context for reading stored conditions
         private readonly MedicalDbContext _dbContext = new MedicalDbContext();
 
+        public List<Data.Models.Condition> InitializedConditions { get; set; } = new();
+
         // Calendar data with notification on change
         private ObservableCollection<DayItem> _daysInMonth = new();
         public ObservableCollection<DayItem> DaysInMonth
@@ -84,12 +86,16 @@ namespace medi1.Pages
 
         private async Task LoadConditionsFromDbAsync()
         {
-            var list = await _dbContext.Conditions.ToListAsync();
+            InitializedConditions = UserSession.Instance.Conditions;
             Conditions.Clear();
-
-            for (int i = 0; i < list.Count; i++)
+            if (InitializedConditions == null)
             {
-                var entity = list[i];
+                return;
+            }
+
+            for (int i = 0; i < InitializedConditions.Count; i++)
+            {
+                var entity = InitializedConditions[i];
                 var color = GenerateColor(i);
                 Conditions.Add(MapToVm(entity, color));
             }

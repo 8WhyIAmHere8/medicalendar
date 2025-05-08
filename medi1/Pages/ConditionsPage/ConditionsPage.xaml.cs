@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.Mvvm.Messaging.Messages;
+using medi1.Services;
 
 namespace medi1.Pages.ConditionsPage
 {
@@ -160,8 +161,10 @@ namespace medi1.Pages.ConditionsPage
         {
             try
             {
+                var currentUser = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == UserSession.Instance.Id);
+                var currentUserConditions = currentUser.Conditions;
                 var conditions = await _dbContext.Conditions
-                    .Where(c => !c.Archived) // Filter out archived conditions
+                    .Where(c => !c.Archived && currentUserConditions.Contains(c.Id)) // Filter out archived conditions
                     .ToListAsync();
 
                 if (conditions == null || conditions.Count == 0)
@@ -420,8 +423,10 @@ namespace medi1.Pages.ConditionsPage
         {
             try
             {
+                var currentUser = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == UserSession.Instance.Id);
+                var currentUserHealthEvents = currentUser.HealthEvents;
                 var healthEvents = await _dbContext.HealthEvent
-                    .Where(he => he.ConditionId == conditionId)
+                    .Where(he => he.ConditionId == conditionId && currentUserHealthEvents.Contains(he.Id))
                     .ToListAsync();
 
                 HealthEvent.Clear();
@@ -443,8 +448,10 @@ namespace medi1.Pages.ConditionsPage
             {
                 try
                 {
+                    var currentUser = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == UserSession.Instance.Id);
+                    var currentUserHealthEvents = currentUser.HealthEvents;
                     var recentEvents = await _dbContext.HealthEvent
-                        .Where(he => he.ConditionId == SelectedCondition.Id)
+                        .Where(he => he.ConditionId == SelectedCondition.Id && currentUserHealthEvents.Contains(he.Id))
                         .OrderByDescending(he => he.StartDate)
                         .Take(5)
                         .ToListAsync();
