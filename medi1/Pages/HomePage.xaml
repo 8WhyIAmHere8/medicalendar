@@ -70,10 +70,10 @@
                 CornerRadius="6"
                 HeightRequest="130"
                 WidthRequest="200"
-                BackgroundColor="{Binding IsToday, Converter={StaticResource HighlightToday}}">
+                BackgroundColor="{AppThemeBinding Light=#eff1f4, Dark=#4B2E53}">
                 <StackLayout>
 
-                  <!-- Day number -->
+                  <!-- Day number BackgroundColor="{Binding IsToday, Converter={StaticResource HighlightToday}}" -->
                   <Label
                     Text="{Binding DayNumber}"
                     FontSize="18"
