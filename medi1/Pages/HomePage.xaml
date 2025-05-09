@@ -71,9 +71,14 @@
                 HeightRequest="130"
                 WidthRequest="200"
                 BackgroundColor="{AppThemeBinding Light=#eff1f4, Dark=#4B2E53}">
+                <Frame.Triggers>
+                  <DataTrigger TargetType="Frame" Binding="{Binding IsToday}" Value="True">
+                    <Setter Property="BackgroundColor" Value="#007AFF" />
+                  </DataTrigger>
+                </Frame.Triggers>
                 <StackLayout>
 
-                  <!-- Day number BackgroundColor="{Binding IsToday, Converter={StaticResource HighlightToday}}" -->
+                  <!-- Day number -->
                   <Label
                     Text="{Binding DayNumber}"
                     FontSize="18"
@@ -100,7 +105,8 @@
                         <Frame Padding="2" Margin="0,1" CornerRadius="4" BackgroundColor="{Binding DotColor}" HasShadow="False">
                           <Label Text="{Binding Text}"
                                  FontSize="12"
-                                 LineBreakMode="TailTruncation" />
+                                 LineBreakMode="TailTruncation"
+                                 TextColor="Black" />
                         </Frame>
                       </DataTemplate>
                     </BindableLayout.ItemTemplate>
@@ -122,7 +128,6 @@
         <CollectionView.ItemTemplate>
           <DataTemplate>
             <StackLayout Orientation="Horizontal" Padding="5">
-              <!-- Correct placement of the gesture recognizer -->
               <StackLayout.GestureRecognizers>
                 <TapGestureRecognizer Tapped="OnConditionTapped"/>
               </StackLayout.GestureRecognizers>
@@ -152,11 +157,11 @@
           <DataTemplate>
             <Frame Style="{StaticResource SectionFrameStyle}" Padding="10" Margin="0,0,0,10" CornerRadius="8" HasShadow="True">
               <StackLayout>
-                <Label Text="{Binding Title}" FontSize="18" FontAttributes="Bold"/>
-                <Label Text="{Binding StartDate, StringFormat='{}{0:MMM dd, yyyy}'}" FontSize="14"/>
-                <Label Text="{Binding EndDate, StringFormat='to {0:MMM dd, yyyy}'}" FontSize="14"/>
-                <Label Text="{Binding Impact, StringFormat='Impact: {0}'}" FontSize="14"/>
-                <Label Text="{Binding Notes}" FontSize="14" LineBreakMode="TailTruncation"/>
+                <Label Text="{Binding Title}" FontSize="18" FontAttributes="Bold" />
+                <Label Text="{Binding StartDate, StringFormat='{}{0:MMM dd, yyyy}'}" FontSize="14" />
+                <Label Text="{Binding EndDate, StringFormat='to {0:MMM dd, yyyy}'}" FontSize="14" />
+                <Label Text="{Binding Impact, StringFormat='Impact: {0}'}" FontSize="14" />
+                <Label Text="{Binding Notes}" FontSize="14" LineBreakMode="TailTruncation" TextColor="Black" />
               </StackLayout>
             </Frame>
           </DataTemplate>
@@ -173,12 +178,12 @@
           <DataTemplate>
             <Frame Style="{StaticResource SectionFrameStyle}" Padding="10" Margin="0,0,0,10" CornerRadius="8" HasShadow="True">
               <StackLayout>
-                <Label Text="{Binding Name}" FontSize="18" FontAttributes="Bold"/>
-                <Label Text="{Binding Date, StringFormat='{}{0:MMM dd, yyyy}'}" FontSize="14"/>
-                <Label Text="{Binding Intensity, StringFormat='Intensity: {0}'}" FontSize="14"/>
-                <Label Text="{Binding Duration, StringFormat='Duration: {0}'}" FontSize="14"/>
-                <Label Text="{Binding AggravatedCondition, StringFormat='Aggravated: {0}'}" FontSize="14"/>
-                <Label Text="{Binding Notes}" FontSize="14" LineBreakMode="TailTruncation"/>
+                <Label Text="{Binding Name}" FontSize="18" FontAttributes="Bold" />
+                <Label Text="{Binding Date, StringFormat='{}{0:MMM dd, yyyy}'}" FontSize="14" />
+                <Label Text="{Binding Intensity, StringFormat='Intensity: {0}'}" FontSize="14" />
+                <Label Text="{Binding Duration, StringFormat='Duration: {0}'}" FontSize="14" />
+                <Label Text="{Binding AggravatedCondition, StringFormat='Aggravated: {0}'}" FontSize="14" />
+                <Label Text="{Binding Notes}" FontSize="14" LineBreakMode="TailTruncation" TextColor="Black" />
               </StackLayout>
             </Frame>
           </DataTemplate>
