@@ -5,7 +5,8 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:components="clr-namespace:medi1.SplashPageComponents"
     xmlns:local="clr-namespace:medi1.Pages"
-    Title="Dashboard">
+    Title="Dashboard"
+    BackgroundColor="{AppThemeBinding Light=White, Dark=Black}">
 
   <ContentPage.Resources>
     <ResourceDictionary>
@@ -149,7 +150,7 @@
         </CollectionView.ItemsLayout>
         <CollectionView.ItemTemplate>
           <DataTemplate>
-            <Frame Padding="10" Margin="0,0,0,10" CornerRadius="8" HasShadow="True">
+            <Frame Style="{StaticResource SectionFrameStyle}" Padding="10" Margin="0,0,0,10" CornerRadius="8" HasShadow="True">
               <StackLayout>
                 <Label Text="{Binding Title}" FontSize="18" FontAttributes="Bold"/>
                 <Label Text="{Binding StartDate, StringFormat='{}{0:MMM dd, yyyy}'}" FontSize="14"/>
@@ -170,7 +171,7 @@
         </CollectionView.ItemsLayout>
         <CollectionView.ItemTemplate>
           <DataTemplate>
-            <Frame Padding="10" Margin="0,0,0,10" CornerRadius="8" HasShadow="True">
+            <Frame Style="{StaticResource SectionFrameStyle}" Padding="10" Margin="0,0,0,10" CornerRadius="8" HasShadow="True">
               <StackLayout>
                 <Label Text="{Binding Name}" FontSize="18" FontAttributes="Bold"/>
                 <Label Text="{Binding Date, StringFormat='{}{0:MMM dd, yyyy}'}" FontSize="14"/>
@@ -213,18 +214,39 @@
       </FlexLayout>
 
       <!-- Today's Date, Tasks & Events -->
-      <Frame BorderColor="Gray" Padding="20" CornerRadius="10" HasShadow="True" BackgroundColor="Transparent" Margin="0,30,0,0">
+      <Frame
+        BorderColor="Gray"
+        Padding="20"
+        CornerRadius="10"
+        HasShadow="True"
+        Margin="0,30,0,0"
+        BackgroundColor="{AppThemeBinding Light=White, Dark=Black}">
         <StackLayout Orientation="Vertical" Spacing="10">
-          <Label Text="{Binding FullDateToday}" FontSize="24" HorizontalOptions="Center"/>
+          <Label
+            Text="{Binding FullDateToday}"
+            FontSize="24"
+            HorizontalOptions="Center"/>
 
           <!-- Pane for Adding New Tasks -->
-          <Frame Margin="0,-40,0,0">
+          <Frame
+            Style="{StaticResource SectionFrameStyle}"
+            Margin="0,-40,0,0">
             <StackLayout>
-              <Label Text="Today's Tasks" FontSize="20" HorizontalOptions="Center" Padding="20" Margin="0,-5,0,0"/>
-              <Button Text="+ New Task" Clicked="OnAddTaskClicked"/>
+              <Label
+                Text="Today's Tasks"
+                FontSize="20"
+                HorizontalOptions="Center"
+                Padding="20"
+                Margin="0,-5,0,0"/>
+              <Button
+                Text="+ New Task"
+                Clicked="OnAddTaskClicked"/>
 
-              <!-- Where task items get injected -->
-              <StackLayout x:Name="TaskListContainer" Padding="10" Spacing="5"/>
+              <!-- Task list -->
+              <StackLayout
+                x:Name="TaskListContainer"
+                Padding="10"
+                Spacing="5"/>
 
               <!-- Add Task Popup -->
               <Grid x:Name="AddTaskPopup"
@@ -233,10 +255,11 @@
                     IsVisible="False"
                     HorizontalOptions="Center"
                     VerticalOptions="CenterAndExpand">
-                <Frame BackgroundColor="White"
-                       Padding="20"
-                       CornerRadius="10"
-                       HasShadow="True">
+                <Frame
+                  BackgroundColor="White"
+                  Padding="20"
+                  CornerRadius="10"
+                  HasShadow="True">
                   <StackLayout>
                     <Label Text="Add Task" FontSize="18" HorizontalOptions="Center"/>
                     <Entry x:Name="TaskInput" Placeholder="New Task..."/>
@@ -255,10 +278,11 @@
                     IsVisible="False"
                     HorizontalOptions="Center"
                     VerticalOptions="CenterAndExpand">
-                <Frame BackgroundColor="White"
-                       Padding="20"
-                       CornerRadius="10"
-                       HasShadow="True">
+                <Frame
+                  BackgroundColor="White"
+                  Padding="20"
+                  CornerRadius="10"
+                  HasShadow="True">
                   <StackLayout>
                     <Label Text="Edit Task" FontSize="18" HorizontalOptions="Center"/>
                     <Entry x:Name="EditTaskInput" Placeholder="Edit Task..."/>
@@ -273,7 +297,7 @@
           </Frame>
 
           <!-- Pane for Adding a New Entry -->
-          <Frame>
+          <Frame Style="{StaticResource SectionFrameStyle}">
             <StackLayout>
               <Button Text="+ Log an Entry" Clicked="AddNewEntry"/>
             </StackLayout>

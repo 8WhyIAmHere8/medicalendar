@@ -8,5 +8,17 @@
            FontSize="24" 
            HorizontalOptions="Center" />
     <!-- Profile settings, preferences, and customization controls -->
+
+
+    <!-- Dark Mode toggle -->
+    <Grid ColumnDefinitions="Auto,*,Auto" VerticalOptions="Center">
+      <Label Text="Dark Mode" 
+             FontSize="18" 
+             VerticalOptions="Center" />
+      <Switch x:Name="DarkModeSwitch"
+              Grid.Column="2"
+              Toggled="DarkModeSwitch_Toggled"
+              VerticalOptions="Center"/>
+    </Grid>
   </StackLayout>
 </ContentPage>
