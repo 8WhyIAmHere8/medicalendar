@@ -290,7 +290,7 @@ namespace medi1.Pages
                 
                 //-----------------Aggravated Condition-----------//
                 var aggedConditionSelected = ConditionSelecter.SelectedItem as medi1.Data.Models.Condition;
-                string aggedConditionName = aggedConditionSelected?.Id;
+                string aggedConditionName = aggedConditionSelected?.Name;
                 //Log name of activity in "triggers" of the names health condition
 
 
