@@ -42,9 +42,9 @@ namespace medi1.ViewModels
         public ObservableCollection<string> Symptoms { get; } = new();
         public ObservableCollection<string> Treatments { get; } = new();
 
-        public ConditionsViewModel()
+        public ConditionsViewModel(MedicalDbContext? dbContext = null)
         {
-            _dbContext = new MedicalDbContext(); // Ensure proper initialization
+            _dbContext = dbContext ?? new MedicalDbContext(); // Allow dependency injection
             LoadConditionsCommand = new AsyncRelayCommand(LoadConditionsAsync);
             // ADDING AND UPDATING COND
             AddConditionCommand = new Command(OnAddConditionTapped);
