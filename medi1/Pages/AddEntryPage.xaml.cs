@@ -165,7 +165,7 @@ namespace medi1.Pages
             string entryType = EntrySelecter.SelectedItem.ToString();
 
             //------------------ Entry Notes -----------------//
-            string entryNotes = NotesEntry.Text.ToString();
+            string entryNotes = NotesEntry.Text ?? "";
 
             //------------------ Health Event Relation -----------//
             string healthEvent = HealthEventPicker.SelectedItem?.ToString();
@@ -173,7 +173,13 @@ namespace medi1.Pages
             if (entryType == "Log Health Event"){
                 
                 //------------------- Logging Name -----------------//
-                string eventName = NameEntry.Text.ToString();
+                
+                if(string.IsNullOrEmpty(NameEntry.Text)){
+                    await DisplayAlert("Missing Name", "Please complete the event name", "OK");
+                    return;
+                }
+                string eventName = NameEntry.Text;
+
 
                 //-------------Declare start and end dates and duration -------//
 
@@ -184,6 +190,10 @@ namespace medi1.Pages
                 // ------------- Logging Duration ------------- //
                 string dateRange = DateSelecter.SelectedItem?.ToString();
                 //------------ Event Impact -----------------//
+                if (ImpactSelecter.SelectedItem == null){
+                    await DisplayAlert("Missing Impact Score", "Please select an impact score", "OK");
+                    return;
+                }
                 string eventImpactScore = ImpactSelecter.SelectedItem?.ToString();
                 int eventImpact = int.Parse(eventImpactScore);
 
@@ -230,17 +240,23 @@ namespace medi1.Pages
                     StartDate = eventStartDate,
                     EndDate = eventEndDate,
                     Duration = eventDuration,
-                    HealthRelationship = healthEvent,
+                    HealthRelationship = healthEvent ?? "",
                     ConditionId = associatedCondition,
                     Impact = eventImpact,
                     Notes = entryNotes
                 };
-
+                
                  try
                 {
                     using var dbContext = new MedicalDbContext();
                     await dbContext.HealthEvent.AddAsync(newHealthEvent);
                     await dbContext.SaveChangesAsync();
+
+                    if (healthEvent == null){
+                        await DisplayAlert("Missing Health Relation", 
+                        "Please indicate how this event related to your existing health", "OK");
+                        return;
+                    }
 
                     if (healthEvent == "Related to Condition")
                     {
@@ -256,6 +272,7 @@ namespace medi1.Pages
                             }
                     }
                     UserSession.Instance.SaveNewHealthEvent(newHealthEvent);
+                    await DisplayAlert("Success!", "Health Event has been saved", "Close");
 
                     //else if (healthEvent == "Related to Menstrual Cycle"){Add to Menstrual Cycle database contrainer}
                     
@@ -276,7 +293,11 @@ namespace medi1.Pages
             {
                 //----------Activity Name---------//
                 var activitySelected = ActivityNameSelecter.SelectedItem as medi1.Data.Models.Activity;
-                string activityName = activitySelected?.Name;
+                if (activitySelected == null || string.IsNullOrEmpty(activitySelected.Name)){
+                    await DisplayAlert("Missing Name", "Please select and activity name", "OK");
+                    return;
+                }
+                string activityName = activitySelected.Name;
                 
                 //-------------Date and Duration----------//
                 DateTime activityDate = activityDatePicker.Date;
@@ -287,6 +308,10 @@ namespace medi1.Pages
 
                 //----------------Intensity-------------------//
                 string activityIntensity = IntensitySelecter.SelectedItem?.ToString();
+                if(string.IsNullOrEmpty(activityIntensity)){
+                    await DisplayAlert("Missing Intensty", "Please select an activity intensity", "OK");
+                    return;
+                }
                 
                 //-----------------Aggravated Condition-----------//
                 var aggedConditionSelected = ConditionSelecter.SelectedItem as medi1.Data.Models.Condition;
