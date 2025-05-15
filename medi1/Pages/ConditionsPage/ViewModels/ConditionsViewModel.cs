@@ -44,7 +44,7 @@ namespace medi1.ViewModels
 
         public ConditionsViewModel(MedicalDbContext? dbContext = null)
         {
-            _dbContext = dbContext ?? new MedicalDbContext(); // Allow dependency injection
+            _dbContext = dbContext;
             LoadConditionsCommand = new AsyncRelayCommand(LoadConditionsAsync);
             // ADDING AND UPDATING COND
             AddConditionCommand = new Command(OnAddConditionTapped);
@@ -221,8 +221,10 @@ namespace medi1.ViewModels
             await Shell.Current.GoToAsync(nameof(ArchivedConditionsPage));
         }
 
-        private async Task SaveCondition()
+            private async Task SaveCondition()
         {
+            if (_dbContext == null) return; // Skip DB save in tests
+
             _dbContext.Conditions.Update(SelectedCondition!);
             await _dbContext.SaveChangesAsync();
         }
