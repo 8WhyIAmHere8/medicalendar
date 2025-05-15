@@ -8,5 +8,6 @@
            FontSize="24" 
            HorizontalOptions="Center" />
     <!-- Profile settings, preferences, and customization controls -->
+    <Button Text="Logout" Clicked="OnLogoutClicked"/>
   </StackLayout>
 </ContentPage>

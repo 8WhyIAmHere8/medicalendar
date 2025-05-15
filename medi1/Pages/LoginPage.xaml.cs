@@ -36,30 +36,25 @@ namespace medi1.Pages
                 var userlist = await _dbContext.Users.ToListAsync();
                 Users.Clear();
 
-                if (string.IsNullOrWhiteSpace(inputuser) || string.IsNullOrWhiteSpace(inputpassword)) //Checks if both username and password were filled
+                if (string.IsNullOrWhiteSpace(inputuser) || string.IsNullOrWhiteSpace(inputpassword))
+                {
+                    GeneralError.IsVisible = true;
+                }
+                else
+                {
+                    var user = userlist.FirstOrDefault(u => u.UserName == inputuser);
+                    if (user == null)
                     {
-                        GeneralError.IsVisible = true;
+                        UsernameError.IsVisible = true;
                     }
-            
-                else {
-
-                    bool userfound = false; //used to check if user is in database
-                    foreach (var user in userlist) //Goes through each user
+                    else if (user.Password != inputpassword)
                     {
-                        if (user.UserName == inputuser) // Checks users password if a user is found
-                        {
-                            userfound = true;
-                            if (user.Password == inputpassword) {
-                                await UserSession.Instance.LoginUser(user); //Logs in user if password is correct
-                                Application.Current.MainPage = new AppShell(); //Navigates to the mainpage
-                            }
-                            else {
-                                PasswordError.IsVisible = true; //Displays password error if it doesn't match the username given
-                            }
-                        }
+                        PasswordError.IsVisible = true;
                     }
-                    if (!userfound) {
-                        UsernameError.IsVisible = true; //Displays an error if after checking each user no match is found
+                    else
+                    {
+                        await UserSession.Instance.LoginUser(user);
+                        Application.Current.MainPage = new AppShell();
                     }
                 }
             }
