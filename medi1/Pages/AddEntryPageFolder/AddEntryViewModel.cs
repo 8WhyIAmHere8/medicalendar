@@ -73,7 +73,6 @@ namespace medi1.Pages.AddEntryPageFolder
         {
             "Independent Health Event",
             "Related to Condition",
-            "Related to Menstrual Cycle",
             "Part of a New Condition"
         };
 
