@@ -5,9 +5,9 @@
              xmlns:skia="clr-namespace:SkiaSharp.Views.Maui.Controls;assembly=SkiaSharp.Views.Maui.Controls"
 
              x:Name="MainPageRef"
-             Title="Conditions Tracker">
+             Title="Conditions Tracker"
+             BackgroundColor="{AppThemeBinding Light=White, Dark=Black}">
 
-<!-- xmlns:skia="clr-namespace:SkiaSharp.Views.Maui.Controls;assembly=SkiaSharp.Views.Maui.Controls" -->
     <ContentPage.Resources>
         <ResourceDictionary>
             <Style x:Key="TabButtonStyle" TargetType="Frame">
@@ -19,7 +19,7 @@
             </Style>
         </ResourceDictionary>
     </ContentPage.Resources>
-<!-- xmlns:microcharts="clr-namespace:Microcharts.Maui;assembly=Microcharts.Maui" -->
+
     <ScrollView>
         <VerticalStackLayout Padding="10" Spacing="10">
 
@@ -35,9 +35,8 @@
                                 <DataTemplate>
                                     <Frame Padding="10,5"
                                            CornerRadius="20"
-                                           BackgroundColor="{Binding ., Converter={StaticResource TabHighlightConverter}, ConverterParameter={Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.SelectedCondition}}"
-                                           >
-                                        <Label Text="{Binding Name}" FontSize="16" />
+                                           BackgroundColor="{Binding ., Converter={StaticResource TabHighlightConverter}, ConverterParameter={Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.SelectedCondition}}">
+                                        <Label Text="{Binding Name}" FontSize="16" TextColor="{AppThemeBinding Light=Black, Dark=White}" />
                                     </Frame>
                                 </DataTemplate>
                             </CollectionView.ItemTemplate>
@@ -45,7 +44,7 @@
 
                         <!-- Add Tab -->
                         <Frame Style="{StaticResource TabButtonStyle}" BackgroundColor="#BBDEFB">
-                            <Label Text="＋" FontSize="20">
+                            <Label Text="＋" FontSize="20" TextColor="{AppThemeBinding Light=Black, Dark=White}">
                                 <Label.GestureRecognizers>
                                     <TapGestureRecognizer Command="{Binding AddConditionCommand}" />
                                 </Label.GestureRecognizers>
@@ -56,8 +55,8 @@
 
                 <!-- Archived Conditions Button -->
                 <Button Text="Archived Conditions"
-                        BackgroundColor="#69F0AE"
-                        TextColor="Black"
+                        BackgroundColor="{AppThemeBinding Light=#69F0AE, Dark=#275F43}"
+                        TextColor="{AppThemeBinding Light=Black, Dark=White}"
                         CornerRadius="20"
                         Margin="10,0"
                         VerticalOptions="Center"
@@ -71,89 +70,89 @@
                 <VerticalStackLayout Grid.Column="0" Spacing="15">
 
                     <!-- Medications -->
-                    <Frame BackgroundColor="#E3F2FD" CornerRadius="20" Padding="10">
+                    <Frame BackgroundColor="{AppThemeBinding Light=#E3F2FD, Dark=#253039}" CornerRadius="20" Padding="10">
                         <VerticalStackLayout>
-                            <Label Text="Medications" FontSize="20" FontAttributes="Bold" TextColor="#1A237E" />
+                            <Label Text="Medications" FontSize="20" FontAttributes="Bold" TextColor="{AppThemeBinding Light=#1A237E, Dark=White}" />
                             <CollectionView ItemsSource="{Binding SelectedCondition.Medications}">
                                 <CollectionView.ItemTemplate>
                                     <DataTemplate>
-                                        <Label Text="{Binding}" FontSize="16" />
+                                        <Label Text="{Binding}" FontSize="16" TextColor="{AppThemeBinding Light=Black, Dark=White}" />
                                     </DataTemplate>
                                 </CollectionView.ItemTemplate>
                             </CollectionView>
-                            <Entry Placeholder="Enter medication" Text="{Binding NewMedication}" />
-                            <Button Text="＋" Command="{Binding AddMedicationCommand}" HorizontalOptions="Start" WidthRequest="40" />
+                            <Entry Placeholder="Enter medication" Text="{Binding NewMedication}" TextColor="{AppThemeBinding Light=Black, Dark=White}" />
+                            <Button Text="＋" Command="{Binding AddMedicationCommand}" HorizontalOptions="Start" WidthRequest="40" TextColor="{AppThemeBinding Light=Black, Dark=White}" />
                         </VerticalStackLayout>
                     </Frame>
                     <!-- Treatments -->
-                    <Frame BackgroundColor="#E3F2FD" CornerRadius="20" Padding="10">
+                    <Frame BackgroundColor="{AppThemeBinding Light=#E3F2FD, Dark=#253039}" CornerRadius="20" Padding="10">
                         <VerticalStackLayout>
-                            <Label Text="Treatments" FontSize="20" FontAttributes="Bold" TextColor="#1A237E" />
+                            <Label Text="Treatments" FontSize="20" FontAttributes="Bold" TextColor="{AppThemeBinding Light=#1A237E, Dark=White}" />
                             <CollectionView ItemsSource="{Binding SelectedCondition.Treatments}">
                                 <CollectionView.ItemTemplate>
                                     <DataTemplate>
-                                        <Label Text="{Binding}" FontSize="16" />
+                                        <Label Text="{Binding}" FontSize="16" TextColor="{AppThemeBinding Light=Black, Dark=White}" />
                                     </DataTemplate>
                                 </CollectionView.ItemTemplate>
                             </CollectionView>
-                            <Entry Placeholder="Enter treatment" Text="{Binding NewTreatment}" />
-                            <Button Text="＋" Command="{Binding AddTreatmentCommand}" HorizontalOptions="Start" WidthRequest="40" />
+                            <Entry Placeholder="Enter treatment" Text="{Binding NewTreatment}" TextColor="{AppThemeBinding Light=Black, Dark=White}" />
+                            <Button Text="＋" Command="{Binding AddTreatmentCommand}" HorizontalOptions="Start" WidthRequest="40" TextColor="{AppThemeBinding Light=Black, Dark=White}" />
                         </VerticalStackLayout>
                     </Frame>
 
                     <!-- Symptoms -->
-                    <Frame BackgroundColor="#E3F2FD" CornerRadius="20" Padding="10">
+                    <Frame BackgroundColor="{AppThemeBinding Light=#E3F2FD, Dark=#253039}" CornerRadius="20" Padding="10">
                         <VerticalStackLayout>
-                            <Label Text="Symptoms" FontSize="20" FontAttributes="Bold" TextColor="#1A237E" />
+                            <Label Text="Symptoms" FontSize="20" FontAttributes="Bold" TextColor="{AppThemeBinding Light=#1A237E, Dark=White}" />
                             <CollectionView ItemsSource="{Binding SelectedCondition.Symptoms}">
                                 <CollectionView.ItemTemplate>
                                     <DataTemplate>
-                                        <Label Text="{Binding}" FontSize="16" />
+                                        <Label Text="{Binding}" FontSize="16" TextColor="{AppThemeBinding Light=Black, Dark=White}" />
                                     </DataTemplate>
                                 </CollectionView.ItemTemplate>
                             </CollectionView>
-                            <Entry Placeholder="Enter symptoms" Text="{Binding NewSymptom}" />
-                            <Button Text="＋" Command="{Binding AddSymptomCommand}" HorizontalOptions="Start" WidthRequest="40" />
+                            <Entry Placeholder="Enter symptoms" Text="{Binding NewSymptom}" TextColor="{AppThemeBinding Light=Black, Dark=White}" />
+                            <Button Text="＋" Command="{Binding AddSymptomCommand}" HorizontalOptions="Start" WidthRequest="40" TextColor="{AppThemeBinding Light=Black, Dark=White}" />
                         </VerticalStackLayout>
                     </Frame>
-                    <!-- Triggesrs -->
-                    <Frame BackgroundColor="#E3F2FD" CornerRadius="20" Padding="10">
+                    <!-- Triggers -->
+                    <Frame BackgroundColor="{AppThemeBinding Light=#E3F2FD, Dark=#253039}" CornerRadius="20" Padding="10">
                         <VerticalStackLayout>
-                            <Label Text="Triggers" FontSize="20" FontAttributes="Bold" TextColor="#1A237E" />
+                            <Label Text="Triggers" FontSize="20" FontAttributes="Bold" TextColor="{AppThemeBinding Light=#1A237E, Dark=White}" />
                             <CollectionView ItemsSource="{Binding SelectedCondition.Triggers}">
                                 <CollectionView.ItemTemplate>
                                     <DataTemplate>
-                                        <Label Text="{Binding}" FontSize="16" />
+                                        <Label Text="{Binding}" FontSize="16" TextColor="{AppThemeBinding Light=Black, Dark=White}" />
                                     </DataTemplate>
                                 </CollectionView.ItemTemplate>
                             </CollectionView>
-                            <Entry Placeholder="Enter triggers" Text="{Binding NewTrigger}" />
-                            <Button Text="＋" Command="{Binding AddTriggerCommand}" HorizontalOptions="Start" WidthRequest="40" />
+                            <Entry Placeholder="Enter triggers" Text="{Binding NewTrigger}" TextColor="{AppThemeBinding Light=Black, Dark=White}" />
+                            <Button Text="＋" Command="{Binding AddTriggerCommand}" HorizontalOptions="Start" WidthRequest="40" TextColor="{AppThemeBinding Light=Black, Dark=White}" />
                         </VerticalStackLayout>
                     </Frame>
 
                     <!-- Notes -->
-                    <Frame BackgroundColor="#E3F2FD" CornerRadius="20" Padding="10">
+                    <Frame BackgroundColor="{AppThemeBinding Light=#E3F2FD, Dark=#253039}" CornerRadius="20" Padding="10">
                         <VerticalStackLayout>
-                            <Label Text="My Notes" FontSize="20" FontAttributes="Bold" TextColor="#1A237E" />
-                            <Editor Text="{Binding SelectedCondition.Notes}" HeightRequest="80" />
-                            <Button Text="＋" Command="{Binding SaveNoteCommand}" HorizontalOptions="Start" WidthRequest="40" />
+                            <Label Text="My Notes" FontSize="20" FontAttributes="Bold" TextColor="{AppThemeBinding Light=#1A237E, Dark=White}" />
+                            <Editor Text="{Binding SelectedCondition.Notes}" HeightRequest="80" TextColor="{AppThemeBinding Light=Black, Dark=White}" />
+                            <Button Text="＋" Command="{Binding SaveNoteCommand}" HorizontalOptions="Start" WidthRequest="40" TextColor="{AppThemeBinding Light=Black, Dark=White}" />
                         </VerticalStackLayout>
                     </Frame>
                 </VerticalStackLayout>
 
                 <!-- Right Panel - Recent Events -->
-                <Frame Grid.Column="1" BackgroundColor="#E3F7FE" CornerRadius="20" Padding="10" Margin="10,0">
+                <Frame Grid.Column="1" BackgroundColor="{AppThemeBinding Light=#E3F7FE, Dark=#253039}" CornerRadius="20" Padding="10" Margin="10,0">
                     <VerticalStackLayout>
-                        <Label Text="Recent events" FontSize="20" FontAttributes="Bold" TextColor="Black" />
+                        <Label Text="Recent events" FontSize="20" FontAttributes="Bold" TextColor="{AppThemeBinding Light=Black, Dark=White}" />
                         <CollectionView ItemsSource="{Binding HealthEvents}">
                             <CollectionView.ItemTemplate>
                                 <DataTemplate>
                                     <Frame BackgroundColor="White" CornerRadius="10" Padding="10" Margin="5">
                                         <VerticalStackLayout>
-                                            <Label Text="{Binding Title}" FontSize="16" FontAttributes="Bold" />
-                                            <Label Text="{Binding StartDate, StringFormat='Start Date: {0:MM/dd/yyyy}'}" FontSize="14" />
-                                            <Label Text="{Binding EndDate, StringFormat='End Date: {0:MM/dd/yyyy}'}" FontSize="14" />
+                                            <Label Text="{Binding Title}" FontSize="16" FontAttributes="Bold" TextColor="{AppThemeBinding Light=Black, Dark=White}" />
+                                            <Label Text="{Binding StartDate, StringFormat='Start Date: {0:MM/dd/yyyy}'}" FontSize="14" TextColor="{AppThemeBinding Light=Black, Dark=White}" />
+                                            <Label Text="{Binding Length, StringFormat='Length: {0} days'}" FontSize="14" TextColor="{AppThemeBinding Light=Black, Dark=White}" />
                                         </VerticalStackLayout>
                                     </Frame>
                                 </DataTemplate>
@@ -161,7 +160,7 @@
                         </CollectionView>
                         <Frame>
                             <StackLayout>
-                                <Button Text="+ Log an Entry" Clicked="AddNewEntry" />
+                                <Button Text="+ Log an Entry" Clicked="AddNewEntry" TextColor="Black"/>
                             </StackLayout>
                         </Frame>
                          <VerticalStackLayout Spacing="10">
@@ -175,12 +174,14 @@
     <HorizontalStackLayout HorizontalOptions="Center">
         <Button Text="➖ Zoom Out"
                 Clicked="OnZoomOutClicked"
-                BackgroundColor="#ddd" />
+                BackgroundColor="#ddd"
+                TextColor="{AppThemeBinding Light=Black, Dark=White}" />
         <Button Text="➕ Zoom In"
                 Clicked="OnZoomInClicked"
-                BackgroundColor="#ddd" />
+                BackgroundColor="#ddd"
+                TextColor="{AppThemeBinding Light=Black, Dark=White}" />
                  <DatePicker Date="{Binding StartDate}" />
-    <Label Text="to" VerticalOptions="Center" />
+    <Label Text="to" VerticalOptions="Center" TextColor="{AppThemeBinding Light=Black, Dark=White}" />
     <DatePicker Date="{Binding EndDate}" />
     </HorizontalStackLayout>
 
