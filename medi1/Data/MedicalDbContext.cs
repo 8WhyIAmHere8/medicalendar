@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace medi1.Data
 {
-    public class MedicalDbContext : DbContext
+    public class MedicalDbContext : DbContext, medi1.Pages.ConditionsPage.Interfaces.IMedicalDbContext
     {
         private readonly string _containerName;
         public DbSet<Data.Models.Condition> Conditions { get; set; }
@@ -18,11 +18,11 @@ namespace medi1.Data
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             optionsBuilder.UseCosmos(
-                "https://medicalendar-data.documents.azure.com:443/", // Cosmos DB endpoint
-                "ukEwRy20KzAics3MYQfmnzwXC0IxPQMGd8MfvPCQthLpkW691AMAqS1cSPz5aS6z77WAz3Sgy9I8ACDbywHjig==", // Cosmos DB key
+                "https://medicalendar-data.documents.azure.com:443/", // cosmosDB link
+                "ukEwRy20KzAics3MYQfmnzwXC0IxPQMGd8MfvPCQthLpkW691AMAqS1cSPz5aS6z77WAz3Sgy9I8ACDbywHjig==", // cosmosDB key 
                 "MedicalDatabase"); 
 
-            optionsBuilder.LogTo(Console.WriteLine); // Log database queries
+            optionsBuilder.LogTo(Console.WriteLine); // logging database queries
             base.OnConfiguring(optionsBuilder);
         }
 

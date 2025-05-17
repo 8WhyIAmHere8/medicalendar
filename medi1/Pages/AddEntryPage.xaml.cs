@@ -189,7 +189,7 @@ namespace medi1.Pages
 
                 //---------------- Associated Condition -------------//
                 var associatedConditionSelected = AssociatedConditionSelecter.SelectedItem as medi1.Data.Models.Condition;
-                string associatedCondition = associatedConditionSelected?.Name;
+                string associatedCondition = associatedConditionSelected?.Id;
 
 
                 if (dateRange == "Single Date" && FullDayCheck.IsChecked == true)
@@ -245,7 +245,7 @@ namespace medi1.Pages
                     if (healthEvent == "Related to Condition")
                     {
                         var selectedCondition = await dbContext.Conditions
-                        .FirstOrDefaultAsync(c => c.Name == associatedCondition);
+                        .FirstOrDefaultAsync(c => c.Id == associatedCondition);
 
                         if (associatedCondition != null)
                             {
@@ -290,7 +290,7 @@ namespace medi1.Pages
                 
                 //-----------------Aggravated Condition-----------//
                 var aggedConditionSelected = ConditionSelecter.SelectedItem as medi1.Data.Models.Condition;
-                string aggedConditionName = aggedConditionSelected?.Name;
+                string aggedConditionName = aggedConditionSelected?.Id;
                 //Log name of activity in "triggers" of the names health condition
 
 
@@ -314,7 +314,7 @@ namespace medi1.Pages
 
                     if (AggravatedCheck.IsChecked) {
                             var selectedCondition = await dbContext.Conditions
-                            .FirstOrDefaultAsync(c => c.Name == aggedConditionName);
+                            .FirstOrDefaultAsync(c => c.Id == aggedConditionName);
 
                             if (selectedCondition != null)
                             {

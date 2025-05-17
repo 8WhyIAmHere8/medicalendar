@@ -32,7 +32,7 @@ public partial class ArchivedConditionsViewModel : ObservableObject
             var currentUserConditions = currentUser.Conditions;
         
             var conditions = await _dbContext.Conditions
-                 .Where(c => c.Archived && currentUserConditions.Contains(c.Id))
+                .Where(c => c.Archived && currentUserConditions.Contains(c.Id))
                 .ToListAsync();
 
             ArchivedConditions.Clear();

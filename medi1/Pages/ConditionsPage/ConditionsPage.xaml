@@ -146,14 +146,14 @@
                 <Frame Grid.Column="1" BackgroundColor="#E3F7FE" CornerRadius="20" Padding="10" Margin="10,0">
                     <VerticalStackLayout>
                         <Label Text="Recent events" FontSize="20" FontAttributes="Bold" TextColor="Black" />
-                        <CollectionView ItemsSource="{Binding RecentHealthEvent}">
+                        <CollectionView ItemsSource="{Binding HealthEvents}">
                             <CollectionView.ItemTemplate>
                                 <DataTemplate>
                                     <Frame BackgroundColor="White" CornerRadius="10" Padding="10" Margin="5">
                                         <VerticalStackLayout>
                                             <Label Text="{Binding Title}" FontSize="16" FontAttributes="Bold" />
                                             <Label Text="{Binding StartDate, StringFormat='Start Date: {0:MM/dd/yyyy}'}" FontSize="14" />
-                                            <Label Text="{Binding Length, StringFormat='Length: {0} days'}" FontSize="14" />
+                                            <Label Text="{Binding EndDate, StringFormat='End Date: {0:MM/dd/yyyy}'}" FontSize="14" />
                                         </VerticalStackLayout>
                                     </Frame>
                                 </DataTemplate>
@@ -197,6 +197,12 @@
                     HorizontalOptions="End"
                     Margin="0,20"
                     Command="{Binding ArchiveConditionCommand}" />
+
+            <!-- Export Button -->
+            <Button Text="Export Condition"
+                    BackgroundColor="#FFCC80"
+                    TextColor="Black"
+                    Command="{Binding ExportConditionCommand}" />
         </VerticalStackLayout>
     </ScrollView>
 </ContentPage>
