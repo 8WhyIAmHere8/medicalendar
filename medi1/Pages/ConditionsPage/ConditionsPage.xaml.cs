@@ -22,7 +22,7 @@ namespace medi1.Pages.ConditionsPage
          public ConditionsPage()
     {
         InitializeComponent();
-        _viewModel = new ViewModels.ConditionsViewModel();
+        _viewModel = new ViewModels.ConditionsViewModel(new MedicalDbContext());
         BindingContext = _viewModel;
 
         // Pass ChartCanvas reference

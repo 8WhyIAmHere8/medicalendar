@@ -221,9 +221,10 @@ namespace medi1.ViewModels
             await Shell.Current.GoToAsync(nameof(ArchivedConditionsPage));
         }
 
-            private async Task SaveCondition()
+        private async Task SaveCondition()
         {
-            if (_dbContext == null) return; // Skip DB save in tests
+            // db is skipped for testing
+            if (_dbContext == null) return;
 
             _dbContext.Conditions.Update(SelectedCondition!);
             await _dbContext.SaveChangesAsync();
