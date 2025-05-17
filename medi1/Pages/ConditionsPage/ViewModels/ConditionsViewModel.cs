@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.IO;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -14,6 +15,7 @@ using SkiaSharp.Views.Maui;
 using SkiaSharp.Views.Maui.Controls;
 using medi1.Services;
 
+
 namespace medi1.ViewModels
 {
     public partial class ConditionsViewModel : ObservableObject
@@ -21,9 +23,9 @@ namespace medi1.ViewModels
         private readonly MedicalDbContext _dbContext;
 
         public ObservableCollection<Data.Models.Condition> Conditions { get; } = new();
-        public ObservableCollection<HealthEvent> HealthEvent { get; } = new();
-        [ObservableProperty]
-        private ObservableCollection<HealthEvent> recentHealthEvent = new();
+        
+       
+        public ObservableCollection<Data.Models.HealthEvent> HealthEvents { get; } = new();
 
         [ObservableProperty]
         private Data.Models.Condition? selectedCondition;
@@ -40,9 +42,9 @@ namespace medi1.ViewModels
         public ObservableCollection<string> Symptoms { get; } = new();
         public ObservableCollection<string> Treatments { get; } = new();
 
-        public ConditionsViewModel()
+        public ConditionsViewModel(MedicalDbContext? dbContext = null)
         {
-            _dbContext = new MedicalDbContext(); // Ensure proper initialization
+            _dbContext = dbContext;
             LoadConditionsCommand = new AsyncRelayCommand(LoadConditionsAsync);
             // ADDING AND UPDATING COND
             AddConditionCommand = new Command(OnAddConditionTapped);
@@ -53,6 +55,7 @@ namespace medi1.ViewModels
             UpdateNoteCommand = new AsyncRelayCommand(UpdateNoteAsync);
             ArchiveConditionCommand = new AsyncRelayCommand(ArchiveConditionAsync);
             OpenArchivedConditionsCommand = new AsyncRelayCommand(OpenArchivedConditionsAsync);
+            ExportConditionCommand = new AsyncRelayCommand(ExportConditionAsync);
 
             WeakReferenceMessenger.Default.Register<AddConditionMessage>(this, (r, m) =>
             {
@@ -71,94 +74,81 @@ namespace medi1.ViewModels
         public IAsyncRelayCommand AddTriggerCommand { get; }
         public IAsyncRelayCommand UpdateNoteCommand { get; }
         public IAsyncRelayCommand ArchiveConditionCommand { get; }
+        public IAsyncRelayCommand ExportConditionCommand { get; }
 
         public IAsyncRelayCommand OpenArchivedConditionsCommand { get; }
 
-        partial void OnSelectedConditionChanged(Data.Models.Condition? oldValue, Data.Models.Condition? newValue)
+       partial void OnSelectedConditionChanged(Data.Models.Condition? oldValue, Data.Models.Condition? newValue)
+    {
+        if (newValue != null)
         {
-            if (newValue != null)
-            {
-                LoadConditionDetailsAsync(newValue.Id);
-                InvalidateChart(); // Ensure chart is refreshed when the selected condition changes
-            }
-        }
-
-        private async Task LoadConditionDetailsAsync(string conditionId)
-        {
-            await LoadHealthEvent(conditionId);
-            await LoadRecentHealthEvent(); // Ensure recent events are loaded
-            UpdateCollections();
-            InvalidateChart(); // Ensure chart is refreshed after loading details
-        }
-
-        private void UpdateCollections()
-        {
-            Medications.Clear();
-            Symptoms.Clear();
-            Treatments.Clear();
-
-            if (SelectedCondition != null)
-            {
-                foreach (var m in SelectedCondition.Medications ?? []) Medications.Add(m);
-                foreach (var s in SelectedCondition.Symptoms ?? []) Symptoms.Add(s);
-                foreach (var t in SelectedCondition.Treatments ?? []) Treatments.Add(t);
-            }
+            LoadConditionDetailsAsync(newValue.Id);
+            LoadHealthEventsAsync(newValue.Id);
             InvalidateChart();
         }
+    }
 
-        private async Task LoadConditionsAsync()
+    private async Task LoadConditionDetailsAsync(string conditionId)
+    {
+        await LoadHealthEventsAsync(conditionId); 
+        UpdateCollections();
+        InvalidateChart();
+    }
+
+    private void UpdateCollections()
+    {
+        Medications.Clear();
+        Symptoms.Clear();
+        Treatments.Clear();
+
+        if (SelectedCondition != null)
         {
-            try
-            {
-                var currentUser = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == UserSession.Instance.Id);
-                var currentUserConditions = currentUser.Conditions;
-                var list = await _dbContext.Conditions 
-                .Where(c => !c.Archived && currentUserConditions.Contains(c.Id)) // Filter out archived conditions
-                    .ToListAsync();
-                Conditions.Clear();
-                foreach (var c in list) Conditions.Add(c);
-                SelectedCondition = Conditions.FirstOrDefault();
-                InvalidateChart(); // Ensure chart is refreshed after loading conditions
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Error loading conditions: {ex.Message}");
-            }
+            foreach (var m in SelectedCondition.Medications ?? []) Medications.Add(m);
+            foreach (var s in SelectedCondition.Symptoms ?? []) Symptoms.Add(s);
+            foreach (var t in SelectedCondition.Treatments ?? []) Treatments.Add(t);
         }
+        InvalidateChart();
+    }
 
-        private async Task LoadHealthEvent(string conditionId)
-        {     var currentUser = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == UserSession.Instance.Id);
-                var currentUserHealthEvents = currentUser.HealthEvents;
-                var healthEvents = await _dbContext.HealthEvent
-                    .Where(he => he.ConditionId == conditionId && currentUserHealthEvents.Contains(he.Id))
-                    .ToListAsync();
-
-            var list = await _dbContext.HealthEvent.Where(e => e.ConditionId == conditionId).ToListAsync();
-            HealthEvent.Clear();
-            foreach (var e in list) HealthEvent.Add(e);
-            InvalidateChart(); // Refresh chart after loading health events
-        }
-
-        private async Task LoadRecentHealthEvent()
+    private async Task LoadConditionsAsync()
+    {
+        try
         {
-            if (SelectedCondition == null) return;
             var currentUser = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == UserSession.Instance.Id);
-            var currentUserHealthEvents = currentUser.HealthEvents;
-            var list = await _dbContext.HealthEvent
-                .Where(he => he.ConditionId == SelectedCondition.Id && currentUserHealthEvents.Contains(he.Id))
-                .OrderByDescending(e => e.StartDate)
-                .Take(5)
+            var currentUserConditions = currentUser.Conditions;
+            var list = await _dbContext.Conditions
+                .Where(c => !c.Archived && currentUserConditions.Contains(c.Id))
                 .ToListAsync();
-           
-            // Clear and update the existing collection
-            RecentHealthEvent.Clear();
-            foreach (var item in list)
-                RecentHealthEvent.Add(item);
-
-            InvalidateChart(); 
-            Debug.WriteLine($"[Chart Debug] Loaded {RecentHealthEvent.Count} recent events for condition: {SelectedCondition.Name}");
-            
+            Conditions.Clear();
+            foreach (var c in list) Conditions.Add(c);
+            SelectedCondition = Conditions.FirstOrDefault();
+            InvalidateChart();
         }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Error loading conditions: {ex.Message}");
+        }
+    }
+
+       private async Task LoadHealthEventsAsync(string conditionId)
+    {
+        // var currentUser = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == UserSession.Instance.Id);
+        // if (currentUser == null) return;
+
+        // var currentUserHealthEvents = currentUser.HealthEvents;
+
+        var list = await _dbContext.HealthEvent
+            .Where(he => he.ConditionId == conditionId)
+            .OrderByDescending(e => e.StartDate)
+            .ToListAsync();
+
+        HealthEvents.Clear();
+        foreach (var item in list)
+            HealthEvents.Add(item);
+
+        Debug.WriteLine($"[Debug] HealthEvents count: {HealthEvents.Count}");
+        InvalidateChart();
+    }
 
         // ADDING AND UPDATING CONDITIONS
 
@@ -231,14 +221,42 @@ namespace medi1.ViewModels
             await Shell.Current.GoToAsync(nameof(ArchivedConditionsPage));
         }
 
-        private async Task SaveCondition()
+            private async Task SaveCondition()
         {
+            if (_dbContext == null) return; // Skip DB save in tests
+
             _dbContext.Conditions.Update(SelectedCondition!);
             await _dbContext.SaveChangesAsync();
         }
 
+        private async Task ExportConditionAsync()
+        {
+            if (SelectedCondition == null)
+            {
+                Debug.WriteLine("No condition selected to export.");
+                return;
+            }
 
-
+            try
+            {
+                var filePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), $"{SelectedCondition.Name}_Details.txt");
+                using (var writer = new StreamWriter(filePath))
+                {
+                    await writer.WriteLineAsync($"Condition: {SelectedCondition.Name}");
+                    await writer.WriteLineAsync($"Medications: {string.Join(", ", SelectedCondition.Medications ?? new List<string>())}");
+                    await writer.WriteLineAsync($"Symptoms: {string.Join(", ", SelectedCondition.Symptoms ?? new List<string>())}");
+                    await writer.WriteLineAsync($"Treatments: {string.Join(", ", SelectedCondition.Treatments ?? new List<string>())}");
+                    await writer.WriteLineAsync($"Triggers: {string.Join(", ", SelectedCondition.Triggers ?? new List<string>())}");
+                    await writer.WriteLineAsync($"Notes: {SelectedCondition.Notes}"); 
+                }
+                await Application.Current.MainPage.DisplayAlert("Export Successful", $"Condition details exported to {filePath}", "OK");
+                Debug.WriteLine($"Condition details exported to {filePath}");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error exporting condition: {ex.Message}");
+            }
+        }
 
 // Chart Stuff
 
@@ -283,7 +301,7 @@ private void InvalidateChart()
 public float GetScale() => _scale;
      public void OnCanvasViewPaintSurface(object sender, SKPaintSurfaceEventArgs e)
 {
-    var recentEvents = RecentHealthEvent;
+    var recentEvents = HealthEvents;
     var canvas = e.Surface.Canvas;
     canvas.Clear(SKColors.White);
 

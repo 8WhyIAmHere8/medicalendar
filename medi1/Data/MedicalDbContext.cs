@@ -5,13 +5,15 @@ using System.Threading.Tasks;
 
 namespace medi1.Data
 {
+
+
     public class MedicalDbContext : DbContext
     {
         private readonly string _containerName;
-        public DbSet<Data.Models.Condition> Conditions { get; set; }
-        public DbSet<Data.Models.HealthEvent> HealthEvent { get; set; }
-        public DbSet<Data.Models.Activity> Activities { get; set; }
-        public DbSet<Data.Models.ActivityLog> ActivityEventLog { get; set; }
+        public virtual DbSet<Data.Models.Condition> Conditions { get; set; }
+        public virtual DbSet<Data.Models.HealthEvent> HealthEvent { get; set; }
+        public virtual DbSet<Data.Models.Activity> Activities { get; set; }
+        public virtual DbSet<Data.Models.ActivityLog> ActivityEventLog { get; set; }
         public DbSet<Data.Models.User> Users { get; set; }
         public DbSet<Data.Models.CalendarTask> TaskLog { get; set; }   
 

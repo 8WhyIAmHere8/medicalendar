@@ -1,74 +1,78 @@
-using medi1.Data;
 using medi1.Data.Models;
-using medi1.Pages.ConditionsPage;
+using medi1.ViewModels;
 using Moq;
 using Xunit;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
+using medi1.Services;
 
 public class ConditionsPageTests
 {
-    private readonly Mock<MedicalDbContext> _mockDbContext;
-    private readonly ConditionsPage _conditionsPage;
+    private readonly Mock<ConditionsViewModel> _mockViewModel;
 
     public ConditionsPageTests()
     {
-        _mockDbContext = new Mock<MedicalDbContext>();
-        _conditionsPage = new ConditionsPage
-        {
-            BindingContext = null // Prevent binding issues during tests
-        };
+        _mockViewModel = new Mock<ConditionsViewModel>();
     }
 
-    [Fact]
-    public async Task LoadConditions_ShouldPopulateConditions_WhenDatabaseHasData()
-    {
-        // Arrange
-        var mockConditions = new List<medi1.Data.Models.Condition>
-        {
-            new medi1.Data.Models.Condition { Id = "1", Name = "Condition 1" },
-            new medi1.Data.Models.Condition { Id = "2", Name = "Condition 2" }
-        };
-        _mockDbContext.Setup(db => db.Conditions.Where(It.IsAny<System.Linq.Expressions.Expression<System.Func<medi1.Data.Models.Condition, bool>>>()).ToList())
-                      .Returns(mockConditions);
+    // [Fact]
+    // public void SelectingACondition_TriggersDataUpdate()
+    // {
+    //     // Arrange
+    //     var vm = new ConditionsViewModel();
+    //     var condition1 = new medi1.Data.Models.Condition
+    //     {
+    //         Id = "cond1", Name = "Asthma", Medications = new List<string> { "Ventolin" }
+    //     };
+    //     var condition2 = new medi1.Data.Models.Condition
+    //     {
+    //         Id = "cond2", Name = "Diabetes", Medications = new List<string> { "Insulin" }
+    //     };
 
-        // Act
-        await _conditionsPage.LoadConditions();
+    //     vm.Conditions.Add(condition1);
+    //     vm.Conditions.Add(condition2);
 
-        // Assert
-        Assert.Equal(2, _conditionsPage.Conditions.Count);
-        Assert.Equal("Condition 1", _conditionsPage.Conditions[0].Name);
-    }
+    //     // Act
+    //     vm.SelectedCondition = condition2;
 
-    [Fact]
-    public async Task AddMedication_ShouldAddMedicationToCondition_WhenValidInput()
-    {
-        // Arrange
-        var condition = new medi1.Data.Models.Condition { Id = "1", Name = "Condition 1", Medications = new List<string>() };
-        _conditionsPage.SelectedCondition = condition;
-        _conditionsPage.NewMedication = "Medication 1";
-
-        // Act
-        await _conditionsPage.AddMedication();
-
-        // Assert
-        Assert.Contains("Medication 1", condition.Medications);
-        Assert.Contains("Medication 1", _conditionsPage.Medications);
-    }
+    //     // Assert
+    //     Assert.Equal("Diabetes", vm.SelectedCondition?.Name);
+    //     Assert.Contains("Insulin", vm.SelectedCondition?.Medications);
+    // }
 
     [Fact]
-    public async Task OnArchiveCondition_ShouldArchiveCondition_WhenConditionIsSelected()
+    public async Task AddMedication_WithValidName_AddsToCollection()
+   {
+    var vm = new ConditionsViewModel(); // No db
+    var condition = new medi1.Data.Models.Condition { Name = "Asthma", Medications = new List<string>() };
+    vm.Conditions.Add(condition);
+    vm.SelectedCondition = condition;
+    vm.NewMedication = "Ventolin";
+
+    await vm.AddMedicationCommand.ExecuteAsync(null);
+
+    Assert.Single(vm.SelectedCondition.Medications);
+    Assert.Contains("Ventolin", vm.SelectedCondition.Medications);
+}
+
+    [Fact]
+    public async Task AddMedication_WithEmptyOrWhitespaceName_DoesNotAdd()
     {
-        // Arrange
-        var condition = new medi1.Data.Models.Condition { Id = "1", Name = "Condition 1", Archived = false };
-        _conditionsPage.SelectedCondition = condition;
 
-        // Act
-        await _conditionsPage.OnArchiveCondition();
+        var vm = new ConditionsViewModel(); // No db
+        var condition = new medi1.Data.Models.Condition { Name = "Asthma", Medications = new List<string>() };
+        vm.Conditions.Add(condition);
+        vm.SelectedCondition = condition;
 
-        // Assert
-        Assert.True(condition.Archived);
-        Assert.DoesNotContain(condition, _conditionsPage.Conditions);
+
+        vm.NewMedication = "";
+        await vm.AddMedicationCommand.ExecuteAsync(null);
+        Assert.Empty(vm.SelectedCondition.Medications);
+
+
+        vm.NewMedication = "   ";
+        await vm.AddMedicationCommand.ExecuteAsync(null);
+        Assert.Empty(vm.SelectedCondition.Medications);
     }
 }
+

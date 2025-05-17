@@ -11,6 +11,7 @@ using SkiaSharp;
 using SkiaSharp.Views.Maui;
 using SkiaSharp.Views.Maui.Controls;
 using medi1.Services;
+using medi1.Pages.AddEntryPageFolder;
 
 namespace medi1.Pages.ConditionsPage
 
@@ -30,7 +31,7 @@ namespace medi1.Pages.ConditionsPage
 
         _viewModel.PropertyChanged += (s, e) =>
         {
-            if (e.PropertyName == nameof(_viewModel.RecentHealthEvent) || e.PropertyName == nameof(_viewModel.SelectedCondition))
+            if (e.PropertyName == nameof(_viewModel.HealthEvents) || e.PropertyName == nameof(_viewModel.SelectedCondition))
             {
                 Debug.WriteLine($"[Chart Debug] Property changed: {e.PropertyName}");
                 ChartCanvas.InvalidateSurface();
@@ -40,6 +41,7 @@ namespace medi1.Pages.ConditionsPage
         Loaded += async (s, e) =>
         {
             await _viewModel.LoadConditionsCommand.ExecuteAsync(null);
+            Debug.WriteLine($"[Debug] Conditions loaded: {_viewModel.Conditions.Count}"); // Add debug log
             ChartCanvas.InvalidateSurface();
         };
     }

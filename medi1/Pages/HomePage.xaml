@@ -4,6 +4,7 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:components="clr-namespace:medi1.SplashPageComponents"
+    xmlns:viewmodels="clr-namespace:medi1.Pages.AddEntryPageFolder"
     xmlns:local="clr-namespace:medi1.Pages"
     Title="Dashboard">
 
@@ -141,49 +142,6 @@
         </CollectionView.ItemTemplate>
       </CollectionView>
 
-      <!-- Health Events Section -->
-      <Label Text="↓  List of Health Events:" FontSize="20" Margin="0,20,0,5"/>
-      <CollectionView ItemsSource="{Binding HealthEvents}">
-        <CollectionView.ItemsLayout>
-          <LinearItemsLayout Orientation="Vertical" ItemSpacing="8"/>
-        </CollectionView.ItemsLayout>
-        <CollectionView.ItemTemplate>
-          <DataTemplate>
-            <Frame Padding="10" Margin="0,0,0,10" CornerRadius="8" HasShadow="True">
-              <StackLayout>
-                <Label Text="{Binding Title}" FontSize="18" FontAttributes="Bold"/>
-                <Label Text="{Binding StartDate, StringFormat='{}{0:MMM dd, yyyy}'}" FontSize="14"/>
-                <Label Text="{Binding EndDate, StringFormat='to {0:MMM dd, yyyy}'}" FontSize="14"/>
-                <Label Text="{Binding Impact, StringFormat='Impact: {0}'}" FontSize="14"/>
-                <Label Text="{Binding Notes}" FontSize="14" LineBreakMode="TailTruncation"/>
-              </StackLayout>
-            </Frame>
-          </DataTemplate>
-        </CollectionView.ItemTemplate>
-      </CollectionView>
-
-      <!-- Activity Log Section -->
-      <Label Text="↓  List of Activities:" FontSize="20" Margin="0,20,0,5"/>
-      <CollectionView ItemsSource="{Binding ActivityLogs}">
-        <CollectionView.ItemsLayout>
-          <LinearItemsLayout Orientation="Vertical" ItemSpacing="8"/>
-        </CollectionView.ItemsLayout>
-        <CollectionView.ItemTemplate>
-          <DataTemplate>
-            <Frame Padding="10" Margin="0,0,0,10" CornerRadius="8" HasShadow="True">
-              <StackLayout>
-                <Label Text="{Binding Name}" FontSize="18" FontAttributes="Bold"/>
-                <Label Text="{Binding Date, StringFormat='{}{0:MMM dd, yyyy}'}" FontSize="14"/>
-                <Label Text="{Binding Intensity, StringFormat='Intensity: {0}'}" FontSize="14"/>
-                <Label Text="{Binding Duration, StringFormat='Duration: {0}'}" FontSize="14"/>
-                <Label Text="{Binding AggravatedCondition, StringFormat='Aggravated: {0}'}" FontSize="14"/>
-                <Label Text="{Binding Notes}" FontSize="14" LineBreakMode="TailTruncation"/>
-              </StackLayout>
-            </Frame>
-          </DataTemplate>
-        </CollectionView.ItemTemplate>
-      </CollectionView>
-
       <!-- Navigation Buttons -->
       <FlexLayout Direction="Row" JustifyContent="Center" AlignItems="Center" Padding="30">
         <Button Text="My Conditions"
@@ -193,14 +151,6 @@
                 WidthRequest="120"
                 HeightRequest="40"
                 Clicked="GoToConditions"
-                Margin="5,10,0,0"/>
-        <Button Text="Report"
-                BackgroundColor="Blue"
-                TextColor="White"
-                FontSize="14"
-                WidthRequest="120"
-                HeightRequest="40"
-                Clicked="GoToReports"
                 Margin="5,10,0,0"/>
       </FlexLayout>
 
@@ -273,6 +223,50 @@
 
         </StackLayout>
       </Frame>
+
+            <!-- Health Events Section -->
+      <Label Text="↓  List of Health Events:" FontSize="20" Margin="0,20,0,5"/>
+      <CollectionView ItemsSource="{Binding HealthEvents}">
+        <CollectionView.ItemsLayout>
+          <LinearItemsLayout Orientation="Vertical" ItemSpacing="8"/>
+        </CollectionView.ItemsLayout>
+        <CollectionView.ItemTemplate>
+          <DataTemplate>
+            <Frame Padding="10" Margin="0,0,0,10" CornerRadius="8" HasShadow="True">
+              <StackLayout>
+                <Label Text="{Binding Title}" FontSize="18" FontAttributes="Bold"/>
+                <Label Text="{Binding StartDate, StringFormat='{}{0:MMM dd, yyyy}'}" FontSize="14"/>
+                <Label Text="{Binding EndDate, StringFormat='to {0:MMM dd, yyyy}'}" FontSize="14"/>
+                <Label Text="{Binding Impact, StringFormat='Impact: {0}'}" FontSize="14"/>
+                <Label Text="{Binding Notes}" FontSize="14" LineBreakMode="TailTruncation"/>
+              </StackLayout>
+            </Frame>
+          </DataTemplate>
+        </CollectionView.ItemTemplate>
+      </CollectionView>
+
+      <!-- Activity Log Section -->
+      <Label Text="↓  List of Activities:" FontSize="20" Margin="0,20,0,5"/>
+      <CollectionView ItemsSource="{Binding ActivityLogs}">
+        <CollectionView.ItemsLayout>
+          <LinearItemsLayout Orientation="Vertical" ItemSpacing="8"/>
+        </CollectionView.ItemsLayout>
+        <CollectionView.ItemTemplate>
+          <DataTemplate>
+            <Frame Padding="10" Margin="0,0,0,10" CornerRadius="8" HasShadow="True">
+              <StackLayout>
+                <Label Text="{Binding Name}" FontSize="18" FontAttributes="Bold"/>
+                <Label Text="{Binding Date, StringFormat='{}{0:MMM dd, yyyy}'}" FontSize="14"/>
+                <Label Text="{Binding Intensity, StringFormat='Intensity: {0}'}" FontSize="14"/>
+                <Label Text="{Binding Duration, StringFormat='Duration: {0}'}" FontSize="14"/>
+                <Label Text="{Binding AggravatedCondition, StringFormat='Aggravated: {0}'}" FontSize="14"/>
+                <Label Text="{Binding Notes}" FontSize="14" LineBreakMode="TailTruncation"/>
+              </StackLayout>
+            </Frame>
+          </DataTemplate>
+        </CollectionView.ItemTemplate>
+      </CollectionView>
+      
     </StackLayout>
   </ScrollView>
 </ContentPage>
