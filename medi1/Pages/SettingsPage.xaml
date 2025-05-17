@@ -2,12 +2,24 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="medi1.Pages.SettingsPage"
-             Title="Settings &amp; Profile">
+             Title="Settings &amp; Profile"
+             BackgroundColor="{AppThemeBinding Light=White, Dark=Black}">
   <StackLayout Padding="20">
     <Label Text="Settings &amp; Profile" 
            FontSize="24" 
            HorizontalOptions="Center" />
     <!-- Profile settings, preferences, and customization controls -->
     <Button Text="Logout" Clicked="OnLogoutClicked"/>
+
+    <!-- Dark Mode toggle -->
+    <Grid ColumnDefinitions="Auto,*,Auto" VerticalOptions="Center">
+      <Label Text="Dark Mode" 
+             FontSize="18" 
+             VerticalOptions="Center" />
+      <Switch x:Name="DarkModeSwitch"
+              Grid.Column="2"
+              Toggled="DarkModeSwitch_Toggled"
+              VerticalOptions="Center"/>
+    </Grid>
   </StackLayout>
 </ContentPage>

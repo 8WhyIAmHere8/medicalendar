@@ -49,6 +49,13 @@ namespace medi1.Pages
             FullDateToday = _displayDate.ToString("MMMM dd, yyyy");
             LoadMonth(_displayDate);
 
+            // >>> Add this <<<
+    Application.Current.RequestedThemeChanged += (s, a) =>
+    {
+        // Force the calendar cells to refresh their BackgroundColor via the converter
+        OnPropertyChanged(nameof(DaysInMonth));
+    };
+
         }
         private async void AddNewEntry(object sender, EventArgs e)
             => await Navigation.PushModalAsync(new AddEntryPage());
@@ -268,6 +275,8 @@ namespace medi1.Pages
             => await Navigation.PushAsync(new ConditionsPage.ConditionsPage());
         private async void GoToAddEntry(object s, EventArgs e)
             => await Navigation.PushAsync(new AddEntryPage());
+        private async void GoToSettings(object s, EventArgs e)
+            => await Navigation.PushAsync(new SettingsPage());
         private async void GoToReports(object s, EventArgs e)
             => await Navigation.PushAsync(new ReportsPage());
 

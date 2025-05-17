@@ -5,7 +5,43 @@
              x:Class="medi1.App">
   <Application.Resources>
     <ResourceDictionary>
+
+      <!-- Converters -->
       <converters:TabHighlightConverter x:Key="TabHighlightConverter" />
+
+      <!-- Color resources for light and dark themes -->
+      <Color x:Key="TextColorLight">Black</Color>
+      <Color x:Key="TextColorDark">White</Color>
+
+      <!-- Implicit Label style for theming text color -->
+      <Style TargetType="Label">
+        <Setter Property="TextColor">
+          <Setter.Value>
+            <AppThemeBinding Light="{StaticResource TextColorLight}" 
+                             Dark="{StaticResource TextColorDark}" />
+          </Setter.Value>
+        </Setter>
+      </Style>
+
+      <!-- Implicit Button style for theming text color -->
+      <Style TargetType="Button">
+        <Setter Property="TextColor">
+          <Setter.Value>
+            <AppThemeBinding Light="{StaticResource TextColorLight}" 
+                             Dark="{StaticResource TextColorDark}" />
+          </Setter.Value>
+        </Setter>
+      </Style>
+
+      <!-- Section Frame style: transparent in light, black in dark -->
+      <Style x:Key="SectionFrameStyle" TargetType="Frame">
+        <Setter Property="BackgroundColor">
+          <Setter.Value>
+            <AppThemeBinding Light="#F1F3F5" Dark="Black" />
+          </Setter.Value>
+        </Setter>
+      </Style>
+
     </ResourceDictionary>
   </Application.Resources>
 </Application>
