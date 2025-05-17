@@ -18,10 +18,6 @@
     <ShellContent ContentTemplate="{DataTemplate pages:ConditionsPage.ConditionsPage}" Route="conditions" />
   </FlyoutItem>
 
-  <FlyoutItem Title="Reports &amp; Comparisons">
-    <ShellContent ContentTemplate="{DataTemplate pages:ReportsPage}" Route="reports" />
-  </FlyoutItem>
-
   <FlyoutItem Title="Settings &amp; Profile">
     <ShellContent ContentTemplate="{DataTemplate pages:SettingsPage}" Route="settings" />
   </FlyoutItem>
