@@ -181,10 +181,10 @@
                        HasShadow="True">
                   <StackLayout>
                     <Label Text="Add Task" FontSize="18" HorizontalOptions="Center"/>
-                    <Entry x:Name="TaskInput" Placeholder="New Task..."/>
+                    <Entry x:Name="TaskInput" Placeholder="New Task..." BackgroundColor="White" TextColor="Black"/>
                     <StackLayout Orientation="Horizontal" HorizontalOptions="Center" Spacing="10">
-                      <Button Text="Confirm" Clicked="OnConfirmTaskClicked"/>
-                      <Button Text="Cancel"  Clicked="OnCancelTaskClicked"/>
+                      <Button Text="Confirm" Clicked="OnConfirmTaskClicked" BackgroundColor="#457b9d" TextColor="White" FontAttributes="Bold"/>
+                      <Button Text="Cancel"  Clicked="OnCancelTaskClicked" BackgroundColor="#1d3558" TextColor="White" FontAttributes="Bold"/>
                     </StackLayout>
                   </StackLayout>
                 </Frame>
@@ -205,8 +205,8 @@
                     <Label Text="Edit Task" FontSize="18" HorizontalOptions="Center"/>
                     <Entry x:Name="EditTaskInput" Placeholder="Edit Task..."/>
                     <StackLayout Orientation="Horizontal" HorizontalOptions="Center" Spacing="10">
-                      <Button Text="Confirm" Clicked="TaskEditConfirmClicked"/>
-                      <Button Text="Cancel"  Clicked="TaskEditCancelClicked"/>
+                      <Button Text="Confirm" Clicked="TaskEditConfirmClicked" BackgroundColor="#457b9d" TextColor="White" FontAttributes="Bold"/>
+                      <Button Text="Cancel"  Clicked="TaskEditCancelClicked" BackgroundColor="#1d3558" TextColor="White" FontAttributes="Bold"/>
                     </StackLayout>
                   </StackLayout>
                 </Frame>
@@ -266,7 +266,7 @@
           </DataTemplate>
         </CollectionView.ItemTemplate>
       </CollectionView>
-      
+
     </StackLayout>
   </ScrollView>
 </ContentPage>

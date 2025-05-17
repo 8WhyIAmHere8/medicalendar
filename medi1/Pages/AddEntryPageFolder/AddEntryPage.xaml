@@ -126,8 +126,8 @@
 
             <!-- Buttons -->
             <HorizontalStackLayout Spacing="20">
-                <Button Text="Cancel" Command="{Binding CancelEntryCommand}" />
-                <Button Text="Save" Command="{Binding ConfirmEntryCommand}" />
+                <Button Text="Cancel" Command="{Binding CancelEntryCommand}" BackgroundColor="#1d3558" TextColor="White" FontAttributes="Bold"/>
+                <Button Text="Save" Command="{Binding ConfirmEntryCommand}" BackgroundColor="#457b9d" TextColor="White" FontAttributes="Bold"/>
             </HorizontalStackLayout>
 
         </VerticalStackLayout>
