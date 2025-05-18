@@ -58,11 +58,10 @@ namespace medi1.ViewModels
             ExportConditionCommand = new AsyncRelayCommand(ExportConditionAsync);
             DeleteConditionCommand = new AsyncRelayCommand(DeleteConditionAsync); // <-- Add this
 
-            WeakReferenceMessenger.Default.Register<AddConditionMessage>(this, (r, m) =>
+            WeakReferenceMessenger.Default.Register<AddConditionMessage>(this, async (r, m) =>
             {
-                var condition = new Data.Models.Condition { Name = m.Value };
-                Conditions.Add(condition);
-                SelectedCondition = condition;
+                // Reload from DB to ensure up-to-date list
+                await LoadConditionsAsync();
             });
         }
 
