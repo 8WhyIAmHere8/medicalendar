@@ -143,9 +143,10 @@ public class AddConditionPopupViewModel : INotifyPropertyChanged
                 }
             }
 
+
+            await UserSession.Instance.SaveNewCondition(newCondition);
             WeakReferenceMessenger.Default.Send(new AddConditionMessage(newCondition.Name));
             await _navigationService.PopModalAsync();
-            UserSession.Instance.SaveNewCondition(newCondition);
         }
         catch (Exception ex)
         {
