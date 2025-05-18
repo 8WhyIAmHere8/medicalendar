@@ -146,6 +146,7 @@ public class AddConditionPopupViewModel : INotifyPropertyChanged
             WeakReferenceMessenger.Default.Send(new AddConditionMessage(newCondition.Name));
             await _navigationService.PopModalAsync();
             UserSession.Instance.SaveNewCondition(newCondition);
+            
         }
         catch (Exception ex)
         {
