@@ -72,7 +72,7 @@
                     <!-- Medications -->
                     <Frame BackgroundColor="{AppThemeBinding Light=#E3F2FD, Dark=#253039}" CornerRadius="20" Padding="10">
                         <VerticalStackLayout>
-                            <Label Text="Medications" FontSize="20" FontAttributes="Bold" TextColor="#1A237E" />
+                            <Label Text="Medications" FontSize="20" FontAttributes="Bold" TextColor="{AppThemeBinding Light=#1A237E, Dark=White}" />
                             <CollectionView ItemsSource="{Binding Medications}">
                                 <CollectionView.ItemTemplate>
                                     <DataTemplate>
@@ -142,7 +142,7 @@
                 </VerticalStackLayout>
 
                 <!-- Right Panel - Recent Events -->
-<Frame Grid.Column="1" BackgroundColor="#E3F7FE" CornerRadius="20" Padding="10" Margin="10,0">
+<Frame Grid.Column="1" BackgroundColor="{AppThemeBinding Light=#E3F7FE, Dark=#253039}" CornerRadius="20" Padding="10" Margin="10,0">
     <VerticalStackLayout Spacing="10">
 
         <!-- Chart View -->
@@ -168,7 +168,7 @@
         </HorizontalStackLayout>
 
         <!-- Recent Events Section -->
-        <Label Text="Recent Events" FontSize="20" FontAttributes="Bold" TextColor="Black" />
+        <Label Text="Recent Events" FontSize="20" FontAttributes="Bold" TextColor="{AppThemeBinding Light=Black, Dark=White}" />
 
         <!-- Two Column Grid Layout -->
         <CollectionView ItemsSource="{Binding HealthEvents}">
