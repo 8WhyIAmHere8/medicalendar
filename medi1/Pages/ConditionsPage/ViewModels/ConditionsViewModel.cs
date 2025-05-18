@@ -56,6 +56,7 @@ namespace medi1.ViewModels
             ArchiveConditionCommand = new AsyncRelayCommand(ArchiveConditionAsync);
             OpenArchivedConditionsCommand = new AsyncRelayCommand(OpenArchivedConditionsAsync);
             ExportConditionCommand = new AsyncRelayCommand(ExportConditionAsync);
+            DeleteConditionCommand = new AsyncRelayCommand(DeleteConditionAsync); // <-- Add this
 
             WeakReferenceMessenger.Default.Register<AddConditionMessage>(this, (r, m) =>
             {
@@ -77,6 +78,7 @@ namespace medi1.ViewModels
         public IAsyncRelayCommand ExportConditionCommand { get; }
 
         public IAsyncRelayCommand OpenArchivedConditionsCommand { get; }
+        public IAsyncRelayCommand DeleteConditionCommand { get; } // <-- Add this
 
        partial void OnSelectedConditionChanged(Data.Models.Condition? oldValue, Data.Models.Condition? newValue)
     {
@@ -132,10 +134,7 @@ namespace medi1.ViewModels
 
        private async Task LoadHealthEventsAsync(string conditionId)
     {
-        // var currentUser = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == UserSession.Instance.Id);
-        // if (currentUser == null) return;
-
-        // var currentUserHealthEvents = currentUser.HealthEvents;
+       
 
         var list = await _dbContext.HealthEvent
             .Where(he => he.ConditionId == conditionId)
@@ -228,6 +227,9 @@ namespace medi1.ViewModels
 
             _dbContext.Conditions.Update(SelectedCondition!);
             await _dbContext.SaveChangesAsync();
+            await LoadConditionDetailsAsync(SelectedCondition!.Id);
+            UpdateCollections();
+
         }
 
         private async Task ExportConditionAsync()
@@ -256,6 +258,32 @@ namespace medi1.ViewModels
             catch (Exception ex)
             {
                 Debug.WriteLine($"Error exporting condition: {ex.Message}");
+            }
+        }
+
+        private async Task DeleteConditionAsync()
+        {
+            if (SelectedCondition == null || _dbContext == null) return;
+
+            // Show confirmation dialog
+            bool confirm = await Application.Current.MainPage.DisplayAlert(
+                "Delete Condition",
+                $"Are you sure you want to delete \"{SelectedCondition.Name}\"? This cannot be undone.",
+                "Yes", "No");
+
+            if (!confirm)
+                return;
+
+            try
+            {
+                _dbContext.Conditions.Remove(SelectedCondition);
+                await _dbContext.SaveChangesAsync();
+                Conditions.Remove(SelectedCondition);
+                SelectedCondition = null;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error deleting condition: {ex.Message}");
             }
         }
 

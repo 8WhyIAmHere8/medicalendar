@@ -72,8 +72,8 @@
                     <!-- Medications -->
                     <Frame BackgroundColor="{AppThemeBinding Light=#E3F2FD, Dark=#253039}" CornerRadius="20" Padding="10">
                         <VerticalStackLayout>
-                            <Label Text="Medications" FontSize="20" FontAttributes="Bold" TextColor="{AppThemeBinding Light=#1A237E, Dark=White}" />
-                            <CollectionView ItemsSource="{Binding SelectedCondition.Medications}">
+                            <Label Text="Medications" FontSize="20" FontAttributes="Bold" TextColor="#1A237E" />
+                            <CollectionView ItemsSource="{Binding Medications}">
                                 <CollectionView.ItemTemplate>
                                     <DataTemplate>
                                         <Label Text="{Binding}" FontSize="16" TextColor="{AppThemeBinding Light=Black, Dark=White}" />
@@ -142,68 +142,78 @@
                 </VerticalStackLayout>
 
                 <!-- Right Panel - Recent Events -->
-                <Frame Grid.Column="1" BackgroundColor="{AppThemeBinding Light=#E3F7FE, Dark=#253039}" CornerRadius="20" Padding="10" Margin="10,0">
-                    <VerticalStackLayout>
-                        <Label Text="Recent events" FontSize="20" FontAttributes="Bold" TextColor="{AppThemeBinding Light=Black, Dark=White}" />
-                        <CollectionView ItemsSource="{Binding HealthEvents}">
-                            <CollectionView.ItemTemplate>
-                                <DataTemplate>
-                                    <Frame BackgroundColor="White" CornerRadius="10" Padding="10" Margin="5">
-                                        <VerticalStackLayout>
-                                            <Label Text="{Binding Title}" FontSize="16" FontAttributes="Bold" TextColor="{AppThemeBinding Light=Black, Dark=White}" />
-                                            <Label Text="{Binding StartDate, StringFormat='Start Date: {0:MM/dd/yyyy}'}" FontSize="14" TextColor="{AppThemeBinding Light=Black, Dark=White}" />
-                                            <Label Text="{Binding Length, StringFormat='Length: {0} days'}" FontSize="14" TextColor="{AppThemeBinding Light=Black, Dark=White}" />
-                                        </VerticalStackLayout>
-                                    </Frame>
-                                </DataTemplate>
-                            </CollectionView.ItemTemplate>
-                        </CollectionView>
-                        <Frame>
-                            <StackLayout>
-                                <Button Text="+ Log an Entry" Clicked="AddNewEntry" TextColor="Black"/>
-                            </StackLayout>
-                        </Frame>
-                         <VerticalStackLayout Spacing="10">
+<Frame Grid.Column="1" BackgroundColor="#E3F7FE" CornerRadius="20" Padding="10" Margin="10,0">
+    <VerticalStackLayout Spacing="10">
 
-    <!-- Existing chart view -->
-    <skia:SKCanvasView x:Name="ChartCanvas"
-                       HeightRequest="300"
-                       PaintSurface="OnCanvasViewPaintSurface" />
+        <!-- Chart View -->
+        <Label Text="Health Event Timeline" FontSize="20" FontAttributes="Bold"  TextColor="{AppThemeBinding Light=Black, Dark=White}" />
+        <skia:SKCanvasView x:Name="ChartCanvas"
+                           HeightRequest="300"
+                           PaintSurface="OnCanvasViewPaintSurface" />
 
-    <!-- Zoom controls -->
-    <HorizontalStackLayout HorizontalOptions="Center">
-        <Button Text="➖ Zoom Out"
-                Clicked="OnZoomOutClicked"
-                BackgroundColor="#ddd"
-                TextColor="{AppThemeBinding Light=Black, Dark=White}" />
-        <Button Text="➕ Zoom In"
-                Clicked="OnZoomInClicked"
-                BackgroundColor="#ddd"
-                TextColor="{AppThemeBinding Light=Black, Dark=White}" />
-                 <DatePicker Date="{Binding StartDate}" />
-    <Label Text="to" VerticalOptions="Center" TextColor="{AppThemeBinding Light=Black, Dark=White}" />
-    <DatePicker Date="{Binding EndDate}" />
-    </HorizontalStackLayout>
+        <!-- Zoom Controls -->
+        <HorizontalStackLayout HorizontalOptions="Center">
+            <Button Text="➖ Zoom Out"
+                    Clicked="OnZoomOutClicked"
+                    BackgroundColor="#ddd" 
+                    TextColor="{AppThemeBinding Light=Black, Dark=White}"/>
+                    
+            <Button Text="➕ Zoom In"
+                    Clicked="OnZoomInClicked"
+                    BackgroundColor="#ddd" 
+                    TextColor="{AppThemeBinding Light=Black, Dark=White}"/>
+            <DatePicker Date="{Binding StartDate}" />
+            <Label Text="to" VerticalOptions="Center" />
+            <DatePicker Date="{Binding EndDate}" />
+        </HorizontalStackLayout>
 
-</VerticalStackLayout>
-                    </VerticalStackLayout>
-                </Frame>
+        <!-- Recent Events Section -->
+        <Label Text="Recent Events" FontSize="20" FontAttributes="Bold" TextColor="Black" />
+
+        <!-- Two Column Grid Layout -->
+        <CollectionView ItemsSource="{Binding HealthEvents}">
+            <CollectionView.ItemsLayout>
+                <GridItemsLayout Orientation="Vertical" Span="2" />
+            </CollectionView.ItemsLayout>
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Frame BackgroundColor="White" CornerRadius="10" Padding="10" Margin="5">
+                        <VerticalStackLayout>
+                            <Label Text="{Binding Title}" FontSize="16" FontAttributes="Bold"  TextColor="{AppThemeBinding Light=Black, Dark=White}"/>
+                            <Label Text="{Binding StartDate, StringFormat='Start Date: {0:MM/dd/yyyy}'}" FontSize="14" TextColor="{AppThemeBinding Light=Black, Dark=White}" />
+                            <Label Text="{Binding EndDate, StringFormat='End Date: {0:MM/dd/yyyy}'}" FontSize="14"  TextColor="{AppThemeBinding Light=Black, Dark=White}"/>
+                        </VerticalStackLayout>
+                    </Frame>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <!-- Log New Entry Button -->
+        <Button Text="+ Log an Entry" Clicked="AddNewEntry" />
+    </VerticalStackLayout>
+</Frame>
               
             </Grid>
 
             <!-- Archive Button -->
-            <Button Text="Archive this condition"
-                    BackgroundColor="#E0E0E0"
-                    TextColor="Black"
-                    HorizontalOptions="End"
-                    Margin="0,20"
-                    Command="{Binding ArchiveConditionCommand}" />
+            <HorizontalStackLayout HorizontalOptions="End" Margin="0,20">
+                <Button Text="Archive this condition"
+                        BackgroundColor="#E0E0E0"
+                         TextColor="{AppThemeBinding Light=Black, Dark=White}"
+                        Command="{Binding ArchiveConditionCommand}" />
+                <Button Text="Delete this condition"
+                        BackgroundColor="#FF5252"
+                        TextColor="{AppThemeBinding Light=Black, Dark=White}"
+                        Margin="10,0,0,0"
+                        Command="{Binding DeleteConditionCommand}" />
+                <Button Text="Export Condition"
+                    BackgroundColor="#FFCC80"
+                     TextColor="{AppThemeBinding Light=Black, Dark=White}"
+                    Command="{Binding ExportConditionCommand}" />
+            </HorizontalStackLayout>
 
             <!-- Export Button -->
-            <Button Text="Export Condition"
-                    BackgroundColor="#FFCC80"
-                    TextColor="Black"
-                    Command="{Binding ExportConditionCommand}" />
+            
         </VerticalStackLayout>
     </ScrollView>
 </ContentPage>
