@@ -44,12 +44,12 @@
                     </Picker.Items>
                 </Picker>
 
-                <StackLayout IsVisible="{Binding SelectedDateRange, Converter={StaticResource EqualsConverter}, ConverterParameter=Single Date}">
+                <StackLayout IsVisible="{Binding SelectedDateRange, Mode=TwoWay, Converter={StaticResource EqualsConverter}, ConverterParameter=Single Date}">
                     <DatePicker Date="{Binding SingleDate}" />
                     <Label Text="All Day?"/>
-                    <CheckBox IsChecked="{Binding IsFullDay}" />
-                    <Label Text="Duration (hrs/mins)" />
-                    <HorizontalStackLayout>
+                    <CheckBox IsChecked="{Binding IsFullDay, Mode=TwoWay}"/>
+                    <HorizontalStackLayout IsVisible="{Binding ShowDurationSpinners}">
+                        <Label Text="Duration (hrs/mins)" />
                         <Stepper Value="{Binding HourDuration}" Minimum="0" Maximum="23" />
                         <Label Text="{Binding HourDuration}" VerticalOptions="Center" />
                         <Label Text=":" FontSize="24" VerticalOptions="Center" />

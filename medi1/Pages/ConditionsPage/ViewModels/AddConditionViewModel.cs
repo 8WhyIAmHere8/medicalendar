@@ -21,12 +21,29 @@ public class AddConditionPopupViewModel : INotifyPropertyChanged
         }
     }
 
+    private string symptomsInput;
+    public string SymptomsInput
+    {
+        get => symptomsInput;
+        set
+        {
+            symptomsInput = value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SymptomsInput)));
+        }
+    }
+
+    private readonly string RelatedSymptom;
+
+
     public ICommand ClosePopupCommand { get; }
     public ICommand ConfirmAddCommand { get; }
  
-    public AddConditionPopupViewModel()
+    public AddConditionPopupViewModel(string relatedSymptom)
     {
         ClosePopupCommand = new Command(async () => await Shell.Current.Navigation.PopModalAsync());
+
+        SymptomsInput = relatedSymptom;
+        RelatedSymptom = relatedSymptom;
 
         ConfirmAddCommand = new Command(async () =>
         {
@@ -43,7 +60,7 @@ public class AddConditionPopupViewModel : INotifyPropertyChanged
                 Archived = false,
                 Description = string.Empty,
                 Notes = string.Empty,
-                Symptoms = new(),
+                Symptoms = SymptomsInput?.Split(',').Select(s => s.Trim()).Where(s => !string.IsNullOrEmpty(s)).ToList() ?? new(),
                 Medications = new(),
                 Treatments = new()
             };

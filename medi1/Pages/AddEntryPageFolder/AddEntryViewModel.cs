@@ -57,7 +57,7 @@ namespace medi1.Pages.AddEntryPageFolder
 
 
         public bool ShowDurationSpinners =>
-            SelectedDateRange == "Single Date" && !IsFullDay;
+            SelectedDateRange == "Single Date" && IsFullDay == false;
 
         
         partial void OnSelectedDateRangeChanged(string value)
@@ -188,14 +188,17 @@ namespace medi1.Pages.AddEntryPageFolder
                             await _dbContext.SaveChangesAsync();
                         }
                     }
+            
 
                     UserSession.Instance.SaveNewHealthEvent(healthEvent);
-                    await PostSaveNavigation();
+                    await Shell.Current.Navigation.PopModalAsync();
 
-                    if (SelectedHealthRelation == "Part of a New Condition")
-                        await Shell.Current.Navigation.PushModalAsync(new ConditionsPage.AddConditionPopup());
-                    else
+                    if (SelectedHealthRelation == "Part of a New Condition"){
                         await Shell.Current.Navigation.PopModalAsync();
+                        await Shell.Current.Navigation.PushModalAsync(new ConditionsPage.AddConditionPopup(EventName));
+                    } else {
+                        await PostSaveNavigation();
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -260,7 +263,7 @@ namespace medi1.Pages.AddEntryPageFolder
         protected virtual async Task PostSaveNavigation()
         {
             if (SelectedHealthRelation == "Part of a New Condition")
-                await Shell.Current.Navigation.PushModalAsync(new ConditionsPage.AddConditionPopup());
+                await Shell.Current.Navigation.PushModalAsync(new ConditionsPage.AddConditionPopup(EventName));
             else
                 await Shell.Current.Navigation.PopModalAsync();
         }
