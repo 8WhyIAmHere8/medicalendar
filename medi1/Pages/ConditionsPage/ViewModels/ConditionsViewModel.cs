@@ -15,7 +15,6 @@ using SkiaSharp.Views.Maui;
 using SkiaSharp.Views.Maui.Controls;
 using medi1.Services;
 
-
 namespace medi1.ViewModels
 {
     public partial class ConditionsViewModel : ObservableObject
@@ -24,7 +23,6 @@ namespace medi1.ViewModels
 
         public ObservableCollection<Data.Models.Condition> Conditions { get; } = new();
         
-       
         public ObservableCollection<Data.Models.HealthEvent> HealthEvents { get; } = new();
 
         [ObservableProperty]
@@ -36,7 +34,6 @@ namespace medi1.ViewModels
         [ObservableProperty] private string? newTrigger;
         [ObservableProperty] private string? newNote;
         private SKCanvasView? _canvasView;
-
 
         public ObservableCollection<string> Medications { get; } = new();
         public ObservableCollection<string> Symptoms { get; } = new();
@@ -59,14 +56,16 @@ namespace medi1.ViewModels
             DeleteConditionCommand = new AsyncRelayCommand(DeleteConditionAsync); // <-- Add this
 
             WeakReferenceMessenger.Default.Register<AddConditionMessage>(this, async (r, m) =>
-            {
+{
+    await MainThread.InvokeOnMainThreadAsync(async () =>
+    {
+        await LoadConditionsAsync();
+        var added = Conditions.FirstOrDefault(c => c.Name == m.Value);
+        if (added != null)
+            SelectedCondition = added;
+    });
+});
 
-                var condition = new Data.Models.Condition { Name = m.Value };
-                Conditions.Add(condition);
-                SelectedCondition = condition;
-                await LoadConditionsAsync();
-            
-            });
         }
 
         public IAsyncRelayCommand LoadConditionsCommand { get; }
@@ -83,80 +82,80 @@ namespace medi1.ViewModels
         public IAsyncRelayCommand OpenArchivedConditionsCommand { get; }
         public IAsyncRelayCommand DeleteConditionCommand { get; } // <-- Add this
 
-       partial void OnSelectedConditionChanged(Data.Models.Condition? oldValue, Data.Models.Condition? newValue)
-    {
-        if (newValue != null)
+        partial void OnSelectedConditionChanged(Data.Models.Condition? oldValue, Data.Models.Condition? newValue)
         {
-            LoadConditionDetailsAsync(newValue.Id);
-            LoadHealthEventsAsync(newValue.Id);
+            if (newValue != null)
+            {
+                LoadConditionDetailsAsync(newValue.Id);
+                LoadHealthEventsAsync(newValue.Id);
+                InvalidateChart();
+            }
+        }
+
+        private async Task LoadConditionDetailsAsync(string conditionId)
+        {
+            await LoadHealthEventsAsync(conditionId); 
+            UpdateCollections();
             InvalidateChart();
- 
         }
-    }
 
-    private async Task LoadConditionDetailsAsync(string conditionId)
-    {
-        await LoadHealthEventsAsync(conditionId); 
-        UpdateCollections();
-        InvalidateChart();
-    }
-
-    private void UpdateCollections()
-    {
-        Medications.Clear();
-        Symptoms.Clear();
-        Treatments.Clear();
-
-        if (SelectedCondition != null)
+        private void UpdateCollections()
         {
-            // Ensure lists are initialized
-            SelectedCondition.Medications ??= new List<string>();
-            SelectedCondition.Symptoms ??= new List<string>();
-            SelectedCondition.Treatments ??= new List<string>();
+            Medications.Clear();
+            Symptoms.Clear();
+            Treatments.Clear();
 
-            foreach (var m in SelectedCondition.Medications) Medications.Add(m);
-            foreach (var s in SelectedCondition.Symptoms) Symptoms.Add(s);
-            foreach (var t in SelectedCondition.Treatments) Treatments.Add(t);
+            if (SelectedCondition != null)
+            {
+                // Ensure lists are initialized
+                SelectedCondition.Medications ??= new List<string>();
+                SelectedCondition.Symptoms ??= new List<string>();
+                SelectedCondition.Treatments ??= new List<string>();
+
+                foreach (var m in SelectedCondition.Medications) Medications.Add(m);
+                foreach (var s in SelectedCondition.Symptoms) Symptoms.Add(s);
+                foreach (var t in SelectedCondition.Treatments) Treatments.Add(t);
+            }
+            InvalidateChart();
         }
-        InvalidateChart();
-    }
 
-    private async Task LoadConditionsAsync()
-    {
-        try
+        private async Task LoadConditionsAsync()
         {
-            var currentUser = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == UserSession.Instance.Id);
-            var currentUserConditions = currentUser.Conditions;
-            var list = await _dbContext.Conditions
-                .Where(c => !c.Archived && currentUserConditions.Contains(c.Id))
+            try
+            {
+                using (var freshDbContext = new MedicalDbContext())
+                {
+                    var currentUser = await freshDbContext.Users.FirstOrDefaultAsync(u => u.Id == UserSession.Instance.Id);
+                    var currentUserConditions = currentUser.Conditions;
+                    var list = await freshDbContext.Conditions
+                        .Where(c => !c.Archived && currentUserConditions.Contains(c.Id))
+                        .ToListAsync();
+                    Conditions.Clear();
+                    foreach (var c in list) Conditions.Add(c);
+                    SelectedCondition = Conditions.FirstOrDefault();
+                    InvalidateChart();
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error loading conditions: {ex.Message}");
+            }
+        }
+
+        private async Task LoadHealthEventsAsync(string conditionId)
+        {
+            var list = await _dbContext.HealthEvent
+                .Where(he => he.ConditionId == conditionId)
+                .OrderByDescending(e => e.StartDate)
                 .ToListAsync();
-            Conditions.Clear();
-            foreach (var c in list) Conditions.Add(c);
-            SelectedCondition = Conditions.FirstOrDefault();
+
+            HealthEvents.Clear();
+            foreach (var item in list)
+                HealthEvents.Add(item);
+
+            Debug.WriteLine($"[Debug] HealthEvents count: {HealthEvents.Count}");
             InvalidateChart();
         }
-        catch (Exception ex)
-        {
-            Debug.WriteLine($"Error loading conditions: {ex.Message}");
-        }
-    }
-
-       private async Task LoadHealthEventsAsync(string conditionId)
-    {
-       
-
-        var list = await _dbContext.HealthEvent
-            .Where(he => he.ConditionId == conditionId)
-            .OrderByDescending(e => e.StartDate)
-            .ToListAsync();
-
-        HealthEvents.Clear();
-        foreach (var item in list)
-            HealthEvents.Add(item);
-
-        Debug.WriteLine($"[Debug] HealthEvents count: {HealthEvents.Count}");
-        InvalidateChart();
-    }
 
         // ADDING AND UPDATING CONDITIONS
 
@@ -238,7 +237,6 @@ namespace medi1.ViewModels
             await _dbContext.SaveChangesAsync();
             await LoadConditionDetailsAsync(SelectedCondition!.Id);
             UpdateCollections();
-
         }
 
         private async Task ExportConditionAsync()
@@ -296,126 +294,124 @@ namespace medi1.ViewModels
             }
         }
 
-// Chart Stuff
+        // Chart Stuff
 
-private float _scale = 1f;
-public void ZoomIn()
-{
-    _scale = Math.Min(_scale + 0.1f, 5f);
-    InvalidateChart(); // <-- Force chart to repaint
-}
-
-public void ZoomOut()
-{
-    _scale = Math.Max(_scale - 0.1f, 0.5f);
-    InvalidateChart(); // <-- Force chart to repaint
-}
-[ObservableProperty]
-private DateTime startDate = DateTime.Today.AddDays(-30);
-
-partial void OnStartDateChanged(DateTime value)
-{
-    InvalidateChart();
-}
-
-[ObservableProperty]
-private DateTime endDate = DateTime.Today;
-
-partial void OnEndDateChanged(DateTime value)
-{
-    InvalidateChart();
-}
-
-public void AttachCanvas(SKCanvasView canvasView)
-{
-    _canvasView = canvasView;
-}
-
-private void InvalidateChart()
-{
-    _canvasView?.InvalidateSurface();
-} 
-
-public float GetScale() => _scale;
-     public void OnCanvasViewPaintSurface(object sender, SKPaintSurfaceEventArgs e)
-{
-    var recentEvents = HealthEvents;
-    var canvas = e.Surface.Canvas;
-    canvas.Clear(SKColors.White);
-
-    if (StartDate >= EndDate)
-        return;
-
-    float canvasWidth = e.Info.Width;
-    float canvasHeight = e.Info.Height;
-
-    float startX = 60;
-    float startY = canvasHeight - 80;
-float baseBarWidth = 20;
-float baseSpace = 10;
-float scale = GetScale();
-
-float barWidth = baseBarWidth * scale;
-float space = baseSpace * scale;
-
-    var paint = new SKPaint { Style = SKPaintStyle.Fill, IsAntialias = true };
-    var textPaint = new SKPaint
-    {
-        Color = SKColors.Black,
-        TextSize = 16,
-        IsAntialias = true,
-        TextAlign = SKTextAlign.Center
-    };
-
-    // Draw X-axis
-    canvas.DrawLine(startX - 20, startY, canvasWidth - 20, startY, new SKPaint
-    {
-        Color = SKColors.Gray,
-        StrokeWidth = 2
-    });
-
-    var dateRange = Enumerable.Range(0, (EndDate - StartDate).Days + 1)
-        .Select(i => StartDate.AddDays(i))
-        .ToList();
-
-    for (int i = 0; i < dateRange.Count; i++)
-    {
-        var date = dateRange[i];
-        var centerX = startX + i * (barWidth + space);
-
-        // Get matching event
-        var ev = recentEvents.FirstOrDefault(e => e.StartDate <= date && e.EndDate>= date);
-        if (ev != null)
+        private float _scale = 1f;
+        public void ZoomIn()
         {
-            int ImpactHeight = ev.Impact * 10;
-            float barHeight = Math.Max(ImpactHeight, 10);
-            float top = startY - barHeight;
-
-            paint.Color = ev.Impact switch
-            {
-                <= 3 => SKColors.Green,
-                <= 6 => SKColors.Yellow,
-                <= 9 => SKColors.Orange,
-                10 => SKColors.Red,
-                _ => SKColors.Gray
-            };
-
-            canvas.DrawRect(centerX - barWidth / 2, top, barWidth, barHeight, paint);
-            canvas.DrawText(Truncate(ev.Title, 6), centerX, startY + 20, textPaint);
+            _scale = Math.Min(_scale + 0.1f, 5f);
+            InvalidateChart(); // <-- Force chart to repaint
         }
 
-        // Always draw date label
-       int labelInterval = (int)(1 / scale);
-if (labelInterval < 1) labelInterval = 1;
+        public void ZoomOut()
+        {
+            _scale = Math.Max(_scale - 0.1f, 0.5f);
+            InvalidateChart(); // <-- Force chart to repaint
+        }
+        [ObservableProperty]
+        private DateTime startDate = DateTime.Today.AddDays(-30);
 
-if (i % labelInterval == 0)
-{
-    canvas.DrawText(date.ToString("MM/dd"), centerX, startY + 40, textPaint);
-}
-    }
-}
+        partial void OnStartDateChanged(DateTime value)
+        {
+            InvalidateChart();
+        }
 
+        [ObservableProperty]
+        private DateTime endDate = DateTime.Today;
 
+        partial void OnEndDateChanged(DateTime value)
+        {
+            InvalidateChart();
+        }
+
+        public void AttachCanvas(SKCanvasView canvasView)
+        {
+            _canvasView = canvasView;
+        }
+
+        private void InvalidateChart()
+        {
+            _canvasView?.InvalidateSurface();
+        } 
+
+        public float GetScale() => _scale;
+        public void OnCanvasViewPaintSurface(object sender, SKPaintSurfaceEventArgs e)
+        {
+            var recentEvents = HealthEvents;
+            var canvas = e.Surface.Canvas;
+            canvas.Clear(SKColors.White);
+
+            if (StartDate >= EndDate)
+                return;
+
+            float canvasWidth = e.Info.Width;
+            float canvasHeight = e.Info.Height;
+
+            float startX = 60;
+            float startY = canvasHeight - 80;
+            float baseBarWidth = 20;
+            float baseSpace = 10;
+            float scale = GetScale();
+
+            float barWidth = baseBarWidth * scale;
+            float space = baseSpace * scale;
+
+            var paint = new SKPaint { Style = SKPaintStyle.Fill, IsAntialias = true };
+            var textPaint = new SKPaint
+            {
+                Color = SKColors.Black,
+                TextSize = 16,
+                IsAntialias = true,
+                TextAlign = SKTextAlign.Center
+            };
+
+            // Draw X-axis
+            canvas.DrawLine(startX - 20, startY, canvasWidth - 20, startY, new SKPaint
+            {
+                Color = SKColors.Gray,
+                StrokeWidth = 2
+            });
+
+            var dateRange = Enumerable.Range(0, (EndDate - StartDate).Days + 1)
+                .Select(i => StartDate.AddDays(i))
+                .ToList();
+
+            for (int i = 0; i < dateRange.Count; i++)
+            {
+                var date = dateRange[i];
+                var centerX = startX + i * (barWidth + space);
+
+                // Get matching event
+                var ev = recentEvents.FirstOrDefault(e => e.StartDate <= date && e.EndDate >= date);
+                if (ev != null)
+                {
+                    int ImpactHeight = ev.Impact * 10;
+                    float barHeight = Math.Max(ImpactHeight, 10);
+                    float top = startY - barHeight;
+
+                    paint.Color = ev.Impact switch
+                    {
+                        <= 3 => SKColors.Green,
+                        <= 6 => SKColors.Yellow,
+                        <= 9 => SKColors.Orange,
+                        10 => SKColors.Red,
+                        _ => SKColors.Gray
+                    };
+
+                    canvas.DrawRect(centerX - barWidth / 2, top, barWidth, barHeight, paint);
+                    canvas.DrawText(Truncate(ev.Title, 6), centerX, startY + 20, textPaint);
+                }
+
+                // Always draw date label
+                int labelInterval = (int)(1 / scale);
+                if (labelInterval < 1) labelInterval = 1;
+
+                if (i % labelInterval == 0)
+                {
+                    canvas.DrawText(date.ToString("MM/dd"), centerX, startY + 40, textPaint);
+                }
+            }
+        }
 
         private string Truncate(string value, int maxLength)
         {

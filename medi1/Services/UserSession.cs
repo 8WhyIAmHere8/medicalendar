@@ -147,16 +147,24 @@ namespace medi1.Services
             }  
         }
 
-        public async void SaveNewCondition (Data.Models.Condition newCondition)
-        {
-          Conditions.Add(newCondition);
+        public async Task SaveNewCondition(Data.Models.Condition newCondition)
+{
+    Conditions.Add(newCondition);
 
-            using (var _dbContext = new MedicalDbContext()) 
-            {
-                var loadedUser = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == _instance.Id);
-                loadedUser.Conditions.Add(newCondition.Id);
-                await _dbContext.SaveChangesAsync();
-            }  
-        }
+    using (var _dbContext = new MedicalDbContext())
+    {
+        var loadedUser = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == _instance.Id);
+        loadedUser.Conditions.Add(newCondition.Id);
+        await _dbContext.SaveChangesAsync();
+
+        // Refresh local list
+        var conditionIds = loadedUser.Conditions;
+        var updatedConditions = await _dbContext.Conditions
+            .Where(c => conditionIds.Contains(c.Id))
+            .ToListAsync();
+
+        Conditions = updatedConditions;
+    }
+}
     }
 }
