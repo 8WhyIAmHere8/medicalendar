@@ -60,8 +60,12 @@ namespace medi1.ViewModels
 
             WeakReferenceMessenger.Default.Register<AddConditionMessage>(this, async (r, m) =>
             {
-                // Reload from DB to ensure up-to-date list
+
+                var condition = new Data.Models.Condition { Name = m.Value };
+                Conditions.Add(condition);
+                SelectedCondition = condition;
                 await LoadConditionsAsync();
+            
             });
         }
 
@@ -86,6 +90,7 @@ namespace medi1.ViewModels
             LoadConditionDetailsAsync(newValue.Id);
             LoadHealthEventsAsync(newValue.Id);
             InvalidateChart();
+ 
         }
     }
 
@@ -104,9 +109,14 @@ namespace medi1.ViewModels
 
         if (SelectedCondition != null)
         {
-            foreach (var m in SelectedCondition.Medications ?? []) Medications.Add(m);
-            foreach (var s in SelectedCondition.Symptoms ?? []) Symptoms.Add(s);
-            foreach (var t in SelectedCondition.Treatments ?? []) Treatments.Add(t);
+            // Ensure lists are initialized
+            SelectedCondition.Medications ??= new List<string>();
+            SelectedCondition.Symptoms ??= new List<string>();
+            SelectedCondition.Treatments ??= new List<string>();
+
+            foreach (var m in SelectedCondition.Medications) Medications.Add(m);
+            foreach (var s in SelectedCondition.Symptoms) Symptoms.Add(s);
+            foreach (var t in SelectedCondition.Treatments) Treatments.Add(t);
         }
         InvalidateChart();
     }
@@ -152,7 +162,7 @@ namespace medi1.ViewModels
 
         private async void OnAddConditionTapped()
         {
-            await Shell.Current.Navigation.PushModalAsync(new AddConditionPopup());
+            await Shell.Current.Navigation.PushModalAsync(new AddConditionPopup("", "")); // Pass empty strings
             InvalidateChart();
         }
 

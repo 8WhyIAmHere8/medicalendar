@@ -22,6 +22,4 @@ public partial class AddConditionPopup : ContentPage
 
         BindingContext = new AddConditionPopupViewModel(relatedSymptom, healthEventID, dbContext, alertService, navigationService );
     }
-
-    public AddConditionPopup() : this(string.Empty, string.Empty) { }
 }

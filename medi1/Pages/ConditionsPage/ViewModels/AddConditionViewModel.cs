@@ -59,8 +59,11 @@ public class AddConditionPopupViewModel : INotifyPropertyChanged
 
         ClosePopupCommand = new Command(async () => await _navigationService.PopModalAsync());
 
-        SymptomsInput = relatedSymptom;
-        RelatedSymptom = relatedSymptom;
+        if (!string.IsNullOrWhiteSpace(relatedSymptom))
+        {
+            SymptomsInput = relatedSymptom;
+            RelatedSymptom = relatedSymptom;
+        }
 
         ConfirmAddCommand = new Command(async () => await AddConditionAsync(healthEventID));
     }
@@ -100,14 +103,34 @@ public class AddConditionPopupViewModel : INotifyPropertyChanged
             Archived = false,
             Description = string.Empty,
             Notes = string.Empty,
-            Symptoms = SymptomsInput?.Split(',').Select(s => s.Trim()).Where(s => !string.IsNullOrEmpty(s)).ToList() ?? new(),
             Medications = new(),
-            Treatments = new()
+            Treatments = new(),
+            Triggers = new()
         };
+
+        if (!string.IsNullOrWhiteSpace(SymptomsInput))
+        {
+            newCondition.Symptoms = SymptomsInput.Split(',')
+                .Select(s => s.Trim())
+                .Where(s => !string.IsNullOrEmpty(s))
+                .ToList();
+        }
+        else
+        {
+            newCondition.Symptoms = new();
+        }
 
         try
         {
             _dbContext.Conditions.Add(newCondition);
+
+    
+            if (!currentUser.Conditions.Contains(newCondition.Id))
+            {
+                currentUser.Conditions.Add(newCondition.Id);
+                _dbContext.Users.Update(currentUser);
+            }
+
             await _dbContext.SaveChangesAsync();
 
             if (!string.IsNullOrEmpty(healthEventID))
