@@ -11,6 +11,7 @@
             <Label Text="Add New Condition" FontSize="24" FontAttributes="Bold" HorizontalOptions="Center" />
 
             <Entry Placeholder="Condition name" Text="{Binding NewConditionName}" />
+            <Entry Placeholder="Existing Symptoms" Text="{Binding SymptomsInput}" />
 
             <HorizontalStackLayout HorizontalOptions="Center" Spacing="20">
                 <Button Text="Cancel" Command="{Binding ClosePopupCommand}" />

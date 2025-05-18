@@ -1,0 +1,135 @@
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewmodels="clr-namespace:medi1.Pages.AddEntryPageFolder"
+             xmlns:converters="clr-namespace:medi1.Pages.AddEntryPageFolder"
+             xmlns:local="clr-namespace:medi1.EntryComponents"
+             x:Class="medi1.Pages.AddEntryPageFolder.AddEntryPage"
+             Title="Add Entry">
+
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <converters:EntryTypeToVisibilityConverter x:Key="EntryTypeToVisibilityConverter" />
+            <converters:EqualsConverter x:Key="EqualsConverter" />
+        </ResourceDictionary>
+    </ContentPage.Resources>
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="16">
+
+            <!-- Entry Type Picker -->
+            <Label Text="Log Type" />
+            <Picker ItemsSource="{Binding EntryTypes}"
+                    SelectedItem="{Binding SelectedEntryType}" />
+
+            <!-- Event Name -->
+            <StackLayout IsVisible="{Binding SelectedEntryType, Converter={StaticResource EntryTypeToVisibilityConverter}, ConverterParameter=Log Health Event}">
+                <Label Text="Event Name" />
+                <Entry Text="{Binding EventName}" />
+            </StackLayout>
+
+            <!-- Activity Picker -->
+            <StackLayout IsVisible="{Binding SelectedEntryType, Converter={StaticResource EntryTypeToVisibilityConverter}, ConverterParameter=Log Activity}">
+                <Label Text="Activity" />
+                <Picker ItemsSource="{Binding Activities}" ItemDisplayBinding="{Binding Name}"
+                        SelectedItem="{Binding SelectedActivity}" />
+            </StackLayout>
+
+            <!-- Date Selectors -->
+            <StackLayout IsVisible="{Binding IsDateSectionVisible}">
+                <Label Text="Date Range" />
+                <Picker SelectedItem="{Binding SelectedDateRange}">
+                    <Picker.Items>
+                        <x:String>Single Date</x:String>
+                        <x:String>Date Range</x:String>
+                    </Picker.Items>
+                </Picker>
+
+                <StackLayout IsVisible="{Binding SelectedDateRange, Mode=TwoWay, Converter={StaticResource EqualsConverter}, ConverterParameter=Single Date}">
+                    <DatePicker Date="{Binding SingleDate}" />
+                    <Label Text="All Day?"/>
+                    <CheckBox IsChecked="{Binding IsFullDay, Mode=TwoWay}"/>
+                    <HorizontalStackLayout IsVisible="{Binding ShowDurationSpinners}">
+                        <Label Text="Duration (hrs/mins)" />
+                        <Stepper Value="{Binding HourDuration}" Minimum="0" Maximum="23" />
+                        <Label Text="{Binding HourDuration}" VerticalOptions="Center" />
+                        <Label Text=":" FontSize="24" VerticalOptions="Center" />
+                        <Label Text="{Binding MinuteDuration}" VerticalOptions="Center" />
+                        <Stepper Value="{Binding MinuteDuration}" Minimum="0" Maximum="59" />
+                    </HorizontalStackLayout>
+                </StackLayout>
+
+                <StackLayout IsVisible="{Binding SelectedDateRange, Converter={StaticResource EqualsConverter}, ConverterParameter=Date Range}">
+                    <Label Text="Start Date" />
+                    <DatePicker Date="{Binding StartDate}" />
+                    <Label Text="End Date" />
+                    <DatePicker Date="{Binding EndDate}" />
+                </StackLayout>
+            </StackLayout>
+
+            <StackLayout Padding="10"
+             IsVisible="{Binding IsHealthEventFormVisible}">
+                <Label Text="How is this related to your overall health?" FontSize="20"/>
+                <Label Text="If selecting 'Part of a New Condition', you will also log a new condition." FontSize="12"/>
+
+                <Picker Title="Health Relation"
+                        ItemsSource="{Binding HealthRelationOptions}"
+                        SelectedItem="{Binding SelectedHealthRelation}" />
+
+                <Picker Title="Related Condition"
+                        IsVisible="{Binding ShowAssociatedCondition}"
+                        ItemsSource="{Binding Conditions}"
+                        ItemDisplayBinding="{Binding Name}"
+                        SelectedItem="{Binding SelectedAssociatedCondition}" />
+            </StackLayout>
+
+
+            <!-- Intensity -->
+            <StackLayout IsVisible="{Binding SelectedEntryType, Converter={StaticResource EntryTypeToVisibilityConverter}, ConverterParameter=Log Activity}">
+                <Label Text="Intensity" />
+                <Picker SelectedItem="{Binding SelectedIntensity}">
+                    <Picker.Items>
+                        <x:String>Low</x:String>
+                        <x:String>Medium</x:String>
+                        <x:String>High</x:String>
+                    </Picker.Items>
+                </Picker>
+            </StackLayout>
+
+            <!-- Impact Score -->
+            <StackLayout IsVisible="{Binding SelectedEntryType, Converter={StaticResource EntryTypeToVisibilityConverter}, ConverterParameter=Log Health Event}">
+                <Label Text="Impact Score (1-10)" />
+                <Picker SelectedItem="{Binding SelectedImpact}">
+                    <Picker.Items>
+                        <x:String>1</x:String><x:String>2</x:String><x:String>3</x:String>
+                        <x:String>4</x:String><x:String>5</x:String><x:String>6</x:String>
+                        <x:String>7</x:String><x:String>8</x:String><x:String>9</x:String>
+                        <x:String>10</x:String>
+                    </Picker.Items>
+                </Picker>
+            </StackLayout>
+
+            <!-- Aggravated Condition -->
+            <StackLayout IsVisible="{Binding SelectedEntryType, Converter={StaticResource EntryTypeToVisibilityConverter}, ConverterParameter=Log Activity}">
+                <Label Text="Aggravated Condition?" />
+                <CheckBox IsChecked="{Binding Aggravated}" />
+                <Picker ItemsSource="{Binding Conditions}" IsVisible="{Binding ShowAggravatedConditionPicker}" 
+                        ItemDisplayBinding="{Binding Name}"
+                        SelectedItem="{Binding SelectedAggravatedCondition}" />
+            </StackLayout>
+
+
+            <!-- Notes -->
+            <StackLayout IsVisible="{Binding IsNotesSectionVisible}">
+                <Label Text="Notes" />
+                <Editor Text="{Binding EntryNotes}" HeightRequest="100" />
+            </StackLayout>
+
+            <!-- Buttons -->
+            <HorizontalStackLayout Spacing="20">
+                <Button Text="Cancel" Command="{Binding CancelEntryCommand}" BackgroundColor="#1d3558" TextColor="White" FontAttributes="Bold"/>
+                <Button Text="Save" Command="{Binding ConfirmEntryCommand}" BackgroundColor="#457b9d" TextColor="White" FontAttributes="Bold"/>
+            </HorizontalStackLayout>
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

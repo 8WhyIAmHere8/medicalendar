@@ -11,6 +11,7 @@ using SkiaSharp;
 using SkiaSharp.Views.Maui;
 using SkiaSharp.Views.Maui.Controls;
 using medi1.Services;
+using medi1.Pages.AddEntryPageFolder;
 
 namespace medi1.Pages.ConditionsPage
 

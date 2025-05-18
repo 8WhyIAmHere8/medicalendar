@@ -13,6 +13,7 @@ public class AddConditionPopupViewModel : INotifyPropertyChanged
     private readonly IMedicalDbContext _dbContext;
     private readonly IAlertService _alertService;
     private readonly INavigationService _navigationService;
+    private readonly string RelatedSymptom;
 
     public event PropertyChangedEventHandler PropertyChanged;
 
@@ -21,7 +22,7 @@ public class AddConditionPopupViewModel : INotifyPropertyChanged
     {
         get => newConditionName;
         set
-        {
+       {
             if (newConditionName != value)
             {
                 newConditionName = value;
@@ -30,10 +31,24 @@ public class AddConditionPopupViewModel : INotifyPropertyChanged
         }
     }
 
+    private string symptomsInput;
+    public string SymptomsInput
+    {
+        get => symptomsInput;
+        set
+        {
+            symptomsInput = value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SymptomsInput)));
+
+            newConditionName = value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(NewConditionName)));
+        }
+    }
+
     public ICommand ClosePopupCommand { get; }
     public ICommand ConfirmAddCommand { get; }
 
-    public AddConditionPopupViewModel(
+    public AddConditionPopupViewModel(string relatedSymptom, string healthEventID,
         IMedicalDbContext dbContext,
         IAlertService alertService,
         INavigationService navigationService)
@@ -44,10 +59,13 @@ public class AddConditionPopupViewModel : INotifyPropertyChanged
 
         ClosePopupCommand = new Command(async () => await _navigationService.PopModalAsync());
 
-        ConfirmAddCommand = new Command(async () => await AddConditionAsync());
+        SymptomsInput = relatedSymptom;
+        RelatedSymptom = relatedSymptom;
+
+        ConfirmAddCommand = new Command(async () => await AddConditionAsync(healthEventID));
     }
 
-    public async Task AddConditionAsync()
+    public async Task AddConditionAsync(string healthEventID)
     {
         if (string.IsNullOrWhiteSpace(NewConditionName))
         {
@@ -78,7 +96,7 @@ public class AddConditionPopupViewModel : INotifyPropertyChanged
             Archived = false,
             Description = string.Empty,
             Notes = string.Empty,
-            Symptoms = new(),
+            Symptoms = SymptomsInput?.Split(',').Select(s => s.Trim()).Where(s => !string.IsNullOrEmpty(s)).ToList() ?? new(),
             Medications = new(),
             Treatments = new()
         };
@@ -87,6 +105,16 @@ public class AddConditionPopupViewModel : INotifyPropertyChanged
         {
             _dbContext.Conditions.Add(newCondition);
             await _dbContext.SaveChangesAsync();
+
+                if (!string.IsNullOrEmpty(healthEventID))
+                {
+                    var evt = await _dbContext.HealthEvent.FindAsync(healthEventID);
+                    if (evt != null)
+                    {
+                        evt.ConditionId = newCondition.Id;
+                        await _dbContext.SaveChangesAsync();
+                    }
+                }
 
             WeakReferenceMessenger.Default.Send(new AddConditionMessage(newCondition.Name));
             await _navigationService.PopModalAsync();
