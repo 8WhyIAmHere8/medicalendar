@@ -20,25 +20,28 @@
 
     <VerticalStackLayout Padding="10" Spacing="10">
         <Frame Grid.Column="1" BackgroundColor="#E3F7FE" CornerRadius="20" Padding="10" Margin="10,0">
-                <ScrollView>
-                    <VerticalStackLayout>
-                        <Label Text="Archived Conditions" FontSize="20" FontAttributes="Bold" TextColor="Black" />
-                        <CollectionView ItemsSource="{Binding ArchivedConditions}" SelectionMode="Single">
-                            <CollectionView.ItemTemplate>
-                                <DataTemplate>
-                                    <Frame BackgroundColor="White" CornerRadius="10" Padding="10" Margin="5">
-                                        <VerticalStackLayout>
-                                            <Label Text="{Binding Name}" FontSize="16" FontAttributes="Bold" />
-                                            <Label Text="{Binding Description}" FontSize="14" />
-                                            <Label Text="{Binding Symptoms}" FontSize="14" />
-                                            <Button Text="Unarchive" Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.UnarchiveCommand}" CommandParameter="{Binding .}" />
-                                        </VerticalStackLayout>
-                                    </Frame>
-                                </DataTemplate>
-                            </CollectionView.ItemTemplate>
-                        </CollectionView>
-                    </VerticalStackLayout>
-                </ScrollView>
-                    </Frame>
+            <ScrollView>
+                <VerticalStackLayout>
+                    <Label Text="Archived Conditions" FontSize="20" FontAttributes="Bold" TextColor="Black" />
+                    <CollectionView ItemsSource="{Binding ArchivedConditions}" SelectionMode="Single">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Frame BackgroundColor="White" CornerRadius="10" Padding="10" Margin="5">
+                                    <VerticalStackLayout>
+                                        <Label Text="{Binding Name}" FontSize="16" FontAttributes="Bold" />
+                                        <Label Text="{Binding Description}" FontSize="14" />
+                                        <Label Text="Symptoms:" FontAttributes="Bold" FontSize="13"/>
+                                        <Label Text="{Binding SymptomsDisplay}" FontSize="13" />
+                                        <Label Text="Medications:" FontAttributes="Bold" FontSize="13"/>
+                                        <Label Text="{Binding MedicationsDisplay}" FontSize="13" />
+                                        <Button Text="Unarchive" Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.UnarchiveCommand}" CommandParameter="{Binding .}" />
+                                    </VerticalStackLayout>
+                                </Frame>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </VerticalStackLayout>
+            </ScrollView>
+        </Frame>
     </VerticalStackLayout>
 </ContentPage>

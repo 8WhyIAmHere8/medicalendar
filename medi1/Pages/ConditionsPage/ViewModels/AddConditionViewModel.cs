@@ -7,7 +7,7 @@ using medi1.Services;
 using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
 using medi1.Pages.ConditionsPage.Interfaces;
-
+using medi1.Services;
 public class AddConditionPopupViewModel : INotifyPropertyChanged
 {
     private readonly IMedicalDbContext _dbContext;
@@ -47,11 +47,27 @@ public class AddConditionPopupViewModel : INotifyPropertyChanged
         ConfirmAddCommand = new Command(async () => await AddConditionAsync());
     }
 
-    private async Task AddConditionAsync()
+    public async Task AddConditionAsync()
     {
         if (string.IsNullOrWhiteSpace(NewConditionName))
         {
             await _alertService.ShowAlert("Validation", "Condition name cannot be empty.", "OK");
+            return;
+        }
+
+        // checking for duplicates
+        
+        var currentUser = _dbContext.Users.FirstOrDefault(u => u.Id == UserSession.Instance.Id);
+        var currentUserConditions = currentUser.Conditions;
+        var list = await _dbContext.Conditions
+                .Where(c => !c.Archived && currentUserConditions.Contains(c.Id))
+                .ToListAsync();
+        
+        var duplicate = list.Any(c => c.Name.Equals(NewConditionName.Trim(), StringComparison.OrdinalIgnoreCase));
+
+        if (duplicate)
+        {
+            await _alertService.ShowAlert("Duplicate", "A condition with this name already exists.", "OK");
             return;
         }
 

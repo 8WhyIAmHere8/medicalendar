@@ -74,7 +74,7 @@
                     <Frame BackgroundColor="#E3F2FD" CornerRadius="20" Padding="10">
                         <VerticalStackLayout>
                             <Label Text="Medications" FontSize="20" FontAttributes="Bold" TextColor="#1A237E" />
-                            <CollectionView ItemsSource="{Binding SelectedCondition.Medications}">
+                            <CollectionView ItemsSource="{Binding Medications}">
                                 <CollectionView.ItemTemplate>
                                     <DataTemplate>
                                         <Label Text="{Binding}" FontSize="16" />
@@ -143,66 +143,75 @@
                 </VerticalStackLayout>
 
                 <!-- Right Panel - Recent Events -->
-                <Frame Grid.Column="1" BackgroundColor="#E3F7FE" CornerRadius="20" Padding="10" Margin="10,0">
-                    <VerticalStackLayout>
-                        <Label Text="Recent events" FontSize="20" FontAttributes="Bold" TextColor="Black" />
-                        <CollectionView ItemsSource="{Binding HealthEvents}">
-                            <CollectionView.ItemTemplate>
-                                <DataTemplate>
-                                    <Frame BackgroundColor="White" CornerRadius="10" Padding="10" Margin="5">
-                                        <VerticalStackLayout>
-                                            <Label Text="{Binding Title}" FontSize="16" FontAttributes="Bold" />
-                                            <Label Text="{Binding StartDate, StringFormat='Start Date: {0:MM/dd/yyyy}'}" FontSize="14" />
-                                            <Label Text="{Binding EndDate, StringFormat='End Date: {0:MM/dd/yyyy}'}" FontSize="14" />
-                                        </VerticalStackLayout>
-                                    </Frame>
-                                </DataTemplate>
-                            </CollectionView.ItemTemplate>
-                        </CollectionView>
-                        <Frame>
-                            <StackLayout>
-                                <Button Text="+ Log an Entry" Clicked="AddNewEntry" />
-                            </StackLayout>
-                        </Frame>
-                         <VerticalStackLayout Spacing="10">
+<Frame Grid.Column="1" BackgroundColor="#E3F7FE" CornerRadius="20" Padding="10" Margin="10,0">
+    <VerticalStackLayout Spacing="10">
 
-    <!-- Existing chart view -->
-    <skia:SKCanvasView x:Name="ChartCanvas"
-                       HeightRequest="300"
-                       PaintSurface="OnCanvasViewPaintSurface" />
+        <!-- Chart View -->
+        <Label Text="Health Event Timeline" FontSize="20" FontAttributes="Bold" TextColor="Black" />
+        <skia:SKCanvasView x:Name="ChartCanvas"
+                           HeightRequest="300"
+                           PaintSurface="OnCanvasViewPaintSurface" />
 
-    <!-- Zoom controls -->
-    <HorizontalStackLayout HorizontalOptions="Center">
-        <Button Text="➖ Zoom Out"
-                Clicked="OnZoomOutClicked"
-                BackgroundColor="#ddd" />
-        <Button Text="➕ Zoom In"
-                Clicked="OnZoomInClicked"
-                BackgroundColor="#ddd" />
-                 <DatePicker Date="{Binding StartDate}" />
-    <Label Text="to" VerticalOptions="Center" />
-    <DatePicker Date="{Binding EndDate}" />
-    </HorizontalStackLayout>
+        <!-- Zoom Controls -->
+        <HorizontalStackLayout HorizontalOptions="Center">
+            <Button Text="➖ Zoom Out"
+                    Clicked="OnZoomOutClicked"
+                    BackgroundColor="#ddd" />
+            <Button Text="➕ Zoom In"
+                    Clicked="OnZoomInClicked"
+                    BackgroundColor="#ddd" />
+            <DatePicker Date="{Binding StartDate}" />
+            <Label Text="to" VerticalOptions="Center" />
+            <DatePicker Date="{Binding EndDate}" />
+        </HorizontalStackLayout>
 
-</VerticalStackLayout>
-                    </VerticalStackLayout>
-                </Frame>
+        <!-- Recent Events Section -->
+        <Label Text="Recent Events" FontSize="20" FontAttributes="Bold" TextColor="Black" />
+
+        <!-- Two Column Grid Layout -->
+        <CollectionView ItemsSource="{Binding HealthEvents}">
+            <CollectionView.ItemsLayout>
+                <GridItemsLayout Orientation="Vertical" Span="2" />
+            </CollectionView.ItemsLayout>
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Frame BackgroundColor="White" CornerRadius="10" Padding="10" Margin="5">
+                        <VerticalStackLayout>
+                            <Label Text="{Binding Title}" FontSize="16" FontAttributes="Bold" />
+                            <Label Text="{Binding StartDate, StringFormat='Start Date: {0:MM/dd/yyyy}'}" FontSize="14" />
+                            <Label Text="{Binding EndDate, StringFormat='End Date: {0:MM/dd/yyyy}'}" FontSize="14" />
+                        </VerticalStackLayout>
+                    </Frame>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <!-- Log New Entry Button -->
+        <Button Text="+ Log an Entry" Clicked="AddNewEntry" />
+    </VerticalStackLayout>
+</Frame>
               
             </Grid>
 
             <!-- Archive Button -->
-            <Button Text="Archive this condition"
-                    BackgroundColor="#E0E0E0"
-                    TextColor="Black"
-                    HorizontalOptions="End"
-                    Margin="0,20"
-                    Command="{Binding ArchiveConditionCommand}" />
-
-            <!-- Export Button -->
-            <Button Text="Export Condition"
+            <HorizontalStackLayout HorizontalOptions="End" Margin="0,20">
+                <Button Text="Archive this condition"
+                        BackgroundColor="#E0E0E0"
+                        TextColor="Black"
+                        Command="{Binding ArchiveConditionCommand}" />
+                <Button Text="Delete this condition"
+                        BackgroundColor="#FF5252"
+                        TextColor="White"
+                        Margin="10,0,0,0"
+                        Command="{Binding DeleteConditionCommand}" />
+                <Button Text="Export Condition"
                     BackgroundColor="#FFCC80"
                     TextColor="Black"
                     Command="{Binding ExportConditionCommand}" />
+            </HorizontalStackLayout>
+
+            <!-- Export Button -->
+            
         </VerticalStackLayout>
     </ScrollView>
 </ContentPage>
