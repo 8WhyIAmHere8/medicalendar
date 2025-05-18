@@ -195,7 +195,7 @@ namespace medi1.Pages.AddEntryPageFolder
 
                     if (SelectedHealthRelation == "Part of a New Condition"){
                         await Shell.Current.Navigation.PopModalAsync();
-                        await Shell.Current.Navigation.PushModalAsync(new ConditionsPage.AddConditionPopup(EventName));
+                        await Shell.Current.Navigation.PushModalAsync(new ConditionsPage.AddConditionPopup(EventName, healthEvent.Id));
                     } else {
                         await PostSaveNavigation();
                     }
@@ -263,7 +263,7 @@ namespace medi1.Pages.AddEntryPageFolder
         protected virtual async Task PostSaveNavigation()
         {
             if (SelectedHealthRelation == "Part of a New Condition")
-                await Shell.Current.Navigation.PushModalAsync(new ConditionsPage.AddConditionPopup(EventName));
+                await Shell.Current.Navigation.PushModalAsync(new ConditionsPage.AddConditionPopup());
             else
                 await Shell.Current.Navigation.PopModalAsync();
         }

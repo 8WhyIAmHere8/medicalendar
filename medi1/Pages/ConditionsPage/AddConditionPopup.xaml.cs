@@ -9,11 +9,11 @@ using medi1.Pages.AddEntryPageFolder;
 namespace medi1.Pages.ConditionsPage;
 public partial class AddConditionPopup : ContentPage
 {
-    public AddConditionPopup(string relatedSymptom)
+    public AddConditionPopup(string relatedSymptom, string healthEventID)
     {
         InitializeComponent();
-        BindingContext = new AddConditionPopupViewModel(relatedSymptom);
+        BindingContext = new AddConditionPopupViewModel(relatedSymptom, healthEventID);
     }
 
-    public AddConditionPopup() : this(string.Empty) { }
+    public AddConditionPopup() : this(string.Empty, string.Empty) { }
 }

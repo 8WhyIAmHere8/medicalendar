@@ -38,7 +38,7 @@ public class AddConditionPopupViewModel : INotifyPropertyChanged
     public ICommand ClosePopupCommand { get; }
     public ICommand ConfirmAddCommand { get; }
  
-    public AddConditionPopupViewModel(string relatedSymptom)
+    public AddConditionPopupViewModel(string relatedSymptom, string healthEventID)
     {
         ClosePopupCommand = new Command(async () => await Shell.Current.Navigation.PopModalAsync());
 
@@ -70,6 +70,16 @@ public class AddConditionPopupViewModel : INotifyPropertyChanged
                 using var dbContext = new MedicalDbContext();
                 dbContext.Conditions.Add(newCondition);
                 await dbContext.SaveChangesAsync();
+
+                if (!string.IsNullOrEmpty(healthEventID))
+                {
+                    var evt = await dbContext.HealthEvent.FindAsync(healthEventID);
+                    if (evt != null)
+                    {
+                        evt.ConditionId = newCondition.Id;
+                        await dbContext.SaveChangesAsync();
+                    }
+                }
 
                 WeakReferenceMessenger.Default.Send(new AddConditionMessage(newCondition.Name));
                 await Shell.Current.Navigation.PopModalAsync();
