@@ -134,10 +134,7 @@ namespace medi1.ViewModels
 
        private async Task LoadHealthEventsAsync(string conditionId)
     {
-        // var currentUser = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == UserSession.Instance.Id);
-        // if (currentUser == null) return;
-
-        // var currentUserHealthEvents = currentUser.HealthEvents;
+       
 
         var list = await _dbContext.HealthEvent
             .Where(he => he.ConditionId == conditionId)
