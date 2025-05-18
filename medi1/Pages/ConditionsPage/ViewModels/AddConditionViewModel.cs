@@ -7,7 +7,7 @@ using medi1.Services;
 using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
 using medi1.Pages.ConditionsPage.Interfaces;
-using medi1.Services;
+
 public class AddConditionPopupViewModel : INotifyPropertyChanged
 {
     private readonly IMedicalDbContext _dbContext;
@@ -22,7 +22,7 @@ public class AddConditionPopupViewModel : INotifyPropertyChanged
     {
         get => newConditionName;
         set
-       {
+        {
             if (newConditionName != value)
             {
                 newConditionName = value;
@@ -37,11 +37,11 @@ public class AddConditionPopupViewModel : INotifyPropertyChanged
         get => symptomsInput;
         set
         {
-            symptomsInput = value;
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SymptomsInput)));
-
-            newConditionName = value;
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(NewConditionName)));
+            if (symptomsInput != value)
+            {
+                symptomsInput = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SymptomsInput)));
+            }
         }
     }
 
@@ -74,13 +74,17 @@ public class AddConditionPopupViewModel : INotifyPropertyChanged
         }
 
         // checking for duplicates
-        
-        var currentUser = _dbContext.Users.FirstOrDefault(u => u.Id == UserSession.Instance.Id);
+        var currentUser = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == UserSession.Instance.Id);
+        if (currentUser == null)
+        {
+            await _alertService.ShowAlert("Error", "Current user not found.", "OK");
+            return;
+        }
         var currentUserConditions = currentUser.Conditions;
         var list = await _dbContext.Conditions
                 .Where(c => !c.Archived && currentUserConditions.Contains(c.Id))
                 .ToListAsync();
-        
+
         var duplicate = list.Any(c => c.Name.Equals(NewConditionName.Trim(), StringComparison.OrdinalIgnoreCase));
 
         if (duplicate)
@@ -106,15 +110,15 @@ public class AddConditionPopupViewModel : INotifyPropertyChanged
             _dbContext.Conditions.Add(newCondition);
             await _dbContext.SaveChangesAsync();
 
-                if (!string.IsNullOrEmpty(healthEventID))
+            if (!string.IsNullOrEmpty(healthEventID))
+            {
+                var evt = await _dbContext.HealthEvent.FindAsync(healthEventID);
+                if (evt != null)
                 {
-                    var evt = await _dbContext.HealthEvent.FindAsync(healthEventID);
-                    if (evt != null)
-                    {
-                        evt.ConditionId = newCondition.Id;
-                        await _dbContext.SaveChangesAsync();
-                    }
+                    evt.ConditionId = newCondition.Id;
+                    await _dbContext.SaveChangesAsync();
                 }
+            }
 
             WeakReferenceMessenger.Default.Send(new AddConditionMessage(newCondition.Name));
             await _navigationService.PopModalAsync();
