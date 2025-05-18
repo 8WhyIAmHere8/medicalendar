@@ -13,8 +13,8 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Xaml;
 using Microsoft.Maui.Graphics;
 using medi1.Services;
-// alias to avoid conflict with MAUI.Controls.Condition
 using DCondition = medi1.Data.Models.Condition;
+using medi1.Pages.AddEntryPageFolder;
 
 namespace medi1.Pages
 {
@@ -58,8 +58,18 @@ namespace medi1.Pages
 
         }
         private async void AddNewEntry(object sender, EventArgs e)
-            => await Navigation.PushModalAsync(new AddEntryPage());
- 
+        {
+            try
+            {
+                await Navigation.PushModalAsync(new AddEntryPage());
+            }
+            catch (Exception ex)
+            {
+                // Show an alert to get the error message immediately
+                await DisplayAlert("Navigation Error", ex.Message + "\n" + ex.StackTrace, "OK");
+            }
+        }
+
         protected override async void OnAppearing()
         {
             base.OnAppearing();
@@ -273,12 +283,6 @@ namespace medi1.Pages
 
         private async void GoToConditions(object s, EventArgs e)
             => await Navigation.PushAsync(new ConditionsPage.ConditionsPage());
-        private async void GoToAddEntry(object s, EventArgs e)
-            => await Navigation.PushAsync(new AddEntryPage());
-        private async void GoToSettings(object s, EventArgs e)
-            => await Navigation.PushAsync(new SettingsPage());
-        private async void GoToReports(object s, EventArgs e)
-            => await Navigation.PushAsync(new ReportsPage());
 
         private async void OnConditionTapped(object s, EventArgs e)
         {

@@ -8,6 +8,7 @@ namespace medi1.Pages.ConditionsPage.Interfaces
     {   
         DbSet<Data.Models.User> Users { get; }
         DbSet<medi1.Data.Models.Condition> Conditions { get; }
+        DbSet<medi1.Data.Models.HealthEvent> HealthEvent { get; }
         
 
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);

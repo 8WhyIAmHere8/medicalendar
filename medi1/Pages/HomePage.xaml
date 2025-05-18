@@ -4,6 +4,7 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:components="clr-namespace:medi1.SplashPageComponents"
+    xmlns:viewmodels="clr-namespace:medi1.Pages.AddEntryPageFolder"
     xmlns:local="clr-namespace:medi1.Pages"
     Title="Dashboard"
     BackgroundColor="{AppThemeBinding Light=White, Dark=Black}">
@@ -147,7 +148,89 @@
         </CollectionView.ItemTemplate>
       </CollectionView>
 
-      <!-- Health Events Section -->
+      <!-- Navigation Buttons -->
+      <FlexLayout Direction="Row" JustifyContent="Center" AlignItems="Center" Padding="30">
+        <Button Text="My Conditions"
+                BackgroundColor="Red"
+                TextColor="White"
+                FontSize="14"
+                WidthRequest="120"
+                HeightRequest="40"
+                Clicked="GoToConditions"
+                Margin="5,10,0,0"/>
+      </FlexLayout>
+
+      <!-- Today's Date, Tasks & Events -->
+      <Frame BorderColor="Gray" Padding="20" CornerRadius="10" HasShadow="True" BackgroundColor="Transparent" Margin="0,30,0,0">
+        <StackLayout Orientation="Vertical" Spacing="10">
+          <Label Text="{Binding FullDateToday}" FontSize="24" HorizontalOptions="Center"/>
+
+          <!-- Pane for Adding New Tasks -->
+          <Frame Margin="0,-40,0,0">
+            <StackLayout>
+              <Label Text="Today's Tasks" FontSize="20" HorizontalOptions="Center" Padding="20" Margin="0,-5,0,0"/>
+              <Button Text="+ New Task" Clicked="OnAddTaskClicked"/>
+
+              <!-- Where task items get injected -->
+              <StackLayout x:Name="TaskListContainer" Padding="10" Spacing="5"/>
+
+              <!-- Add Task Popup -->
+              <Grid x:Name="AddTaskPopup"
+                    BackgroundColor="Black"
+                    Opacity="0.5"
+                    IsVisible="False"
+                    HorizontalOptions="Center"
+                    VerticalOptions="CenterAndExpand">
+                <Frame BackgroundColor="White"
+                       Padding="20"
+                       CornerRadius="10"
+                       HasShadow="True">
+                  <StackLayout>
+                    <Label Text="Add Task" FontSize="18" HorizontalOptions="Center"/>
+                    <Entry x:Name="TaskInput" Placeholder="New Task..." BackgroundColor="White" TextColor="Black"/>
+                    <StackLayout Orientation="Horizontal" HorizontalOptions="Center" Spacing="10">
+                      <Button Text="Confirm" Clicked="OnConfirmTaskClicked" BackgroundColor="#457b9d" TextColor="White" FontAttributes="Bold"/>
+                      <Button Text="Cancel"  Clicked="OnCancelTaskClicked" BackgroundColor="#1d3558" TextColor="White" FontAttributes="Bold"/>
+                    </StackLayout>
+                  </StackLayout>
+                </Frame>
+              </Grid>
+
+              <!-- Edit Task Popup -->
+              <Grid x:Name="EditTaskPopup"
+                    BackgroundColor="Black"
+                    Opacity="0.5"
+                    IsVisible="False"
+                    HorizontalOptions="Center"
+                    VerticalOptions="CenterAndExpand">
+                <Frame BackgroundColor="White"
+                       Padding="20"
+                       CornerRadius="10"
+                       HasShadow="True">
+                  <StackLayout>
+                    <Label Text="Edit Task" FontSize="18" HorizontalOptions="Center"/>
+                    <Entry x:Name="EditTaskInput" Placeholder="Edit Task..."/>
+                    <StackLayout Orientation="Horizontal" HorizontalOptions="Center" Spacing="10">
+                      <Button Text="Confirm" Clicked="TaskEditConfirmClicked" BackgroundColor="#457b9d" TextColor="White" FontAttributes="Bold"/>
+                      <Button Text="Cancel"  Clicked="TaskEditCancelClicked" BackgroundColor="#1d3558" TextColor="White" FontAttributes="Bold"/>
+                    </StackLayout>
+                  </StackLayout>
+                </Frame>
+              </Grid>
+            </StackLayout>
+          </Frame>
+
+          <!-- Pane for Adding a New Entry -->
+          <Frame>
+            <StackLayout>
+              <Button Text="+ Log an Entry" Clicked="AddNewEntry"/>
+            </StackLayout>
+          </Frame>
+
+        </StackLayout>
+      </Frame>
+
+            <!-- Health Events Section -->
       <Label Text="↓  List of Health Events:" FontSize="20" Margin="0,20,0,5"/>
       <CollectionView ItemsSource="{Binding HealthEvents}">
         <CollectionView.ItemsLayout>
@@ -190,126 +273,6 @@
         </CollectionView.ItemTemplate>
       </CollectionView>
 
-      <!-- Navigation Buttons -->
-      <FlexLayout Direction="Row" JustifyContent="Center" AlignItems="Center" Padding="30">
-        <Button Text="My Conditions"
-                BackgroundColor="Red"
-                TextColor="White"
-                FontSize="14"
-                WidthRequest="120"
-                HeightRequest="40"
-                Clicked="GoToConditions"
-                Margin="5,10,0,0"/>
-        <Button Text="Reports &amp; Comparisons"
-                BackgroundColor="LightGray"
-                TextColor="Red"
-                FontSize="14"
-                WidthRequest="190"
-                HeightRequest="40"
-                Clicked="GoToReports"
-                Margin="5,10,0,0"/>
-        <Button Text="Settings &amp; Profile"
-                BackgroundColor="Blue"
-                TextColor="White"
-                FontSize="14"
-                WidthRequest="150"
-                HeightRequest="40"
-                Clicked="GoToSettings"
-                Margin="5,10,0,0"/>
-      </FlexLayout>
-
-      <!-- Today's Date, Tasks & Events -->
-      <Frame
-        BorderColor="Gray"
-        Padding="20"
-        CornerRadius="10"
-        HasShadow="True"
-        Margin="0,30,0,0"
-        BackgroundColor="{AppThemeBinding Light=White, Dark=Black}">
-        <StackLayout Orientation="Vertical" Spacing="10">
-          <Label
-            Text="{Binding FullDateToday}"
-            FontSize="24"
-            HorizontalOptions="Center"/>
-
-          <!-- Pane for Adding New Tasks -->
-          <Frame
-            Style="{StaticResource SectionFrameStyle}"
-            Margin="0,-40,0,0">
-            <StackLayout>
-              <Label
-                Text="Today's Tasks"
-                FontSize="20"
-                HorizontalOptions="Center"
-                Padding="20"
-                Margin="0,-5,0,0"/>
-              <Button
-                Text="+ New Task"
-                Clicked="OnAddTaskClicked"/>
-
-              <!-- Task list -->
-              <StackLayout
-                x:Name="TaskListContainer"
-                Padding="10"
-                Spacing="5"/>
-
-              <!-- Add Task Popup -->
-              <Grid x:Name="AddTaskPopup"
-                    BackgroundColor="Black"
-                    Opacity="0.5"
-                    IsVisible="False"
-                    HorizontalOptions="Center"
-                    VerticalOptions="CenterAndExpand">
-                <Frame
-                  BackgroundColor="White"
-                  Padding="20"
-                  CornerRadius="10"
-                  HasShadow="True">
-                  <StackLayout>
-                    <Label Text="Add Task" FontSize="18" HorizontalOptions="Center"/>
-                    <Entry x:Name="TaskInput" Placeholder="New Task..."/>
-                    <StackLayout Orientation="Horizontal" HorizontalOptions="Center" Spacing="10">
-                      <Button Text="Confirm" Clicked="OnConfirmTaskClicked"/>
-                      <Button Text="Cancel"  Clicked="OnCancelTaskClicked"/>
-                    </StackLayout>
-                  </StackLayout>
-                </Frame>
-              </Grid>
-
-              <!-- Edit Task Popup -->
-              <Grid x:Name="EditTaskPopup"
-                    BackgroundColor="Black"
-                    Opacity="0.5"
-                    IsVisible="False"
-                    HorizontalOptions="Center"
-                    VerticalOptions="CenterAndExpand">
-                <Frame
-                  BackgroundColor="White"
-                  Padding="20"
-                  CornerRadius="10"
-                  HasShadow="True">
-                  <StackLayout>
-                    <Label Text="Edit Task" FontSize="18" HorizontalOptions="Center"/>
-                    <Entry x:Name="EditTaskInput" Placeholder="Edit Task..."/>
-                    <StackLayout Orientation="Horizontal" HorizontalOptions="Center" Spacing="10">
-                      <Button Text="Confirm" Clicked="TaskEditConfirmClicked"/>
-                      <Button Text="Cancel"  Clicked="TaskEditCancelClicked"/>
-                    </StackLayout>
-                  </StackLayout>
-                </Frame>
-              </Grid>
-            </StackLayout>
-          </Frame>
-
-          <!-- Pane for Adding a New Entry -->
-          <Frame Style="{StaticResource SectionFrameStyle}">
-            <StackLayout>
-              <Button Text="+ Log an Entry" Clicked="AddNewEntry"/>
-            </StackLayout>
-          </Frame>
-
-        </StackLayout>
-      </Frame>
     </StackLayout>
   </ScrollView>
 </ContentPage>
