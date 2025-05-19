@@ -272,7 +272,7 @@ namespace medi1.ViewModels
         {
             if (SelectedCondition == null || _dbContext == null) return;
 
-            // Show confirmation dialog
+          
             bool confirm = await Application.Current.MainPage.DisplayAlert(
                 "Delete Condition",
                 $"Are you sure you want to delete \"{SelectedCondition.Name}\"? This cannot be undone.",
@@ -300,13 +300,13 @@ namespace medi1.ViewModels
         public void ZoomIn()
         {
             _scale = Math.Min(_scale + 0.1f, 5f);
-            InvalidateChart(); // <-- Force chart to repaint
+            InvalidateChart();
         }
 
         public void ZoomOut()
         {
             _scale = Math.Max(_scale - 0.1f, 0.5f);
-            InvalidateChart(); // <-- Force chart to repaint
+            InvalidateChart();
         }
         [ObservableProperty]
         private DateTime startDate = DateTime.Today.AddDays(-30);
@@ -336,103 +336,103 @@ namespace medi1.ViewModels
 
         public float GetScale() => _scale;
         public void OnCanvasViewPaintSurface(object sender, SKPaintSurfaceEventArgs e)
-{
-    var recentEvents = HealthEvents;
-    var canvas = e.Surface.Canvas;
-    canvas.Clear(SKColors.White);
-
-    if (StartDate >= EndDate)
-        return;
-
-    float canvasWidth = e.Info.Width;
-    float canvasHeight = e.Info.Height;
-
-    float startX = 60;
-    float startY = canvasHeight - 80;
-    float baseBarWidth = 20;
-    float baseSpace = 10;
-    float scale = GetScale();
-
-    float barWidth = baseBarWidth * scale;
-    float space = baseSpace * scale;
-
-    var barPaint = new SKPaint { IsAntialias = true, Style = SKPaintStyle.Fill };
-    var gridPaint = new SKPaint
-    {
-        Color = SKColors.LightGray,
-        StrokeWidth = 1,
-        IsAntialias = true,
-        Style = SKPaintStyle.Stroke
-    };
-    var textPaint = new SKPaint
-    {
-        Color = SKColors.Black,
-        TextSize = 14,
-        IsAntialias = true,
-        TextAlign = SKTextAlign.Center
-    };
-
-    // Draw horizontal grid lines
-    for (int y = 0; y <= 10; y++)
-    {
-        float yLine = startY - y * 10;
-        canvas.DrawLine(startX - 20, yLine, canvasWidth - 20, yLine, gridPaint);
-    }
-
-    // Draw X-axis
-    canvas.DrawLine(startX - 20, startY, canvasWidth - 20, startY, new SKPaint
-    {
-        Color = SKColors.Gray,
-        StrokeWidth = 2
-    });
-
-    var dateRange = Enumerable.Range(0, (EndDate - StartDate).Days + 1)
-        .Select(i => StartDate.AddDays(i))
-        .ToList();
-
-    for (int i = 0; i < dateRange.Count; i++)
-    {
-        var date = dateRange[i];
-        float centerX = startX + i * (barWidth + space);
-
-        // Draw matching event bar
-        var ev = recentEvents.FirstOrDefault(e => e.StartDate <= date && e.EndDate >= date);
-        if (ev != null)
         {
-            int impactHeight = ev.Impact * 10;
-            float barHeight = Math.Max(impactHeight, 10);
-            float top = startY - barHeight;
+            var recentEvents = HealthEvents;
+            var canvas = e.Surface.Canvas;
+            canvas.Clear(SKColors.White);
 
-            barPaint.Color = ev.Impact switch
+            if (StartDate >= EndDate)
+                return;
+
+            float canvasWidth = e.Info.Width;
+            float canvasHeight = e.Info.Height;
+
+            float startX = 60;
+            float startY = canvasHeight - 80;
+            float baseBarWidth = 20;
+            float baseSpace = 10;
+            float scale = GetScale();
+
+            float barWidth = baseBarWidth * scale;
+            float space = baseSpace * scale;
+
+            var barPaint = new SKPaint { IsAntialias = true, Style = SKPaintStyle.Fill };
+            var gridPaint = new SKPaint
             {
-                <= 3 => SKColors.LightGreen,
-                <= 6 => SKColors.Gold,
-                <= 9 => SKColors.OrangeRed,
-                10 => SKColors.DarkRed,
-                _ => SKColors.Gray
+                Color = SKColors.LightGray,
+                StrokeWidth = 1,
+                IsAntialias = true,
+                Style = SKPaintStyle.Stroke
+            };
+            var textPaint = new SKPaint
+            {
+                Color = SKColors.Black,
+                TextSize = 14,
+                IsAntialias = true,
+                TextAlign = SKTextAlign.Center
             };
 
-            var rect = new SKRect(centerX - barWidth / 2, top, centerX + barWidth / 2, startY);
-            canvas.DrawRoundRect(rect, 4, 4, barPaint);
+            //  horizontal lines
+            for (int y = 0; y <= 10; y++)
+            {
+                float yLine = startY - y * 10;
+                canvas.DrawLine(startX - 20, yLine, canvasWidth - 20, yLine, gridPaint);
+            }
 
-            // Draw short title label
-            string label = Truncate(ev.Title, 8);
-            canvas.DrawText(label, centerX, startY + 20, textPaint);
+            // x-axis
+            canvas.DrawLine(startX - 20, startY, canvasWidth - 20, startY, new SKPaint
+            {
+                Color = SKColors.Gray,
+                StrokeWidth = 2
+            });
+
+            var dateRange = Enumerable.Range(0, (EndDate - StartDate).Days + 1)
+                .Select(i => StartDate.AddDays(i))
+                .ToList();
+
+            for (int i = 0; i < dateRange.Count; i++)
+            {
+                var date = dateRange[i];
+                float centerX = startX + i * (barWidth + space);
+
+                // drawign event bar
+                var ev = recentEvents.FirstOrDefault(e => e.StartDate <= date && e.EndDate >= date);
+                if (ev != null)
+                {
+                    int impactHeight = ev.Impact * 10;
+                    float barHeight = Math.Max(impactHeight, 10);
+                    float top = startY - barHeight;
+
+                    barPaint.Color = ev.Impact switch
+                    {
+                        <= 3 => SKColors.LightGreen,
+                        <= 6 => SKColors.Gold,
+                        <= 9 => SKColors.OrangeRed,
+                        10 => SKColors.DarkRed,
+                        _ => SKColors.Gray
+                    };
+
+                    var rect = new SKRect(centerX - barWidth / 2, top, centerX + barWidth / 2, startY);
+                    canvas.DrawRoundRect(rect, 4, 4, barPaint);
+
+                    // Draw short title label
+                    string label = Truncate(ev.Title, 8);
+                    canvas.DrawText(label, centerX, startY + 20, textPaint);
+                }
+
+                // date labels 
+                int labelInterval = (int)(1 / scale);
+                if (labelInterval < 1) labelInterval = 1;
+
+                if (i % labelInterval == 0)
+                {
+                    canvas.Save();
+                    canvas.RotateDegrees(-45, centerX, startY + 40);
+                    canvas.DrawText(date.ToString("MM/dd"), centerX, startY + 40, textPaint);
+                    canvas.Restore();
+                }
+            }
         }
-
-        // Date labels - rotated for readability
-        int labelInterval = (int)(1 / scale);
-        if (labelInterval < 1) labelInterval = 1;
-
-        if (i % labelInterval == 0)
-        {
-            canvas.Save();
-            canvas.RotateDegrees(-45, centerX, startY + 40);
-            canvas.DrawText(date.ToString("MM/dd"), centerX, startY + 40, textPaint);
-            canvas.Restore();
-        }
-    }
-}
 
         private string Truncate(string value, int maxLength)
         {
