@@ -161,12 +161,12 @@
       </FlexLayout>
 
       <!-- Today's Date, Tasks & Events -->
-      <Frame BorderColor="Gray" Padding="20" CornerRadius="10" HasShadow="True" BackgroundColor="Transparent" Margin="0,30,0,0">
+      <Frame BorderColor="Gray" Padding="20" CornerRadius="10" HasShadow="True" BackgroundColor="{AppThemeBinding Light=White, Dark=Black}" Margin="0,30,0,0">
         <StackLayout Orientation="Vertical" Spacing="10">
           <Label Text="{Binding FullDateToday}" FontSize="24" HorizontalOptions="Center"/>
 
           <!-- Pane for Adding New Tasks -->
-          <Frame Margin="0,-40,0,0">
+          <Frame Style="{StaticResource SectionFrameStyle}" Margin="0,-40,0,0">
             <StackLayout>
               <Label Text="Today's Tasks" FontSize="20" HorizontalOptions="Center" Padding="20" Margin="0,-5,0,0"/>
               <Button Text="+ New Task" Clicked="OnAddTaskClicked"/>
@@ -187,10 +187,10 @@
                        HasShadow="True">
                   <StackLayout>
                     <Label Text="Add Task" FontSize="18" HorizontalOptions="Center"/>
-                    <Entry x:Name="TaskInput" Placeholder="New Task..." BackgroundColor="White" TextColor="Black"/>
+                    <Entry x:Name="TaskInput" Placeholder="New Task..."/>
                     <StackLayout Orientation="Horizontal" HorizontalOptions="Center" Spacing="10">
-                      <Button Text="Confirm" Clicked="OnConfirmTaskClicked" BackgroundColor="#457b9d" TextColor="White" FontAttributes="Bold"/>
-                      <Button Text="Cancel"  Clicked="OnCancelTaskClicked" BackgroundColor="#1d3558" TextColor="White" FontAttributes="Bold"/>
+                      <Button Text="Confirm" Clicked="OnConfirmTaskClicked"/>
+                      <Button Text="Cancel"  Clicked="OnCancelTaskClicked"/>
                     </StackLayout>
                   </StackLayout>
                 </Frame>
@@ -211,8 +211,8 @@
                     <Label Text="Edit Task" FontSize="18" HorizontalOptions="Center"/>
                     <Entry x:Name="EditTaskInput" Placeholder="Edit Task..."/>
                     <StackLayout Orientation="Horizontal" HorizontalOptions="Center" Spacing="10">
-                      <Button Text="Confirm" Clicked="TaskEditConfirmClicked" BackgroundColor="#457b9d" TextColor="White" FontAttributes="Bold"/>
-                      <Button Text="Cancel"  Clicked="TaskEditCancelClicked" BackgroundColor="#1d3558" TextColor="White" FontAttributes="Bold"/>
+                      <Button Text="Confirm" Clicked="TaskEditConfirmClicked"/>
+                      <Button Text="Cancel"  Clicked="TaskEditCancelClicked"/>
                     </StackLayout>
                   </StackLayout>
                 </Frame>
@@ -221,7 +221,7 @@
           </Frame>
 
           <!-- Pane for Adding a New Entry -->
-          <Frame>
+          <Frame Style="{StaticResource SectionFrameStyle}">
             <StackLayout>
               <Button Text="+ Log an Entry" Clicked="AddNewEntry"/>
             </StackLayout>
