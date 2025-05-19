@@ -19,7 +19,7 @@ namespace medi1.Data
         {
             optionsBuilder.UseCosmos(
                 "https://medicalendar-data.documents.azure.com:443/", // cosmosDB link
-                "ukEwRy20KzAics3MYQfmnzwXC0IxPQMGd8MfvPCQthLpkW691AMAqS1cSPz5aS6z77WAz3Sgy9I8ACDbywHjig==", // cosmosDB key 
+                "Masked due to being sensitive. Can provide if needed.", // cosmosDB key 
                 "MedicalDatabase"); 
 
             optionsBuilder.LogTo(Console.WriteLine); // logging database queries
