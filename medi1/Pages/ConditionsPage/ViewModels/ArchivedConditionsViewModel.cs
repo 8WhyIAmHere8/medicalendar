@@ -10,7 +10,6 @@ using System.Linq;
 
 namespace medi1.ViewModels;
 
-// Wrapper for display in UI
 public class ConditionDisplay
 {
     public medi1.Data.Models.Condition Model { get; }

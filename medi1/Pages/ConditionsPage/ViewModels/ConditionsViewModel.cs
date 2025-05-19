@@ -107,7 +107,7 @@ namespace medi1.ViewModels
 
             if (SelectedCondition != null)
             {
-                // Ensure lists are initialized
+                // ensuring lists are initialised
                 SelectedCondition.Medications ??= new List<string>();
                 SelectedCondition.Symptoms ??= new List<string>();
                 SelectedCondition.Treatments ??= new List<string>();
@@ -336,86 +336,110 @@ namespace medi1.ViewModels
 
         public float GetScale() => _scale;
         public void OnCanvasViewPaintSurface(object sender, SKPaintSurfaceEventArgs e)
+{
+    var recentEvents = HealthEvents;
+    var canvas = e.Surface.Canvas;
+    canvas.Clear(SKColors.White);
+
+    if (StartDate >= EndDate)
+        return;
+
+    float canvasWidth = e.Info.Width;
+    float canvasHeight = e.Info.Height;
+
+    float startX = 60;
+    float startY = canvasHeight - 80;
+    float baseBarWidth = 20;
+    float baseSpace = 10;
+    float scale = GetScale();
+
+    float barWidth = baseBarWidth * scale;
+    float space = baseSpace * scale;
+
+    var barPaint = new SKPaint { IsAntialias = true, Style = SKPaintStyle.Fill };
+    var gridPaint = new SKPaint
+    {
+        Color = SKColors.LightGray,
+        StrokeWidth = 1,
+        IsAntialias = true,
+        Style = SKPaintStyle.Stroke
+    };
+    var textPaint = new SKPaint
+    {
+        Color = SKColors.Black,
+        TextSize = 14,
+        IsAntialias = true,
+        TextAlign = SKTextAlign.Center
+    };
+
+    // Draw horizontal grid lines
+    for (int y = 0; y <= 10; y++)
+    {
+        float yLine = startY - y * 10;
+        canvas.DrawLine(startX - 20, yLine, canvasWidth - 20, yLine, gridPaint);
+    }
+
+    // Draw X-axis
+    canvas.DrawLine(startX - 20, startY, canvasWidth - 20, startY, new SKPaint
+    {
+        Color = SKColors.Gray,
+        StrokeWidth = 2
+    });
+
+    var dateRange = Enumerable.Range(0, (EndDate - StartDate).Days + 1)
+        .Select(i => StartDate.AddDays(i))
+        .ToList();
+
+    for (int i = 0; i < dateRange.Count; i++)
+    {
+        var date = dateRange[i];
+        float centerX = startX + i * (barWidth + space);
+
+        // Draw matching event bar
+        var ev = recentEvents.FirstOrDefault(e => e.StartDate <= date && e.EndDate >= date);
+        if (ev != null)
         {
-            var recentEvents = HealthEvents;
-            var canvas = e.Surface.Canvas;
-            canvas.Clear(SKColors.White);
+            int impactHeight = ev.Impact * 10;
+            float barHeight = Math.Max(impactHeight, 10);
+            float top = startY - barHeight;
 
-            if (StartDate >= EndDate)
-                return;
-
-            float canvasWidth = e.Info.Width;
-            float canvasHeight = e.Info.Height;
-
-            float startX = 60;
-            float startY = canvasHeight - 80;
-            float baseBarWidth = 20;
-            float baseSpace = 10;
-            float scale = GetScale();
-
-            float barWidth = baseBarWidth * scale;
-            float space = baseSpace * scale;
-
-            var paint = new SKPaint { Style = SKPaintStyle.Fill, IsAntialias = true };
-            var textPaint = new SKPaint
+            barPaint.Color = ev.Impact switch
             {
-                Color = SKColors.Black,
-                TextSize = 16,
-                IsAntialias = true,
-                TextAlign = SKTextAlign.Center
+                <= 3 => SKColors.LightGreen,
+                <= 6 => SKColors.Gold,
+                <= 9 => SKColors.OrangeRed,
+                10 => SKColors.DarkRed,
+                _ => SKColors.Gray
             };
 
-            // Draw X-axis
-            canvas.DrawLine(startX - 20, startY, canvasWidth - 20, startY, new SKPaint
-            {
-                Color = SKColors.Gray,
-                StrokeWidth = 2
-            });
+            var rect = new SKRect(centerX - barWidth / 2, top, centerX + barWidth / 2, startY);
+            canvas.DrawRoundRect(rect, 4, 4, barPaint);
 
-            var dateRange = Enumerable.Range(0, (EndDate - StartDate).Days + 1)
-                .Select(i => StartDate.AddDays(i))
-                .ToList();
-
-            for (int i = 0; i < dateRange.Count; i++)
-            {
-                var date = dateRange[i];
-                var centerX = startX + i * (barWidth + space);
-
-                // Get matching event
-                var ev = recentEvents.FirstOrDefault(e => e.StartDate <= date && e.EndDate >= date);
-                if (ev != null)
-                {
-                    int ImpactHeight = ev.Impact * 10;
-                    float barHeight = Math.Max(ImpactHeight, 10);
-                    float top = startY - barHeight;
-
-                    paint.Color = ev.Impact switch
-                    {
-                        <= 3 => SKColors.Green,
-                        <= 6 => SKColors.Yellow,
-                        <= 9 => SKColors.Orange,
-                        10 => SKColors.Red,
-                        _ => SKColors.Gray
-                    };
-
-                    canvas.DrawRect(centerX - barWidth / 2, top, barWidth, barHeight, paint);
-                    canvas.DrawText(Truncate(ev.Title, 6), centerX, startY + 20, textPaint);
-                }
-
-                // Always draw date label
-                int labelInterval = (int)(1 / scale);
-                if (labelInterval < 1) labelInterval = 1;
-
-                if (i % labelInterval == 0)
-                {
-                    canvas.DrawText(date.ToString("MM/dd"), centerX, startY + 40, textPaint);
-                }
-            }
+            // Draw short title label
+            string label = Truncate(ev.Title, 8);
+            canvas.DrawText(label, centerX, startY + 20, textPaint);
         }
+
+        // Date labels - rotated for readability
+        int labelInterval = (int)(1 / scale);
+        if (labelInterval < 1) labelInterval = 1;
+
+        if (i % labelInterval == 0)
+        {
+            canvas.Save();
+            canvas.RotateDegrees(-45, centerX, startY + 40);
+            canvas.DrawText(date.ToString("MM/dd"), centerX, startY + 40, textPaint);
+            canvas.Restore();
+        }
+    }
+}
 
         private string Truncate(string value, int maxLength)
         {
-            return value.Length <= maxLength ? value : value.Substring(0, maxLength) + "...";
+            return value.Length <= maxLength ? value : value.Substring(0, maxLength - 1) + "…";
         }
+
+
+
     }
 }
